@@ -1,0 +1,17 @@
+:root {
+    --font-primary: "Akira Expandend", sans-serif; 
+    --font-secondary: "Helvetica", sans-serif; 
+    font-feature-settings: "liga" 1, "calt" 1; /*fix for Chrome*/
+    
+    /* Font families with weights */
+    --font-satoshi-medium: 500;
+    --font-satoshi-bold: 700;
+    
+    /* Typography scales */
+    --text-display: var(--unit-48);
+    --text-heading: var(--unit-40);
+    --text-subheading: var(--unit-24);
+    --text-body: var(--unit-20);
+    --text-label: var(--unit-16);
+    --text-caption: var(--unit-12);
+}
