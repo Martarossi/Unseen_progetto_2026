@@ -4,8 +4,8 @@
     font-feature-settings: "liga" 1, "calt" 1; /*fix for Chrome*/
     
     /* Font families with weights */
-    --font-satoshi-medium: 500;
-    --font-satoshi-bold: 700;
+    --font-akira-medium: 500;
+    --font-akira-bold: 700;
     
     /* Typography scales */
     --text-display: var(--unit-48);

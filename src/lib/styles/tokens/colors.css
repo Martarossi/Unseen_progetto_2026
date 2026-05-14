@@ -1,54 +1,34 @@
 :root {
   /* Background */
-  --colors-background-primary: #0a0a0a;
-  --colors-background-secondary: #1a1a1a;
+  --colors-background-primary: #FFFFFF;
+  --colors-background-secondary: #EDEEEF;
   
   /* Content */
-  --colors-content-primary: #fafafa;
-  --colors-content-secondary: #9499a0;
+  --colors-content-primary: #030404;
+  --colors-content-secondary: #797f88;
   
   /* Filters */
-  --colors-filters-selected: #d33e43;
-  --colors-filters-text-selected: #fafafa;
-  --colors-filters-text-default: #fafafa;
+  --colors-filters-selected: #4e7785;
+  --colors-filters-text-selected: #FFFFFF;
   
   /* Interactive */
-  --colors-interactive-hover: rgba(250, 250, 250, 0.08);
-  --colors-interactive-active: rgba(250, 250, 250, 0.12);
+  --colors-interactive-hover: #273b42;
+  --colors-interactive-active: #273b42;
 }
 
-/* Light Mode */
-html[data-theme="light"] {
-  /* Background */
-  --colors-background-primary: #ffffff;
-  --colors-background-secondary: #f5f5f5;
-  
-  /* Content */
-  --colors-content-primary: #0a0a0a;
-  --colors-content-secondary: #666b70;
-  
-  /* Filters */
-  --colors-filters-selected: #d33e43;
-  --colors-filters-text-selected: #ffffff;
-  --colors-filters-text-default: #0a0a0a;
-  
-  /* Interactive */
-  --colors-interactive-hover: rgba(10, 10, 10, 0.08);
-  --colors-interactive-active: rgba(10, 10, 10, 0.12);
-}
 
 /* System preference fallback */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     --colors-background-primary: #ffffff;
-    --colors-background-secondary: #f5f5f5;
-    --colors-content-primary: #0a0a0a;
-    --colors-content-secondary: #666b70;
-    --colors-filters-selected: #d33e43;
-    --colors-filters-text-selected: #ffffff;
-    --colors-filters-text-default: #0a0a0a;
-    --colors-interactive-hover: rgba(10, 10, 10, 0.08);
-    --colors-interactive-active: rgba(10, 10, 10, 0.12);
+    --colors-background-secondary: #EDEEEF;
+    --colors-content-primary: #030404;
+    --colors-content-secondary: #797f88;
+    --colors-filters-selected: #4e7785;
+    --colors-filters-text-selected: #FFFFFF;
+    --colors-filters-text-default: #030404;
+    --colors-interactive-hover: #273b42;
+    --colors-interactive-active: #273b42;
   }
 }
 
