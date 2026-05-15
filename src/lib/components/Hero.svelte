@@ -1,20 +1,49 @@
 <script>
   import { onMount, tick } from "svelte";
   import gsap from "gsap";
+  import About from "./About.svelte";
 
   let heroRef;
   let descriptionRef;
+  let transitionBgRef;
 
   let mouseX = $state(0);
   let mouseY = $state(0);
   let showLogo = $state(false);
   let isClicked = $state(false);
+  let showAboutOverlay = $state(false);
 
   function handleMouseMove(e) {
     if (!heroRef || isClicked) return;
     const rect = heroRef.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
+  }
+
+  function navigateAbout(e) {
+    e.preventDefault();
+    if (!transitionBgRef) return;
+
+    // Ferma eventuali propagazioni del click
+    e.stopPropagation();
+
+    gsap.to(transitionBgRef, {
+      "--expand-radius": "150%",
+      duration: 1.2,
+      ease: "power3.inOut",
+      onComplete: () => {
+        showAboutOverlay = true;
+      },
+    });
+  }
+
+  function closeAboutOverlay() {
+    showAboutOverlay = false;
+    gsap.to(transitionBgRef, {
+      "--expand-radius": "0%",
+      duration: 1.2,
+      ease: "power3.inOut"
+    });
   }
 
   async function handleClick() {
@@ -59,7 +88,7 @@
   }
 
   function splitIntoLetters(str) {
-    return str.split('').map(c => c === ' ' ? '&nbsp;' : c);
+    return str.split("").map((c) => (c === " " ? "&nbsp;" : c));
   }
 
   onMount(() => {
@@ -70,7 +99,7 @@
     const pieces = descriptionRef.querySelectorAll(".text-piece");
 
     const tl = gsap.timeline({ delay: 0.2 });
-    
+
     // Entrata "a pezzi" con blur
     tl.fromTo(
       pieces,
@@ -82,24 +111,24 @@
         duration: 1.2,
         stagger: 0.03, // ritardo tra ogni lettera
         ease: "power2.out",
-      }
-    )
-    // Uscita "a pezzi" con blur
-    .to(
-      pieces,
-      {
-        opacity: 0,
-        filter: "blur(10px)",
-        y: -20,
-        duration: 0.8,
-        stagger: 0.02,
-        ease: "power2.in",
       },
-      "+=1.5" // Attende 1.5 secondi prima di scomparire
     )
-    .call(() => {
-      showLogo = true;
-    });
+      // Uscita "a pezzi" con blur
+      .to(
+        pieces,
+        {
+          opacity: 0,
+          filter: "blur(10px)",
+          y: -20,
+          duration: 0.8,
+          stagger: 0.02,
+          ease: "power2.in",
+        },
+        "+=1.5", // Attende 1.5 secondi prima di scomparire
+      )
+      .call(() => {
+        showLogo = true;
+      });
   });
 </script>
 
@@ -146,7 +175,7 @@
 
   {#if isClicked}
     <div class="top-bar reveal-item">
-      <a href="/about" class="about-btn">ABOUT</a>
+      <a href="/about" class="about-btn" onclick={navigateAbout}>ABOUT</a>
     </div>
 
     <div class="subtitle reveal-item">
@@ -154,6 +183,16 @@
     </div>
 
     <div class="scroll-prompt reveal-item">scroll down to explore</div>
+  {/if}
+
+  <div
+    class="transition-overlay"
+    bind:this={transitionBgRef}
+    style="--expand-radius: 0%;"
+  ></div>
+
+  {#if showAboutOverlay}
+    <About closeOverlay={closeAboutOverlay} />
   {/if}
 </div>
 
@@ -281,5 +320,18 @@
     color: #888;
     z-index: 20;
     opacity: 0;
+  }
+
+  .transition-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #4a565e 0%, #293035 100%);
+    z-index: 100;
+    pointer-events: none;
+    -webkit-clip-path: circle(var(--expand-radius) at calc(100% - 137px) 53px);
+    clip-path: circle(var(--expand-radius) at calc(100% - 137px) 53px);
   }
 </style>

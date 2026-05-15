@@ -1,6 +1,6 @@
 <script>
-  //import TopBar from '$lib/components/TopBar.svelte';
-  import Hero from '$lib/components/Hero.svelte';
+  import Hero from "$lib/components/Hero.svelte";
+  // import TopBar from '$lib/components/TopBar.svelte';
   //import Filters from '$lib/components/Filters.svelte';
   //import ProjectGrid from '$lib/components/ProjectGrid.svelte';
   //import { projects } from '$lib/data/projects.js';
@@ -14,12 +14,15 @@
 
 <svelte:head>
   <title>Web Design Lab - Politecnico di Milano</title>
-  <meta name="description" content="Archive of the best outcomes from the Web Design Laboratory in Communication Design at Politecnico di Milano" />
+  <meta
+    name="description"
+    content="Archive of the best outcomes from the Web Design Laboratory in Communication Design at Politecnico di Milano"
+  />
 </svelte:head>
 
 <div class="page">
-  <!-- <TopBar /> -->
   <Hero />
+  <!-- <TopBar /> -->
   <!-- <Filters {selectedYear} onYearChange={handleYearChange} /> -->
   <!-- <ProjectGrid {projects} {selectedYear} /> -->
 </div>
