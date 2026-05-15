@@ -12,7 +12,7 @@
   --spacing-9: 36px;
   --spacing-10: 40px;
   --spacing-11: 80px;
-  
+
   /* Radius scale */
   --radius-none: 0;
   --radius-xs: 4px;
@@ -20,7 +20,7 @@
   --radius-m: 16px;
   --radius-l: 24px;
   --radius-full: 999px;
-  
+
   /* Unit scale for typography and layout */
   --unit-12: 12px;
   --unit-16: 16px;
@@ -29,4 +29,5 @@
   --unit-32: 32px;
   --unit-40: 40px;
   --unit-48: 48px;
+  --unit-80: 80px;
 }
