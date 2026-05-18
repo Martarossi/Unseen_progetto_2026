@@ -34,6 +34,15 @@
       resize();
     };
 
+    const bgImg = new Image();
+    bgImg.src = '/SFONDO.png';
+    let bgLoaded = false;
+    
+    bgImg.onload = () => {
+      bgLoaded = true;
+      resize();
+    };
+
     function resize() {
       if (!canvasRef) return;
       canvasRef.width = canvasRef.clientWidth;
@@ -52,7 +61,7 @@
     let idleTargetY = canvasRef.height / 2;
 
     function loop() {
-      if (!imgLoaded) {
+      if (!imgLoaded || !bgLoaded) {
         animationFrame = requestAnimationFrame(loop);
         return;
       }
@@ -103,6 +112,15 @@
 
       // Clear main canvas
       ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+
+      // Draw background with parallax
+      const bgScale = canvasRef.width / bgImg.width;
+      const bgDrawHeight = bgImg.height * bgScale;
+      const scrollY = window.scrollY;
+      const parallaxSpeed = 0.3; // Velocità differente rispetto allo scroll
+      const bgY = -scrollY * parallaxSpeed;
+      
+      ctx.drawImage(bgImg, 0, bgY, canvasRef.width, bgDrawHeight);
 
       // Draw logo centered
       const imgWidth = logoImg.width;
@@ -371,7 +389,7 @@
 
   /* qui si modifica il cerchio che fa vedere le scritte  */
   .logo-reveal {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
