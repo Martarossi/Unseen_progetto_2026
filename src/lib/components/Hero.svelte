@@ -3,6 +3,8 @@
   import gsap from "gsap";
   import About from "./About.svelte";
 
+  let { onClicked } = $props();
+
   let heroRef;
   let descriptionRef;
   let transitionBgRef;
@@ -194,6 +196,11 @@
     if (!showLogo || isClicked) return;
     isClicked = true;
 
+    // Enable scrolling once clicked
+    document.body.style.overflow = '';
+
+    if (onClicked) onClicked();
+
     await tick();
 
     // Anima il cerchio fino a coprire tutta la pagina
@@ -243,6 +250,9 @@
     // Inizializza il centro
     mouseX = window.innerWidth / 2;
     mouseY = window.innerHeight / 2;
+
+    // Lock scrolling initially
+    document.body.style.overflow = 'hidden';
 
     const pieces = descriptionRef.querySelectorAll(".text-piece");
 
@@ -359,7 +369,7 @@
     min-height: 100vh;
     padding: var(--spacing-11);
     text-align: center;
-    background-color: #ffffff;
+    background-color: transparent;
     overflow: hidden;
     cursor: pointer;
   }
@@ -389,7 +399,7 @@
 
   /* qui si modifica il cerchio che fa vedere le scritte  */
   .logo-reveal {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
