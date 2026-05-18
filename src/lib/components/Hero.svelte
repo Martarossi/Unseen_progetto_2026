@@ -13,11 +13,137 @@
   let isClicked = $state(false);
   let showAboutOverlay = $state(false);
 
+  let canvasRef;
+  let revealRadius = 100;
+
+  let lastMoveTime = Date.now();
+  let isIdle = true;
+
+  function initCanvas() {
+    if (!canvasRef) return;
+    const ctx = canvasRef.getContext('2d');
+    const maskCanvas = document.createElement('canvas');
+    const maskCtx = maskCanvas.getContext('2d');
+
+    const logoImg = new Image();
+    logoImg.src = '/LOGO.png';
+    let imgLoaded = false;
+    
+    logoImg.onload = () => {
+      imgLoaded = true;
+      resize();
+    };
+
+    function resize() {
+      if (!canvasRef) return;
+      canvasRef.width = canvasRef.clientWidth;
+      canvasRef.height = canvasRef.clientHeight;
+      maskCanvas.width = canvasRef.width;
+      maskCanvas.height = canvasRef.height;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    let animationFrame;
+    let currentX = mouseX;
+    let currentY = mouseY;
+    let idleTargetX = canvasRef.width / 2;
+    let idleTargetY = canvasRef.height / 2;
+
+    function loop() {
+      if (!imgLoaded) {
+        animationFrame = requestAnimationFrame(loop);
+        return;
+      }
+
+      const idleTime = Date.now() - lastMoveTime;
+      if (idleTime > 2000) {
+        isIdle = true;
+      }
+
+      if (isIdle && showLogo && !isClicked) {
+        const dist = Math.hypot(currentX - idleTargetX, currentY - idleTargetY);
+        
+        // Se vicino al target o se il target è fuori bordo (dopo un resize), scegline uno nuovo
+        if (dist < 50 || idleTargetX > canvasRef.width || idleTargetY > canvasRef.height) {
+          idleTargetX = canvasRef.width * (0.1 + Math.random() * 0.8);
+          idleTargetY = canvasRef.height * (0.1 + Math.random() * 0.8);
+        }
+        
+        // Muoviti verso il target con una velocità ridotta per un effetto "vagabondaggio"
+        currentX += (idleTargetX - currentX) * 0.02;
+        currentY += (idleTargetY - currentY) * 0.02;
+      } else {
+        // Lerp mouse position
+        currentX += (mouseX - currentX) * 0.1;
+        currentY += (mouseY - currentY) * 0.1;
+      }
+
+      // Fade mask
+      maskCtx.globalCompositeOperation = 'destination-out';
+      maskCtx.fillStyle = 'rgba(0,0,0,0.03)'; // Adjust for tail length
+      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+      maskCtx.globalCompositeOperation = 'source-over';
+
+      // Draw reveal spot
+      if (showLogo) {
+        const gradient = maskCtx.createRadialGradient(
+          currentX, currentY, 0,
+          currentX, currentY, revealRadius
+        );
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        
+        maskCtx.fillStyle = gradient;
+        maskCtx.beginPath();
+        maskCtx.arc(currentX, currentY, revealRadius, 0, Math.PI * 2);
+        maskCtx.fill();
+      }
+
+      // Clear main canvas
+      ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+
+      // Draw logo centered
+      const imgWidth = logoImg.width;
+      const imgHeight = logoImg.height;
+      let dWidth = imgWidth;
+      let dHeight = imgHeight;
+      const scale = Math.min(
+        (canvasRef.width * 0.8) / imgWidth,
+        (canvasRef.height * 0.8) / imgHeight,
+        1
+      );
+      dWidth *= scale;
+      dHeight *= scale;
+      const dx = (canvasRef.width - dWidth) / 2;
+      const dy = (canvasRef.height - dHeight) / 2;
+
+      ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
+
+      // Apply mask
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.drawImage(maskCanvas, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+
+      animationFrame = requestAnimationFrame(loop);
+    }
+
+    loop();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrame);
+    };
+  }
+
   function handleMouseMove(e) {
     if (!heroRef || isClicked) return;
     const rect = heroRef.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
+    lastMoveTime = Date.now();
+    isIdle = false;
   }
 
   function navigateAbout(e) {
@@ -53,10 +179,14 @@
     await tick();
 
     // Anima il cerchio fino a coprire tutta la pagina
-    gsap.to(heroRef, {
-      "--mask-radius": "3000px",
+    let obj = { radius: revealRadius };
+    gsap.to(obj, {
+      radius: 3000,
       duration: 1.5,
       ease: "power2.inOut",
+      onUpdate: () => {
+        revealRadius = obj.radius;
+      }
     });
 
     // Fa comparire i primi elementi (about e subtitle)
@@ -129,6 +259,11 @@
       .call(() => {
         showLogo = true;
       });
+
+    const cleanup = initCanvas();
+    return () => {
+      cleanup();
+    };
   });
 </script>
 
@@ -167,10 +302,9 @@
 
   <div
     class="logo-reveal"
-    style="--mouse-x: {mouseX}px; --mouse-y: {mouseY}px;"
     class:visible={showLogo}
   >
-    <img src="/LOGO.png" alt="Unseen Logo" />
+    <canvas bind:this={canvasRef}></canvas>
   </div>
 
   {#if isClicked}
@@ -215,7 +349,7 @@
   .description {
     font-family: "Helvetica", sans-serif;
     font-weight: var(--font-akira-medium);
-    font-size: var(--unit-48);
+    font-size: var(--unit-80);
     line-height: normal;
     color: var(--colors-content-primary);
     margin: 0;
@@ -242,23 +376,16 @@
     left: 0;
     width: 100%;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s ease;
-    -webkit-mask-image: radial-gradient(
-      circle var(--mask-radius) at var(--mouse-x) var(--mouse-y),
-      black 10%,
-      transparent 100%
-    );
-    mask-image: radial-gradient(
-      circle var(--mask-radius) at var(--mouse-x) var(--mouse-y),
-      black 10%,
-      transparent 100%
-    );
     z-index: 1;
+  }
+
+  .logo-reveal canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
   .logo-reveal.visible {
