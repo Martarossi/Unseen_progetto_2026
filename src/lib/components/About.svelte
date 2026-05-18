@@ -1,5 +1,5 @@
 <script>
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import gsap from "gsap";
     import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
@@ -9,8 +9,12 @@
     let containerRef;
     let leftColumn;
     let rightColumn;
+    let opening = $state(false);
 
-    onMount(() => {
+    onMount(async () => {
+        await tick();
+        opening = true;
+
         gsap.registerPlugin(ScrollTrigger);
 
         // Colonna di sinistra: parte nitida, diventa sfocata
@@ -49,7 +53,7 @@
     });
 </script>
 
-<div class="about-wrapper" bind:this={wrapperRef}>
+<div class="about-wrapper" class:opening={opening} bind:this={wrapperRef}>
     <div class="about-container" bind:this={containerRef}>
         <div class="sticky-content">
             <div class="top-bar">
@@ -135,6 +139,12 @@
             #4a565e 0%,
             #293035 100%
         );
+        clip-path: circle(0% at calc(100% - 130px) 50px);
+        transition: clip-path 0.6s ease-out;
+    }
+
+    .about-wrapper.opening {
+        clip-path: circle(150% at calc(100% - 130px) 50px);
     }
 
     .about-container {
@@ -160,13 +170,6 @@
         justify-content: flex-end;
         align-items: flex-start;
         z-index: 10;
-    }
-
-    .logo-img {
-        height: 24px;
-        object-fit: contain;
-        filter: brightness(0) invert(1)
-            drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
     }
 
     .close-btn {

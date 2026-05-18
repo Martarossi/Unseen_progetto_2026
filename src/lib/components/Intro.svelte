@@ -1,21 +1,14 @@
 <script>
   import { onMount } from 'svelte';
-  import { browser } from '$app/environment';
   import gsap from 'gsap';
   import ScrollTrigger from 'gsap/dist/ScrollTrigger';
   import { Canvas } from '@threlte/core';
   import Scene from './Scene.svelte';
-  import About from './About.svelte';
-
-  if (browser) {
-    gsap.registerPlugin(ScrollTrigger);
-  }
 
   let introContainer;
   let textImage;
   let p1;
   let p2;
-  let showAboutOverlay = $state(false);
 
   // Model properties we will animate with GSAP
   let modelPosition = $state([0, 0, 0]);
@@ -32,10 +25,6 @@
     rotY: 0,
     rotZ: 0
   };
-
-  function toggleAbout() {
-    showAboutOverlay = !showAboutOverlay;
-  }
 
   onMount(() => {
     const mm = gsap.matchMedia();
@@ -157,11 +146,6 @@
   <!-- HTML Overlays -->
   <div class="overlay">
     
-    <!-- Top Bar with ABOUT button on the top right (No UNSEEN logo) -->
-    <div class="top-bar">
-      <button class="about-btn" onclick={toggleAbout}>ABOUT</button>
-    </div>
-
     <!-- Initial Centered Text Image -->
     <div class="initial-text-wrapper" bind:this={textImage}>
       <img src="/nontuttociòcheconta.png" alt="Non tutto ciò che conta è visibile" />
@@ -190,9 +174,6 @@
   </div>
 </div>
 
-{#if showAboutOverlay}
-  <About closeOverlay={toggleAbout} />
-{/if}
 
 <style>
   .intro-container {
@@ -222,33 +203,6 @@
     z-index: 2; /* Above canvas */
     box-sizing: border-box;
     padding: var(--spacing-9, 40px) var(--spacing-11, 80px);
-  }
-
-  /* Top Bar Header Layout */
-  .top-bar {
-    position: absolute;
-    top: var(--spacing-9, 36px);
-    right: var(--spacing-11, 80px);
-    z-index: 30;
-  }
-
-  .about-btn {
-    background: #f4f4f4;
-    border: none;
-    color: #000;
-    padding: 10px 32px;
-    text-decoration: none;
-    border-radius: 50px;
-    font-family: "Helvetica", sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
-  }
-
-  .about-btn:hover {
-    background: #e0e0e0;
-    transform: scale(1.03);
   }
 
   /* Centered Text Image in first slide */

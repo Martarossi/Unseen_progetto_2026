@@ -1,21 +1,23 @@
 <script>
   import { onMount, tick } from "svelte";
   import gsap from "gsap";
-  import About from "./About.svelte";
 
   let { onClicked } = $props();
 
-  let heroRef;
-  let descriptionRef;
-  let transitionBgRef;
+  /** @type {HTMLElement|null} */
+  let heroRef = null;
+  /** @type {HTMLElement|null} */
+  let descriptionRef = null;
+  /** @type {HTMLElement|null} */
+  let transitionBgRef = null;
 
   let mouseX = $state(0);
   let mouseY = $state(0);
   let showLogo = $state(false);
   let isClicked = $state(false);
-  let showAboutOverlay = $state(false);
 
-  let canvasRef;
+  /** @type {HTMLCanvasElement|null} */
+  let canvasRef = null;
   let revealRadius = 100;
 
   let lastMoveTime = Date.now();
@@ -23,9 +25,12 @@
 
   function initCanvas() {
     if (!canvasRef) return;
-    const ctx = canvasRef.getContext('2d');
+    const canvas = /** @type {HTMLCanvasElement} */ (canvasRef);
+    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+    if (!ctx) return;
     const maskCanvas = document.createElement('canvas');
-    const maskCtx = maskCanvas.getContext('2d');
+    const maskCtx = /** @type {CanvasRenderingContext2D} */ (maskCanvas.getContext('2d'));
+    if (!maskCtx) return;
 
     const logoImg = new Image();
     logoImg.src = '/LOGO.png';
@@ -46,21 +51,23 @@
     };
 
     function resize() {
-      if (!canvasRef) return;
-      canvasRef.width = canvasRef.clientWidth;
-      canvasRef.height = canvasRef.clientHeight;
-      maskCanvas.width = canvasRef.width;
-      maskCanvas.height = canvasRef.height;
+      const canvas = /** @type {HTMLCanvasElement} */ (canvasRef);
+      if (!canvas) return;
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      maskCanvas.width = canvas.width;
+      maskCanvas.height = canvas.height;
     }
 
     window.addEventListener('resize', resize);
     resize();
 
-    let animationFrame;
+    /** @type {number} */
+    let animationFrame = 0;
     let currentX = mouseX;
     let currentY = mouseY;
-    let idleTargetX = canvasRef.width / 2;
-    let idleTargetY = canvasRef.height / 2;
+    let idleTargetX = canvas.width / 2;
+    let idleTargetY = canvas.height / 2;
 
     function loop() {
       if (!imgLoaded || !bgLoaded) {
@@ -77,9 +84,9 @@
         const dist = Math.hypot(currentX - idleTargetX, currentY - idleTargetY);
         
         // Se vicino al target o se il target è fuori bordo (dopo un resize), scegline uno nuovo
-        if (dist < 50 || idleTargetX > canvasRef.width || idleTargetY > canvasRef.height) {
-          idleTargetX = canvasRef.width * (0.1 + Math.random() * 0.8);
-          idleTargetY = canvasRef.height * (0.1 + Math.random() * 0.8);
+        if (dist < 50 || idleTargetX > canvas.width || idleTargetY > canvas.height) {
+          idleTargetX = canvas.width * (0.1 + Math.random() * 0.8);
+          idleTargetY = canvas.height * (0.1 + Math.random() * 0.8);
         }
         
         // Muoviti verso il target con una velocità ridotta per un effetto "vagabondaggio"
@@ -113,16 +120,16 @@
       }
 
       // Clear main canvas
-      ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw background with parallax
-      const bgScale = canvasRef.width / bgImg.width;
+      const bgScale = canvas.width / bgImg.width;
       const bgDrawHeight = bgImg.height * bgScale;
       const scrollY = window.scrollY;
       const parallaxSpeed = 0.3; // Velocità differente rispetto allo scroll
       const bgY = -scrollY * parallaxSpeed;
       
-      ctx.drawImage(bgImg, 0, bgY, canvasRef.width, bgDrawHeight);
+      ctx.drawImage(bgImg, 0, bgY, canvas.width, bgDrawHeight);
 
       // Draw logo centered
       const imgWidth = logoImg.width;
@@ -130,14 +137,14 @@
       let dWidth = imgWidth;
       let dHeight = imgHeight;
       const scale = Math.min(
-        (canvasRef.width * 0.8) / imgWidth,
-        (canvasRef.height * 0.8) / imgHeight,
+        (canvas.width * 0.8) / imgWidth,
+        (canvas.height * 0.8) / imgHeight,
         1
       );
       dWidth *= scale;
       dHeight *= scale;
-      const dx = (canvasRef.width - dWidth) / 2;
-      const dy = (canvasRef.height - dHeight) / 2;
+      const dx = (canvas.width - dWidth) / 2;
+      const dy = (canvas.height - dHeight) / 2;
 
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
@@ -157,6 +164,7 @@
     };
   }
 
+  /** @param {MouseEvent} e */
   function handleMouseMove(e) {
     if (!heroRef || isClicked) return;
     const rect = heroRef.getBoundingClientRect();
@@ -164,32 +172,6 @@
     mouseY = e.clientY - rect.top;
     lastMoveTime = Date.now();
     isIdle = false;
-  }
-
-  function navigateAbout(e) {
-    e.preventDefault();
-    if (!transitionBgRef) return;
-
-    // Ferma eventuali propagazioni del click
-    e.stopPropagation();
-
-    gsap.to(transitionBgRef, {
-      "--expand-radius": "150%",
-      duration: 1.2,
-      ease: "power3.inOut",
-      onComplete: () => {
-        showAboutOverlay = true;
-      },
-    });
-  }
-
-  function closeAboutOverlay() {
-    showAboutOverlay = false;
-    gsap.to(transitionBgRef, {
-      "--expand-radius": "0%",
-      duration: 1.2,
-      ease: "power3.inOut"
-    });
   }
 
   async function handleClick() {
@@ -242,6 +224,7 @@
     );
   }
 
+  /** @param {string} str */
   function splitIntoLetters(str) {
     return str.split("").map((c) => (c === " " ? "&nbsp;" : c));
   }
@@ -254,7 +237,7 @@
     // Lock scrolling initially
     document.body.style.overflow = 'hidden';
 
-    const pieces = descriptionRef.querySelectorAll(".text-piece");
+    const pieces = descriptionRef?.querySelectorAll(".text-piece") ?? [];
 
     const tl = gsap.timeline({ delay: 0.2 });
 
@@ -290,7 +273,7 @@
 
     const cleanup = initCanvas();
     return () => {
-      cleanup();
+      cleanup?.();
     };
   });
 </script>
@@ -336,10 +319,6 @@
   </div>
 
   {#if isClicked}
-    <div class="top-bar reveal-item">
-      <a href="/about" class="about-btn" onclick={navigateAbout}>ABOUT</a>
-    </div>
-
     <div class="subtitle reveal-item">
       La prima <i>Intelligent Olympics</i> della storia
     </div>
@@ -353,9 +332,6 @@
     style="--expand-radius: 0%;"
   ></div>
 
-  {#if showAboutOverlay}
-    <About closeOverlay={closeAboutOverlay} />
-  {/if}
 </div>
 
 <style>
@@ -420,37 +396,7 @@
     opacity: 1;
   }
 
-  .logo-reveal img {
-    max-width: 80%;
-    max-height: 80%;
-    object-fit: contain;
-  }
-
   /* Nuovi elementi che compaiono al click */
-  .top-bar {
-    position: absolute;
-    top: var(--spacing-9, 36px);
-    right: var(--spacing-11, 80px);
-    z-index: 20;
-    opacity: 0; /* hidden for gsap */
-  }
-
-  .about-btn {
-    display: inline-block;
-    padding: 10px 32px;
-    background: #f4f4f4;
-    color: #000;
-    text-decoration: none;
-    border-radius: 50px;
-    font-family: "Helvetica", sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-    transition: background 0.2s ease;
-  }
-
-  .about-btn:hover {
-    background: #e0e0e0;
-  }
 
   .subtitle {
     position: absolute;
