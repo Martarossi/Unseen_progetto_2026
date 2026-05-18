@@ -15,16 +15,16 @@
   // Glass Material with premium transparency/glass settings
   const glassMaterial = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
-    metalness: 0.05,
-    roughness: 0.05,
-    transmission: 0.95, // Highly transmissive glass
-    ior: 1.5, // Glass index of refraction
+    metalness: 0.1,
+    roughness: 0.05, // Bassi valori per riflessi nitidi
+    transmission: 0, // Disabilitato perché non funziona con lo sfondo HTML
+    transparent: true,
+    opacity: 0.3, // Trasparenza per vedere lo sfondo HTML
+    ior: 1.5,
     thickness: 1.5,
-    envMapIntensity: 2.5,
+    envMapIntensity: 3.0, // Aumentato per riflessi più evidenti
     clearcoat: 1.0,
     clearcoatRoughness: 0.05,
-    transparent: true,
-    opacity: 1,
     side: THREE.DoubleSide
   });
 
