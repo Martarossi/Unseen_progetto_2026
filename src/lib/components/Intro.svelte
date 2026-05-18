@@ -28,7 +28,9 @@
     posY: 0,
     posZ: 0,
     scale: 2.3,
-    rotY: 0
+    rotX: 0,
+    rotY: 0,
+    rotZ: 0
   };
 
   function toggleAbout() {
@@ -39,69 +41,99 @@
     const mm = gsap.matchMedia();
 
     mm.add("(min-width: 800px)", () => {
+      // Create a long, spacious pin timeline to prevent overlap and increase distances
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: introContainer,
           start: "top top",
-          end: "+=3000",
+          end: "+=5000", // Increased scroll range for spacious feel
           scrub: 1,
           pin: true,
         }
       });
 
-      // --- STEP 1: Fade out centered image & Move model to the right ---
+      // Synchronize GSAP animations with 3D state update
+      const update3D = () => {
+        modelPosition = [modelProps.posX, modelProps.posY, modelProps.posZ];
+        modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
+        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+      };
+
+      // --- PHASE 1 (0.0 to 1.5): Center image fades out completely ---
       tl.to(textImage, {
         opacity: 0,
-        y: -100,
+        y: -80,
         filter: "blur(15px)",
         duration: 1.5,
         ease: "power2.inOut"
       }, 0);
 
-      // Model moves right and enlarges
+      // --- PHASE 2 (1.5 to 3.0): Model shifts right & spins in 3D (X, Y, Z) ---
       tl.to(modelProps, {
         posX: 3.2, 
         scale: 3.8, 
-        rotY: Math.PI * 0.4, 
+        rotX: Math.PI * 0.4, // Rotation in X
+        rotY: Math.PI * 0.7, // Rotation in Y
+        rotZ: Math.PI * 0.3, // Rotation in Z
         duration: 2.0,
         ease: "power2.inOut",
-        onUpdate: () => {
-          modelPosition = [modelProps.posX, modelProps.posY, modelProps.posZ];
-          modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
-          modelRotation = [0, modelProps.rotY, 0];
-        }
-      }, 0);
+        onUpdate: update3D
+      }, 1.0);
 
-      // --- STEP 2: Show Paragraph 1 sharp, Paragraph 2 blurred ---
+      // --- PHASE 3 (3.0 to 3.8): Rest hold before text starts entering ---
+      tl.to({}, { duration: 0.8 });
+
+      // --- PHASE 4 (3.8 to 5.2): Paragraph 1 focuses/fades in & model rotates further ---
       tl.to(p1, {
         opacity: 1,
         filter: "blur(0px)",
         y: 0,
+        pointerEvents: "auto",
         duration: 1.5,
         ease: "power2.out"
-      }, 1.2);
+      }, 3.8);
 
-      // Add a slight hold
-      tl.to({}, { duration: 1 });
+      tl.to(modelProps, {
+        rotX: Math.PI * 0.7,
+        rotY: Math.PI * 1.3,
+        rotZ: Math.PI * 0.6,
+        duration: 1.5,
+        ease: "power1.inOut",
+        onUpdate: update3D
+      }, 3.8);
 
-      // --- STEP 3: Paragraph 1 blurs, Paragraph 2 becomes sharp ---
+      // --- PHASE 5 (5.2 to 6.2): Hold with Paragraph 1 fully active ---
+      tl.to({}, { duration: 1.0 });
+
+      // --- PHASE 6 (6.2 to 7.8): Paragraph 1 blurs out & Paragraph 2 focuses in & model rotates to final state ---
       tl.to(p1, {
         opacity: 0.3,
         filter: "blur(5px)",
+        pointerEvents: "none",
         duration: 1.5,
         ease: "power2.inOut"
-      });
+      }, 6.2);
 
       tl.to(p2, {
         opacity: 1,
         filter: "blur(0px)",
         y: 0,
+        pointerEvents: "auto",
         duration: 1.5,
         ease: "power2.inOut"
-      }, "-=1.2");
+      }, 6.2);
 
-      // Hold at the end
-      tl.to({}, { duration: 1 });
+      tl.to(modelProps, {
+        rotX: Math.PI * 1.2,
+        rotY: Math.PI * 2.0,
+        rotZ: Math.PI * 1.1,
+        duration: 1.5,
+        ease: "power2.inOut",
+        onUpdate: update3D
+      }, 6.2);
+
+      // --- PHASE 7 (7.8 to 9.0): Final hold for paragraph 2 ---
+      tl.to({}, { duration: 1.2 });
 
       return () => {
         tl.kill();
@@ -145,7 +177,7 @@
         </p>
       </div>
 
-      <div class="paragraph-wrapper blurred-init" bind:this={p2}>
+      <div class="paragraph-wrapper" bind:this={p2}>
         <p>
           Ogni evento olimpico è costruito su ciò che vediamo:<br>
           <span class="highlight">velocità, performance, emozione.</span><br>
@@ -259,16 +291,10 @@
     line-height: 1.45;
     color: #1a1a1a;
     transition: filter 0.5s ease, opacity 0.5s ease;
-    opacity: 0; /* Starts hidden until model shifts */
+    opacity: 0; /* Fully hidden initially! */
     transform: translateY(30px);
-    filter: blur(8px);
-  }
-
-  /* p2 starts blurred & low opacity */
-  .blurred-init {
-    opacity: 0.25;
-    filter: blur(5px);
-    transform: translateY(0);
+    filter: blur(10px); /* Slightly stronger blur initially */
+    pointer-events: none; /* No pointer events until faded in */
   }
 
   .paragraph-wrapper p {

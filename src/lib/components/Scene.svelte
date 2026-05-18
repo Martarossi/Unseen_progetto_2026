@@ -1,5 +1,5 @@
 <script>
-  import { T, useTask } from '@threlte/core';
+  import { T } from '@threlte/core';
   import { useGltf, Environment } from '@threlte/extras';
   import * as THREE from 'three';
 
@@ -40,12 +40,6 @@
       });
     }
   });
-
-  // Continuous slow rotation for the model
-  let autoRotation = $state(0);
-  useTask((delta) => {
-    autoRotation += delta * 0.25; // Slightly faster for visual flow
-  });
 </script>
 
 <!-- Camera Setup - crucial for Threlte WebGL rendering! -->
@@ -65,6 +59,6 @@
   <T is={$gltf.scene} 
      {position} 
      {scale} 
-     rotation={[rotation[0], autoRotation + rotation[1], rotation[2]]} 
+     {rotation} 
   />
 {/if}
