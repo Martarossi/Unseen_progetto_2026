@@ -182,6 +182,7 @@
     isClicked = true;
 
     if (typeof window !== "undefined") {
+      // @ts-ignore
       window.heroHasBeenClicked = true;
       window.dispatchEvent(new CustomEvent("heroClicked"));
     }

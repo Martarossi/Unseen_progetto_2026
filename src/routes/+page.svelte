@@ -13,6 +13,7 @@
   let selectedYear = $state(2026);
   let hasBeenClicked = $state(false);
 
+  /** @param {number} year */
   function handleYearChange(year) {
     selectedYear = year;
   }

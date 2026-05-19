@@ -3,6 +3,14 @@
   import { useGltf, Environment } from '@threlte/extras';
   import * as THREE from 'three';
 
+  /**
+   * @typedef {Object} SceneProps
+   * @property {[number, number, number]} [position]
+   * @property {[number, number, number]} [scale]
+   * @property {[number, number, number]} [rotation]
+   */
+
+  /** @type {SceneProps} */
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],
@@ -32,7 +40,7 @@
   $effect(() => {
     if ($gltf && $gltf.scene) {
       $gltf.scene.traverse((child) => {
-        if (child.isMesh) {
+        if (child instanceof THREE.Mesh) {
           child.material = glassMaterial;
           child.castShadow = true;
           child.receiveShadow = true;
@@ -53,7 +61,7 @@
 <T.PointLight position={[0, 0, 5]} intensity={1.5} distance={15} />
 
 <!-- AMBIENTE HDR STUDIO (REFLECTIONS): Carica una mappa HDR da Polyhaven per fornire riflessioni fisicamente accurate sulla superficie vetrosa -->
-<Environment path="/" files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr" isBackground={false} />
+<Environment url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr" isBackground={false} />
 
 {#if $gltf}
   <T is={$gltf.scene} 

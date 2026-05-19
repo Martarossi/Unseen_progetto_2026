@@ -4,9 +4,11 @@
 
   // Static asset from /static/topbarunseen.png
   const logoSrc = "/topbarunseen.png";
+  /** @type {{ onOpenAbout?: (event: MouseEvent) => any }} */
   let { onOpenAbout = () => {} } = $props();
 
-  let navbarEl;
+  /** @type {HTMLElement|null} */
+  let navbarEl = null;
   let scrollY = $state(0);
 
   onMount(() => {
@@ -27,6 +29,7 @@
     };
 
     // If logo has already been clicked, show navbar immediately
+    // @ts-ignore
     if (typeof window !== "undefined" && window.heroHasBeenClicked) {
       showNavbar();
     } else if (typeof window !== "undefined") {

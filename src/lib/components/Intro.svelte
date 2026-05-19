@@ -5,14 +5,21 @@
   import { Canvas } from '@threlte/core';
   import Scene from './Scene.svelte';
 
-  let introContainer;
-  let textImage;
-  let p1;
-  let p2;
+  /** @type {HTMLElement|null} */
+  let introContainer = null;
+  /** @type {HTMLElement|null} */
+  let textImage = null;
+  /** @type {HTMLElement|null} */
+  let p1 = null;
+  /** @type {HTMLElement|null} */
+  let p2 = null;
 
   // PROPRIETÀ TRIDIMENSIONALI: Variabili di stato reattive di Svelte 5 che controllano la posizione, la scala e la rotazione del modello 3D.
+  /** @type {[number, number, number]} */
   let modelPosition = $state([0, 0, 0]);
+  /** @type {[number, number, number]} */
   let modelScale = $state([2.3, 2.3, 2.3]);
+  /** @type {[number, number, number]} */
   let modelRotation = $state([0, 0, 0]);
 
   // OGGETTO DI SUPPORTO GSAP: Contiene i valori intermedi che GSAP anima in modo fluido durante lo scrolling e che vengono poi mappati sullo stato 3D.
