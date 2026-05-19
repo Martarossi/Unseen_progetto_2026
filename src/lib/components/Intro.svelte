@@ -229,6 +229,8 @@
     position: relative;
     background-color: transparent; /* Transparent so the home parallax background shows */
     overflow: hidden;
+    margin-top: -35vh; /* Shift Intro up to bring sections closer on scroll */
+    pointer-events: none; /* Allow clicks to pass through to Hero underneath */
   }
 
   .canvas-wrapper {
