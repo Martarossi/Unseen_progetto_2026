@@ -61,7 +61,7 @@
     2. Il modello 3D in vetro ruota su tutti e tre gli assi (X, Y, Z) e si sposta a destra.
     3. I paragrafi descrittivi compaiono uno dopo l'altro sfocandosi e mettendosi a fuoco in modo alternato.
   -->
-  <Intro />
+  <Intro isClicked={hasBeenClicked} />
 </div>
 
 <style>
