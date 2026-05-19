@@ -9,10 +9,10 @@
     rotation = [0, 0, 0]
   } = $props();
 
-  // Load the model using URL-encoded path to handle spaces safely
+  // CARICAMENTO MODELLO GLTF: Carica il modello 3D in formato GLB con URL codificato per gestire gli spazi in sicurezza.
   const gltf = useGltf('/OGGETTO%20ANIMATO%20PER%20SITO%202.glb');
 
-  // Glass Material with premium transparency/glass settings
+  // MATERIALE IN VETRO FISICO: Crea un materiale fisico con trasmissione e rifrazione elevate per riprodurre un effetto vetro ad alta fedeltà.
   const glassMaterial = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     metalness: 0.05,
@@ -28,7 +28,7 @@
     side: THREE.DoubleSide
   });
 
-  // Apply material to all meshes in the scene recursively using Svelte 5 effect
+  // APPLICAZIONE MATERIALE RICORSIVA: Attraversa tutti i nodi del modello caricato e applica il materiale vetro a ogni mesh trovata tramite reattività Svelte 5.
   $effect(() => {
     if ($gltf && $gltf.scene) {
       $gltf.scene.traverse((child) => {
@@ -42,17 +42,17 @@
   });
 </script>
 
-<!-- Camera Setup - crucial for Threlte WebGL rendering! -->
+<!-- CONFIGURAZIONE DELLA CAMERA: Imposta la camera prospettica principale e vi associa una luce direzionale frontale -->
 <T.PerspectiveCamera makeDefault position={[0, 0, 10]}>
   <T.DirectionalLight position={[5, 10, 5]} intensity={3} />
 </T.PerspectiveCamera>
 
-<!-- Lighting & Environment for glass refraction -->
+<!-- SISTEMA DI ILLUMINAZIONE: Dispone le luci ambientali, direzionali e puntiformi necessarie per esaltare le trasparenze e le ombre del vetro -->
 <T.AmbientLight intensity={0.8} />
 <T.DirectionalLight position={[-5, -5, -5]} intensity={1.0} color="#b0c4de" />
 <T.PointLight position={[0, 0, 5]} intensity={1.5} distance={15} />
 
-<!-- Polyhaven Studio HDR Environment for beautiful glass reflections -->
+<!-- AMBIENTE HDR STUDIO (REFLECTIONS): Carica una mappa HDR da Polyhaven per fornire riflessioni fisicamente accurate sulla superficie vetrosa -->
 <Environment path="/" files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr" isBackground={false} />
 
 {#if $gltf}

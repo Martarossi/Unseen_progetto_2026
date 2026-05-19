@@ -15,6 +15,7 @@
   let mouseY = $state(0);
   let showLogo = $state(false);
   let isClicked = $state(false);
+  let canvasBgOpacity = $state(1);
 
   /** @type {HTMLCanvasElement|null} */
   let canvasRef = null;
@@ -129,7 +130,9 @@
       const parallaxSpeed = 0.3; // Velocità differente rispetto allo scroll
       const bgY = -scrollY * parallaxSpeed;
       
+      ctx.globalAlpha = canvasBgOpacity;
       ctx.drawImage(bgImg, 0, bgY, canvas.width, bgDrawHeight);
+      ctx.globalAlpha = 1.0; // Reset alpha to fully draw logo and other elements
 
       // Draw logo centered
       const imgWidth = logoImg.width;
@@ -178,6 +181,11 @@
     if (!showLogo || isClicked) return;
     isClicked = true;
 
+    if (typeof window !== "undefined") {
+      window.heroHasBeenClicked = true;
+      window.dispatchEvent(new CustomEvent("heroClicked"));
+    }
+
     // Enable scrolling once clicked
     document.body.style.overflow = '';
 
@@ -193,6 +201,17 @@
       ease: "power2.inOut",
       onUpdate: () => {
         revealRadius = obj.radius;
+      }
+    });
+
+    // Sfuma la visibilità dello sfondo del canvas per rivelare lo sfondo globale fisso
+    let opacityObj = { val: 1 };
+    gsap.to(opacityObj, {
+      val: 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        canvasBgOpacity = opacityObj.val;
       }
     });
 
@@ -234,14 +253,14 @@
     mouseX = window.innerWidth / 2;
     mouseY = window.innerHeight / 2;
 
-    // Lock scrolling initially
+    // BLOCCO INIZIALE DELLO SCROLL: Disabilita lo scorrimento sul body all'avvio per mantenere l'utente focalizzato sull'animazione iniziale.
     document.body.style.overflow = 'hidden';
 
     const pieces = descriptionRef?.querySelectorAll(".text-piece") ?? [];
 
     const tl = gsap.timeline({ delay: 0.2 });
 
-    // Entrata "a pezzi" con blur
+    // ANIMAZIONE DI ENTRATA DEL TESTO: Fa comparire progressivamente le lettere con dissolvenza, traslazione verticale e rimozione del blur.
     tl.fromTo(
       pieces,
       { opacity: 0, filter: "blur(10px)", y: 20 },
@@ -254,7 +273,7 @@
         ease: "power2.out",
       },
     )
-      // Uscita "a pezzi" con blur
+      // ANIMAZIONE DI USCITA DEL TESTO: Nasconde le lettere facendole sfumare verso l'alto e sfocandole prima di svelare il logo.
       .to(
         pieces,
         {
@@ -373,7 +392,7 @@
     will-change: opacity, filter, transform;
   }
 
-  /* qui si modifica il cerchio che fa vedere le scritte  */
+  /* CONTENITORE RIVELAZIONE LOGO E SFONDO: Gestisce il canvas che mostra il logo interattivo mascherato radialmente dal mouse */
   .logo-reveal {
     position: absolute;
     top: 0;
@@ -396,7 +415,7 @@
     opacity: 1;
   }
 
-  /* Nuovi elementi che compaiono al click */
+  /* ELEMENTI SECONDARI REVEAL: Subtitle e prompt di scorrimento visualizzati dopo il click dell'utente */
 
   .subtitle {
     position: absolute;
