@@ -1,7 +1,18 @@
 <script>
-  import { T } from '@threlte/core';
-  import { useGltf, Environment } from '@threlte/extras';
-  import * as THREE from 'three';
+  import { T } from "@threlte/core";
+  import { useGltf, Environment } from "@threlte/extras";
+  import * as THREE from "three";
+
+  import { useRenderer } from "@threlte/core";
+
+  const { renderer } = useRenderer();
+
+  $effect(() => {
+    if (renderer) {
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+    }
+  });
 
   /**
    * @typedef {Object} SceneProps
@@ -14,26 +25,28 @@
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],
-    rotation = [0, 0, 0]
+    rotation = [0, 0, 0],
   } = $props();
 
   // CARICAMENTO MODELLO GLTF: Carica il modello 3D in formato GLB con URL codificato per gestire gli spazi in sicurezza.
-  const gltf = useGltf('/OGGETTO%20ANIMATO%20PER%20SITO%202.glb');
+  const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb");
 
   // MATERIALE IN VETRO FISICO: Crea un materiale fisico con trasmissione e rifrazione elevate per riprodurre un effetto vetro ad alta fedeltà.
   const glassMaterial = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
-    metalness: 0.05,
-    roughness: 0.05,
-    transmission: 0.95, // Highly transmissive glass
-    ior: 1.5, // Glass index of refraction
-    thickness: 1.5,
-    envMapIntensity: 2.5,
+    metalness: 0.0,
+    roughness: 0.0,
+    transmission: 1.0,
+    ior: 1.8, // ← più alto = più distorsione (default 1.5, max ~2.5)
+    thickness: 2.0, // ← più alto = più distorsione cromatica in profondità
+    dispersion: 0.3, // ← separa i colori RGB come un prisma (se supportato)
+    envMapIntensity: 1.5,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.05,
+    clearcoatRoughness: 0.0,
     transparent: true,
-    opacity: 1,
-    side: THREE.DoubleSide
+    opacity: 1.0,
+    depthWrite: false,
+    side: THREE.FrontSide,
   });
 
   // APPLICAZIONE MATERIALE RICORSIVA: Attraversa tutti i nodi del modello caricato e applica il materiale vetro a ogni mesh trovata tramite reattività Svelte 5.
@@ -42,8 +55,8 @@
       $gltf.scene.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.material = glassMaterial;
-          child.castShadow = true;
-          child.receiveShadow = true;
+          child.castShadow = false; // era true → le ombre opache rompono l'illusione
+          child.receiveShadow = false; // era true → idem
         }
       });
     }
@@ -61,12 +74,11 @@
 <T.PointLight position={[0, 0, 5]} intensity={1.5} distance={15} />
 
 <!-- AMBIENTE HDR STUDIO (REFLECTIONS): Carica una mappa HDR da Polyhaven per fornire riflessioni fisicamente accurate sulla superficie vetrosa -->
-<Environment url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr" isBackground={false} />
+<Environment
+  url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr"
+  isBackground={false}
+/>
 
 {#if $gltf}
-  <T is={$gltf.scene} 
-     {position} 
-     {scale} 
-     {rotation} 
-  />
+  <T is={$gltf.scene} {position} {scale} {rotation} />
 {/if}

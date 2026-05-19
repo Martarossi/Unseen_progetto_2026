@@ -1,9 +1,9 @@
 <script>
-  import { onMount } from 'svelte';
-  import gsap from 'gsap';
-  import ScrollTrigger from 'gsap/dist/ScrollTrigger';
-  import { Canvas } from '@threlte/core';
-  import Scene from './Scene.svelte';
+  import { onMount } from "svelte";
+  import gsap from "gsap";
+  import ScrollTrigger from "gsap/dist/ScrollTrigger";
+  import { Canvas } from "@threlte/core";
+  import Scene from "./Scene.svelte";
 
   /** @type {HTMLElement|null} */
   let introContainer = null;
@@ -30,7 +30,7 @@
     scale: 2.3,
     rotX: 0,
     rotY: 0,
-    rotZ: 0
+    rotZ: 0,
   };
 
   onMount(() => {
@@ -45,7 +45,7 @@
           end: "+=5000", // Ampio range di scorrimento per una sensazione di spaziosità e respiro grafico
           scrub: 1,
           pin: true,
-        }
+        },
       });
 
       // SINCRONIZZAZIONE STATO 3D: Aggiorna reattivamente le variabili tridimensionali di Svelte basandosi sui valori correnti dell'oggetto animato da GSAP.
@@ -56,77 +56,105 @@
       };
 
       // --- FASE 1: Dissolvenza completa dell'immagine testuale centrale "non tutto ciò che conta è visibile" con traslazione e sfocatura progressiva ---
-      tl.to(textImage, {
-        opacity: 0,
-        y: -80,
-        filter: "blur(15px)",
-        duration: 1.5,
-        ease: "power2.inOut"
-      }, 0);
+      tl.to(
+        textImage,
+        {
+          opacity: 0,
+          y: -80,
+          filter: "blur(15px)",
+          duration: 1.5,
+          ease: "power2.inOut",
+        },
+        0,
+      );
 
       // --- FASE 2: Spostamento del modello 3D sulla destra ed avvio della rotazione orbitale tridimensionale simultanea su X, Y e Z ---
-      tl.to(modelProps, {
-        posX: 3.2, 
-        scale: 3.8, 
-        rotX: Math.PI * 0.4, // Rotation in X
-        rotY: Math.PI * 0.7, // Rotation in Y
-        rotZ: Math.PI * 0.3, // Rotation in Z
-        duration: 2.0,
-        ease: "power2.inOut",
-        onUpdate: update3D
-      }, 1.0);
+      tl.to(
+        modelProps,
+        {
+          posX: 3.2,
+          scale: 3.8,
+          rotX: Math.PI * 0.4, // Rotation in X
+          rotY: Math.PI * 0.7, // Rotation in Y
+          rotZ: Math.PI * 0.3, // Rotation in Z
+          duration: 2.0,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        1.0,
+      );
 
       // --- FASE 3: Pausa di stasi controllata per dare respiro visivo prima dell'ingresso dei successivi blocchi di testo ---
       tl.to({}, { duration: 0.8 });
 
       // --- FASE 4: Comparsa a sinistra del primo paragrafo descrittivo (messa a fuoco e dissolvenza) accompagnata da un'ulteriore rotazione del modello ---
-      tl.to(p1, {
-        opacity: 1,
-        filter: "blur(0px)",
-        y: 0,
-        pointerEvents: "auto",
-        duration: 1.5,
-        ease: "power2.out"
-      }, 3.8);
+      tl.to(
+        p1,
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          y: 0,
+          pointerEvents: "auto",
+          duration: 1.5,
+          ease: "power2.out",
+        },
+        3.8,
+      );
 
-      tl.to(modelProps, {
-        rotX: Math.PI * 0.7,
-        rotY: Math.PI * 1.3,
-        rotZ: Math.PI * 0.6,
-        duration: 1.5,
-        ease: "power1.inOut",
-        onUpdate: update3D
-      }, 3.8);
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 0.7,
+          rotY: Math.PI * 1.3,
+          rotZ: Math.PI * 0.6,
+          duration: 1.5,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        3.8,
+      );
 
       // --- FASE 5: Pausa statica di lettura in cui il primo paragrafo rimane pienamente nitido e leggibile ---
       tl.to({}, { duration: 1.0 });
 
       // --- FASE 6: Dissolvenza/sfocatura del primo paragrafo e contemporanea comparsa del secondo paragrafo, mentre il modello compie l'ultima rotazione ---
-      tl.to(p1, {
-        opacity: 0.3,
-        filter: "blur(5px)",
-        pointerEvents: "none",
-        duration: 1.5,
-        ease: "power2.inOut"
-      }, 6.2);
+      tl.to(
+        p1,
+        {
+          opacity: 0.3,
+          filter: "blur(5px)",
+          pointerEvents: "none",
+          duration: 1.5,
+          ease: "power2.inOut",
+        },
+        6.2,
+      );
 
-      tl.to(p2, {
-        opacity: 1,
-        filter: "blur(0px)",
-        y: 0,
-        pointerEvents: "auto",
-        duration: 1.5,
-        ease: "power2.inOut"
-      }, 6.2);
+      tl.to(
+        p2,
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          y: 0,
+          pointerEvents: "auto",
+          duration: 1.5,
+          ease: "power2.inOut",
+        },
+        6.2,
+      );
 
-      tl.to(modelProps, {
-        rotX: Math.PI * 1.2,
-        rotY: Math.PI * 2.0,
-        rotZ: Math.PI * 1.1,
-        duration: 1.5,
-        ease: "power2.inOut",
-        onUpdate: update3D
-      }, 6.2);
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 1.2,
+          rotY: Math.PI * 2.0,
+          rotZ: Math.PI * 1.1,
+          duration: 1.5,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        6.2,
+      );
 
       // --- FASE 7: Pausa finale di lettura sul secondo paragrafo prima dello sblocco definitivo dello scroll della sezione ---
       tl.to({}, { duration: 1.2 });
@@ -141,9 +169,15 @@
 <div class="intro-container" bind:this={introContainer}>
   <!-- CANVAS 3D DI THRELTE: Rendering in background dell'ambiente WebGL contenente la camera, le luci e il modello 3D interattivo -->
   <div class="canvas-wrapper">
-    <Canvas>
-      <Scene 
-        position={modelPosition} 
+    <Canvas
+      rendererParameters={{
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      }}
+    >
+      <Scene
+        position={modelPosition}
         scale={modelScale}
         rotation={modelRotation}
       />
@@ -152,35 +186,41 @@
 
   <!-- ELEMENTI TESTUALI E INFOGRAFICA (OVERLAY HTML): Gestisce l'immagine di benvenuto e i testi narrativi disposti a cascata sulla sinistra -->
   <div class="overlay">
-    
     <!-- IMMAGINE TESTUALE DI TAGLINE: L'immagine iniziale centrata che esprime il concetto cardine del progetto -->
     <div class="initial-text-wrapper" bind:this={textImage}>
-      <img src="/nontuttociòcheconta.png" alt="Non tutto ciò che conta è visibile" />
+      <img
+        src="/nontuttociòcheconta.png"
+        alt="Non tutto ciò che conta è visibile"
+      />
     </div>
 
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
     <div class="texts-container">
       <div class="paragraph-wrapper" bind:this={p1}>
         <p>
-          Per la prima volta nella storia, le <span class="highlight">Olimpiadi di Milano-Cortina 2026</span> 
-          ridefiniscono l'esperienza olimpica attraverso un'<span class="highlight">anima digitale</span> 
+          Per la prima volta nella storia, le <span class="highlight"
+            >Olimpiadi di Milano-Cortina 2026</span
+          >
+          ridefiniscono l'esperienza olimpica attraverso un'<span
+            class="highlight">anima digitale</span
+          >
           che trasforma la visione in immersione.
         </p>
       </div>
 
       <div class="paragraph-wrapper" bind:this={p2}>
         <p>
-          Ogni evento olimpico è costruito su ciò che vediamo:<br>
-          <span class="highlight">velocità, performance, emozione.</span><br>
-          Ma dietro ogni immagine esiste un <span class="highlight">sistema invisibile</span><br>
-          fatto di <span class="highlight">dati, connessioni e tecnologia.</span>
+          Ogni evento olimpico è costruito su ciò che vediamo:<br />
+          <span class="highlight">velocità, performance, emozione.</span><br />
+          Ma dietro ogni immagine esiste un
+          <span class="highlight">sistema invisibile</span><br />
+          fatto di
+          <span class="highlight">dati, connessioni e tecnologia.</span>
         </p>
       </div>
     </div>
-    
   </div>
 </div>
-
 
 <style>
   .intro-container {
@@ -247,11 +287,13 @@
   }
 
   .paragraph-wrapper {
-    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-family: "Helvetica", "Arial", sans-serif;
     font-size: 1.7rem;
     line-height: 1.45;
     color: #1a1a1a;
-    transition: filter 0.5s ease, opacity 0.5s ease;
+    transition:
+      filter 0.5s ease,
+      opacity 0.5s ease;
     opacity: 0; /* Fully hidden initially! */
     transform: translateY(30px);
     filter: blur(10px); /* Slightly stronger blur initially */
