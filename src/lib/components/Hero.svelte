@@ -15,6 +15,7 @@
   let mouseY = $state(0);
   let showLogo = $state(false);
   let isClicked = $state(false);
+  let canvasBgOpacity = $state(1);
 
   /** @type {HTMLCanvasElement|null} */
   let canvasRef = null;
@@ -26,25 +27,29 @@
   function initCanvas() {
     if (!canvasRef) return;
     const canvas = /** @type {HTMLCanvasElement} */ (canvasRef);
-    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+    const ctx = /** @type {CanvasRenderingContext2D} */ (
+      canvas.getContext("2d")
+    );
     if (!ctx) return;
-    const maskCanvas = document.createElement('canvas');
-    const maskCtx = /** @type {CanvasRenderingContext2D} */ (maskCanvas.getContext('2d'));
+    const maskCanvas = document.createElement("canvas");
+    const maskCtx = /** @type {CanvasRenderingContext2D} */ (
+      maskCanvas.getContext("2d")
+    );
     if (!maskCtx) return;
 
     const logoImg = new Image();
-    logoImg.src = '/LOGO.png';
+    logoImg.src = "/LOGO.png";
     let imgLoaded = false;
-    
+
     logoImg.onload = () => {
       imgLoaded = true;
       resize();
     };
 
     const bgImg = new Image();
-    bgImg.src = '/SFONDO.png';
+    bgImg.src = "/SFONDO.png";
     let bgLoaded = false;
-    
+
     bgImg.onload = () => {
       bgLoaded = true;
       resize();
@@ -59,7 +64,7 @@
       maskCanvas.height = canvas.height;
     }
 
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
     resize();
 
     /** @type {number} */
@@ -82,13 +87,17 @@
 
       if (isIdle && showLogo && !isClicked) {
         const dist = Math.hypot(currentX - idleTargetX, currentY - idleTargetY);
-        
+
         // Se vicino al target o se il target è fuori bordo (dopo un resize), scegline uno nuovo
-        if (dist < 50 || idleTargetX > canvas.width || idleTargetY > canvas.height) {
+        if (
+          dist < 50 ||
+          idleTargetX > canvas.width ||
+          idleTargetY > canvas.height
+        ) {
           idleTargetX = canvas.width * (0.1 + Math.random() * 0.8);
           idleTargetY = canvas.height * (0.1 + Math.random() * 0.8);
         }
-        
+
         // Muoviti verso il target con una velocità ridotta per un effetto "vagabondaggio"
         currentX += (idleTargetX - currentX) * 0.02;
         currentY += (idleTargetY - currentY) * 0.02;
@@ -99,20 +108,24 @@
       }
 
       // Fade mask
-      maskCtx.globalCompositeOperation = 'destination-out';
-      maskCtx.fillStyle = 'rgba(0,0,0,0.03)'; // Adjust for tail length
+      maskCtx.globalCompositeOperation = "destination-out";
+      maskCtx.fillStyle = "rgba(0,0,0,0.03)"; // Adjust for tail length
       maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-      maskCtx.globalCompositeOperation = 'source-over';
+      maskCtx.globalCompositeOperation = "source-over";
 
       // Draw reveal spot
       if (showLogo) {
         const gradient = maskCtx.createRadialGradient(
-          currentX, currentY, 0,
-          currentX, currentY, revealRadius
+          currentX,
+          currentY,
+          0,
+          currentX,
+          currentY,
+          revealRadius,
         );
-        gradient.addColorStop(0, 'rgba(255,255,255,1)');
-        gradient.addColorStop(1, 'rgba(255,255,255,0)');
-        
+        gradient.addColorStop(0, "rgba(255,255,255,1)");
+        gradient.addColorStop(1, "rgba(255,255,255,0)");
+
         maskCtx.fillStyle = gradient;
         maskCtx.beginPath();
         maskCtx.arc(currentX, currentY, revealRadius, 0, Math.PI * 2);
@@ -128,8 +141,10 @@
       const scrollY = window.scrollY;
       const parallaxSpeed = 0.3; // Velocità differente rispetto allo scroll
       const bgY = -scrollY * parallaxSpeed;
-      
+
+      ctx.globalAlpha = canvasBgOpacity;
       ctx.drawImage(bgImg, 0, bgY, canvas.width, bgDrawHeight);
+      ctx.globalAlpha = 1.0; // Reset alpha to fully draw logo and other elements
 
       // Draw logo centered
       const imgWidth = logoImg.width;
@@ -139,7 +154,7 @@
       const scale = Math.min(
         (canvas.width * 0.8) / imgWidth,
         (canvas.height * 0.8) / imgHeight,
-        1
+        1,
       );
       dWidth *= scale;
       dHeight *= scale;
@@ -149,9 +164,9 @@
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
       // Apply mask
-      ctx.globalCompositeOperation = 'destination-in';
+      ctx.globalCompositeOperation = "destination-in";
       ctx.drawImage(maskCanvas, 0, 0);
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalCompositeOperation = "source-over";
 
       animationFrame = requestAnimationFrame(loop);
     }
@@ -159,7 +174,7 @@
     loop();
 
     return () => {
-      window.removeEventListener('resize', resize);
+      window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrame);
     };
   }
@@ -178,8 +193,14 @@
     if (!showLogo || isClicked) return;
     isClicked = true;
 
+    if (typeof window !== "undefined") {
+      // @ts-ignore
+      window.heroHasBeenClicked = true;
+      window.dispatchEvent(new CustomEvent("heroClicked"));
+    }
+
     // Enable scrolling once clicked
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
 
     if (onClicked) onClicked();
 
@@ -193,7 +214,18 @@
       ease: "power2.inOut",
       onUpdate: () => {
         revealRadius = obj.radius;
-      }
+      },
+    });
+
+    // Sfuma la visibilità dello sfondo del canvas per rivelare lo sfondo globale fisso
+    let opacityObj = { val: 1 };
+    gsap.to(opacityObj, {
+      val: 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        canvasBgOpacity = opacityObj.val;
+      },
     });
 
     // Fa comparire i primi elementi (about e subtitle)
@@ -234,14 +266,14 @@
     mouseX = window.innerWidth / 2;
     mouseY = window.innerHeight / 2;
 
-    // Lock scrolling initially
-    document.body.style.overflow = 'hidden';
+    // BLOCCO INIZIALE DELLO SCROLL: Disabilita lo scorrimento sul body all'avvio per mantenere l'utente focalizzato sull'animazione iniziale.
+    document.body.style.overflow = "hidden";
 
     const pieces = descriptionRef?.querySelectorAll(".text-piece") ?? [];
 
     const tl = gsap.timeline({ delay: 0.2 });
 
-    // Entrata "a pezzi" con blur
+    // ANIMAZIONE DI ENTRATA DEL TESTO: Fa comparire progressivamente le lettere con dissolvenza, traslazione verticale e rimozione del blur.
     tl.fromTo(
       pieces,
       { opacity: 0, filter: "blur(10px)", y: 20 },
@@ -254,7 +286,7 @@
         ease: "power2.out",
       },
     )
-      // Uscita "a pezzi" con blur
+      // ANIMAZIONE DI USCITA DEL TESTO: Nasconde le lettere facendole sfumare verso l'alto e sfocandole prima di svelare il logo.
       .to(
         pieces,
         {
@@ -311,10 +343,7 @@
     </span>
   </p>
 
-  <div
-    class="logo-reveal"
-    class:visible={showLogo}
-  >
+  <div class="logo-reveal" class:visible={showLogo}>
     <canvas bind:this={canvasRef}></canvas>
   </div>
 
@@ -331,7 +360,6 @@
     bind:this={transitionBgRef}
     style="--expand-radius: 0%;"
   ></div>
-
 </div>
 
 <style>
@@ -352,7 +380,7 @@
 
   .description {
     font-family: "Helvetica", sans-serif;
-    font-weight: var(--font-akira-medium);
+    font-weight: var(--font-secondary);
     font-size: var(--unit-80);
     line-height: normal;
     color: var(--colors-content-primary);
@@ -373,7 +401,7 @@
     will-change: opacity, filter, transform;
   }
 
-  /* qui si modifica il cerchio che fa vedere le scritte  */
+  /* CONTENITORE RIVELAZIONE LOGO E SFONDO: Gestisce il canvas che mostra il logo interattivo mascherato radialmente dal mouse */
   .logo-reveal {
     position: absolute;
     top: 0;
@@ -396,7 +424,7 @@
     opacity: 1;
   }
 
-  /* Nuovi elementi che compaiono al click */
+  /* ELEMENTI SECONDARI REVEAL: Subtitle e prompt di scorrimento visualizzati dopo il click dell'utente */
 
   .subtitle {
     position: absolute;

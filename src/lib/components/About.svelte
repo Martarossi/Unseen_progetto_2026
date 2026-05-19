@@ -5,10 +5,14 @@
 
     let { closeOverlay } = $props();
 
-    let wrapperRef;
-    let containerRef;
-    let leftColumn;
-    let rightColumn;
+    /** @type {HTMLElement|null} */
+    let wrapperRef = null;
+    /** @type {HTMLElement|null} */
+    let containerRef = null;
+    /** @type {HTMLElement|null} */
+    let leftColumn = null;
+    /** @type {HTMLElement|null} */
+    let rightColumn = null;
     let opening = $state(false);
 
     onMount(async () => {

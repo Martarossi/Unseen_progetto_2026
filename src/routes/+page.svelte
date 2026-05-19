@@ -13,20 +13,20 @@
   let selectedYear = $state(2026);
   let hasBeenClicked = $state(false);
 
+  /** @param {number} year */
   function handleYearChange(year) {
     selectedYear = year;
   }
 
   onMount(() => {
     if (browser) {
-      // Create a smooth parallax scrolling effect on the background image
+      // Create a highly pronounced, viewport-wide parallax scrolling effect
       gsap.to(".parallax-bg", {
-        y: "-15%", // move the background up slightly faster than page scroll
+        yPercent: -20, // Translate up by 20% of its own height
         ease: "none",
         scrollTrigger: {
-          trigger: ".page",
-          start: "top top",
-          end: "bottom bottom",
+          start: 0,
+          end: "max", // Covers the entire scroll range including all pinned containers
           scrub: true,
         }
       });
@@ -43,14 +43,25 @@
 </svelte:head>
 
 <!-- Global Parallax Background - starts hidden (white screen) and fades in smoothly on click -->
-<div class="parallax-bg" class:visible={hasBeenClicked} style="background-image: url('/sfondo-About.png');"></div>
+<div class="parallax-bg" class:visible={hasBeenClicked} style="background-image: url('/SFONDO.png');"></div>
 
 <div class="page" class:clicked={hasBeenClicked}>
+  <!-- 
+    SEZIONE HERO (Schermata Iniziale):
+    Gestisce l'ingresso delle scritte in dissolvenza su sfondo bianco solido, il blocco temporaneo dello scorrimento, 
+    la maschera radiale interattiva che svela il logo "UNSEEN" e lo sfondo al movimento del mouse, e la transizione 
+    di sblocco globale (click dell'utente) che avvia la dissolvenza incrociata dello sfondo e della top bar.
+  -->
   <Hero onClicked={() => hasBeenClicked = true} />
+
+  <!-- 
+    SEZIONE INTRO (Sezione Narrativa / Modello 3D):
+    Fissa la schermata e accompagna l'utente in un'esperienza interattiva dove, attraverso lo scroll della pagina:
+    1. L'immagine centrale scompare.
+    2. Il modello 3D in vetro ruota su tutti e tre gli assi (X, Y, Z) e si sposta a destra.
+    3. I paragrafi descrittivi compaiono uno dopo l'altro sfocandosi e mettendosi a fuoco in modo alternato.
+  -->
   <Intro />
-  <!-- <TopBar /> -->
-  <!-- <Filters {selectedYear} onYearChange={handleYearChange} /> -->
-  <!-- <ProjectGrid {projects} {selectedYear} /> -->
 </div>
 
 <style>

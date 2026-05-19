@@ -1,11 +1,58 @@
 <script>
+  import { onMount } from "svelte";
+  import gsap from "gsap";
+
   // Static asset from /static/topbarunseen.png
   const logoSrc = "/topbarunseen.png";
+  /** @type {{ onOpenAbout?: (event: MouseEvent) => any }} */
   let { onOpenAbout = () => {} } = $props();
+
+  /** @type {HTMLElement|null} */
+  let navbarEl = null;
+  let scrollY = $state(0);
+
+  onMount(() => {
+    // Prevent flash of content: immediately hide it offscreen and transparent
+    gsap.set(navbarEl, { y: -50, opacity: 0 });
+
+    let animated = false;
+
+    const showNavbar = () => {
+      if (animated) return;
+      animated = true;
+      gsap.to(navbarEl, {
+        y: 0,
+        opacity: 1,
+        duration: 1.2,
+        ease: "power3.out"
+      });
+    };
+
+    // If logo has already been clicked, show navbar immediately
+    // @ts-ignore
+    if (typeof window !== "undefined" && window.heroHasBeenClicked) {
+      showNavbar();
+    } else if (typeof window !== "undefined") {
+      // Listen for the custom event dispatched by Hero
+      const handleHeroClicked = () => {
+        showNavbar();
+        window.removeEventListener("heroClicked", handleHeroClicked);
+      };
+
+      window.addEventListener("heroClicked", handleHeroClicked);
+
+      return () => {
+        window.removeEventListener("heroClicked", handleHeroClicked);
+      };
+    }
+  });
 </script>
 
-<nav class="navbar">
-  <div class="navbar__brand">
+<svelte:window bind:scrollY />
+
+<nav class="navbar" bind:this={navbarEl}>
+  <!-- Logo is visible only when scrolled past Hero (scrollY > 150) -->
+  <div class="navbar__brand" class:visible={scrollY > 450}>
     <img src={logoSrc} alt="Unseen logo" />
   </div>
 
@@ -28,6 +75,18 @@
     box-sizing: border-box;
     pointer-events: auto;
     background: transparent;
+    opacity: 0; /* Starts transparent for safety before GSAP runs */
+  }
+
+  .navbar__brand {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .navbar__brand.visible {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   .navbar__brand img {
@@ -44,6 +103,8 @@
 
   .navbar__link {
     color: #000;
+    border: none;
+    cursor: pointer;
     text-decoration: none;
     background: transparent;
     font-size: 0.95rem;
