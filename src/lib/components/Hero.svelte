@@ -16,6 +16,8 @@
   let showLogo = $state(false);
   let isClicked = $state(false);
   let canvasBgOpacity = $state(1);
+  let scrollY = $state(0);
+  let scrollOpacity = $derived(Math.max(0, 1 - scrollY / 350));
 
   /** @type {HTMLCanvasElement|null} */
   let canvasRef = null;
@@ -310,6 +312,8 @@
   });
 </script>
 
+<svelte:window bind:scrollY />
+
 <div
   class="hero"
   bind:this={heroRef}
@@ -343,16 +347,18 @@
     </span>
   </p>
 
-  <div class="logo-reveal" class:visible={showLogo}>
+  <div class="logo-reveal" class:visible={showLogo} class:scrolled={scrollY > 0} style="opacity: {showLogo ? scrollOpacity : 0};">
     <canvas bind:this={canvasRef}></canvas>
   </div>
 
   {#if isClicked}
-    <div class="subtitle reveal-item">
-      La prima <i>Intelligent Olympics</i> della storia
-    </div>
+    <div class="scroll-fade-container" style="opacity: {scrollOpacity};">
+      <div class="subtitle reveal-item">
+        La prima <i>Intelligent Olympics</i> della storia
+      </div>
 
-    <div class="scroll-prompt reveal-item">scroll down to explore</div>
+      <div class="scroll-prompt reveal-item">scroll down to explore</div>
+    </div>
   {/if}
 
   <div
@@ -414,6 +420,10 @@
     z-index: 1;
   }
 
+  .logo-reveal.scrolled {
+    transition: none;
+  }
+
   .logo-reveal canvas {
     width: 100%;
     height: 100%;
@@ -422,6 +432,14 @@
 
   .logo-reveal.visible {
     opacity: 1;
+  }
+
+  .scroll-fade-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+    will-change: opacity;
   }
 
   /* ELEMENTI SECONDARI REVEAL: Subtitle e prompt di scorrimento visualizzati dopo il click dell'utente */

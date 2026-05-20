@@ -5,6 +5,8 @@
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
 
+  let { isClicked = false } = $props();
+
   /** @type {HTMLElement|null} */
   let introContainer = null;
   /** @type {HTMLElement|null} */
@@ -18,19 +20,23 @@
   /** @type {[number, number, number]} */
   let modelPosition = $state([0, 0, 0]);
   /** @type {[number, number, number]} */
-  let modelScale = $state([2.3, 2.3, 2.3]);
+  let modelScale = $state([1.5, 1.5, 1.5]);
   /** @type {[number, number, number]} */
   let modelRotation = $state([0, 0, 0]);
+  let currentTwistX = $state(360);
+  let currentTwistZ = $state(200);
 
   // OGGETTO DI SUPPORTO GSAP: Contiene i valori intermedi che GSAP anima in modo fluido durante lo scrolling e che vengono poi mappati sullo stato 3D.
   const modelProps = {
     posX: 0,
     posY: 0,
     posZ: 0,
-    scale: 2.3,
+    scale: 1.5,
     rotX: 0,
     rotY: 0,
     rotZ: 0,
+    twistX: 360,
+    twistZ: 200,
   };
 
   onMount(() => {
@@ -42,8 +48,8 @@
         scrollTrigger: {
           trigger: introContainer,
           start: "top top",
-          end: "+=5000", // Ampio range di scorrimento per una sensazione di spaziosità e respiro grafico
-          scrub: 1,
+          end: "+=8500", // Ampio range di scorrimento per una sensazione di spaziosità e respiro grafico
+          scrub: 2.8,
           pin: true,
         },
       });
@@ -53,6 +59,8 @@
         modelPosition = [modelProps.posX, modelProps.posY, modelProps.posZ];
         modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
       };
 
       // --- FASE 1: Dissolvenza completa dell'immagine testuale centrale "non tutto ciò che conta è visibile" con traslazione e sfocatura progressiva ---
@@ -68,12 +76,23 @@
         0,
       );
 
+      // DISSOLVENZA INGRESSO MODELLO 3D: Il modello 3D in vetro compare sfumando in dissolvenza solo all'avvio del pinning dell'Intro
+      tl.to(
+        ".canvas-wrapper",
+        {
+          opacity: 1,
+          duration: 1.5,
+          ease: "power2.out",
+        },
+        0,
+      );
+
       // --- FASE 2: Spostamento del modello 3D sulla destra ed avvio della rotazione orbitale tridimensionale simultanea su X, Y e Z ---
       tl.to(
         modelProps,
         {
           posX: 3.2,
-          scale: 3.8,
+          scale: 2.4,
           rotX: Math.PI * 0.4, // Rotation in X
           rotY: Math.PI * 0.7, // Rotation in Y
           rotZ: Math.PI * 0.3, // Rotation in Z
@@ -159,6 +178,55 @@
       // --- FASE 7: Pausa finale di lettura sul secondo paragrafo prima dello sblocco definitivo dello scroll della sezione ---
       tl.to({}, { duration: 1.2 });
 
+      // ANIME TWIST SCROLL: Distorsione Twist X e Z sincronizzata con lo scorrimento complessivo (durata totale 8.9s)
+      tl.to(
+        modelProps,
+        {
+          twistX: 45.9,
+          twistZ: 270,
+          duration: 2.197,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        0
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: -360,
+          twistZ: 360,
+          duration: 2.607,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        2.197
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 43.7,
+          twistZ: 270,
+          duration: 2.234,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        4.804
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 360,
+          twistZ: 200,
+          duration: 1.862,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        7.038
+      );
+
       return () => {
         tl.kill();
       };
@@ -169,19 +237,23 @@
 <div class="intro-container" bind:this={introContainer}>
   <!-- CANVAS 3D DI THRELTE: Rendering in background dell'ambiente WebGL contenente la camera, le luci e il modello 3D interattivo -->
   <div class="canvas-wrapper">
-    <Canvas
-      rendererParameters={{
-        alpha: true,
-        antialias: true,
-        powerPreference: "high-performance",
-      }}
-    >
-      <Scene
-        position={modelPosition}
-        scale={modelScale}
-        rotation={modelRotation}
-      />
-    </Canvas>
+    {#if isClicked}
+      <Canvas
+        rendererParameters={{
+          alpha: true,
+          antialias: true,
+          powerPreference: "high-performance",
+        }}
+      >
+        <Scene
+          position={modelPosition}
+          scale={modelScale}
+          rotation={modelRotation}
+          twistX={currentTwistX}
+          twistZ={currentTwistZ}
+        />
+      </Canvas>
+    {/if}
   </div>
 
   <!-- ELEMENTI TESTUALI E INFOGRAFICA (OVERLAY HTML): Gestisce l'immagine di benvenuto e i testi narrativi disposti a cascata sulla sinistra -->
@@ -229,6 +301,8 @@
     position: relative;
     background-color: transparent; /* Transparent so the home parallax background shows */
     overflow: hidden;
+    margin-top: -35vh; /* Shift Intro up to bring sections closer on scroll */
+    pointer-events: none; /* Allow clicks to pass through to Hero underneath */
   }
 
   .canvas-wrapper {
@@ -239,6 +313,8 @@
     height: 100%;
     z-index: 1; /* Behind text */
     pointer-events: none;
+    opacity: 0; /* Hidden by default in the Hero section */
+    will-change: opacity;
   }
 
   .overlay {
