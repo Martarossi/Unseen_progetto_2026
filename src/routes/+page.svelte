@@ -5,6 +5,7 @@
   import ScrollTrigger from "gsap/dist/ScrollTrigger";
   import Hero from "$lib/components/Hero.svelte";
   import Intro from "$lib/components/Intro.svelte";
+  import Gallery from "$lib/components/Gallery.svelte";
   
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
@@ -62,6 +63,15 @@
     3. I paragrafi descrittivi compaiono uno dopo l'altro sfocandosi e mettendosi a fuoco in modo alternato.
   -->
   <Intro isClicked={hasBeenClicked} />
+
+  {#if hasBeenClicked}
+    <!-- 
+      SEZIONE GALLERY (Sezione Finale):
+      Un mazzo di card tridimensionali prospettiche che scorrono verticalmente a imbuto (wheel), 
+      sincronizzate con la lista dei titoli dei progetti sulla sinistra e con i dettagli descrittivi.
+    -->
+    <Gallery />
+  {/if}
 </div>
 
 <style>
