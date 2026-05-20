@@ -53,7 +53,8 @@
         scrollTrigger: {
           trigger: introContainer,
           start: "top top",
-          end: "+=13500",
+          // Ridotto per diminuire la durata dello scroll complessivo della sezione
+          end: "+=9000",
           scrub: 2.8,
           pin: true,
           onEnter: () => { canvasVisible = true; },
@@ -84,18 +85,21 @@
         0,
       );
 
-      tl.to(
+      // Make the 3D model rise into view similarly to the text image
+      tl.fromTo(
         modelProps,
+        { posY: -2 },
         {
           posY: 1.5,
           duration: 1.5,
-          ease: "power2.inOut",
+          ease: "power2.out",
           onUpdate: update3D,
         },
         0,
       );
 
       // --- FASE 2: Spostamento del modello 3D sulla destra ed avvio della rotazione orbitale tridimensionale simultanea su X, Y e Z ---
+      // Accelerate model movement to the right so the first paragraph can appear earlier
       tl.to(
         modelProps,
         {
@@ -105,14 +109,15 @@
           rotX: Math.PI * 0.4, // Rotation in X
           rotY: Math.PI * 0.7, // Rotation in Y
           rotZ: Math.PI * 0.3, // Rotation in Z
-          duration: 2.0,
+          duration: 1.6,
           ease: "power2.inOut",
           onUpdate: update3D,
         },
-        1.0,
+        0.8,
       );
 
       // --- FASE 3: Comparsa a sinistra del primo paragrafo appena il modello raggiunge la destra ---
+      // Show first paragraph earlier with a slightly quicker reveal
       tl.to(
         p1,
         {
@@ -120,41 +125,35 @@
           filter: "blur(0px)",
           y: 0,
           pointerEvents: "auto",
-          duration: 1.5,
+          duration: 1.2,
           ease: "power2.out",
         },
-        2.5,
+        1.8,
       );
 
+      // Slightly shorten the rotation timing to match earlier p1 appearance
       tl.to(
         modelProps,
         {
           rotX: Math.PI * 0.7,
           rotY: Math.PI * 1.3,
           rotZ: Math.PI * 0.6,
-          duration: 1.5,
+          duration: 1.2,
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        2.5,
+        1.8,
       );
 
       // --- FASE 4: Pausa statica di lettura in cui il primo paragrafo rimane pienamente nitido e leggibile ---
-      tl.to({}, { duration: 1.0 });
+      // Ridotto il tempo di pausa per accelerare la transizione verso il secondo paragrafo
+      tl.to({}, { duration: 0.4 });
 
-      // --- FASE 5: Dissolvenza/sfocatura del primo paragrafo e contemporanea comparsa del secondo paragrafo, mentre il modello compie l'ultima rotazione ---
-      tl.to(
-        p1,
-        {
-          opacity: 0.3,
-          filter: "blur(5px)",
-          pointerEvents: "none",
-          duration: 1.5,
-          ease: "power2.inOut",
-        },
-        5.0,
-      );
+      // --- FASE 5: Mantieni `p1` nitido fino all'uscita simultanea con `p2`.
+      // Rimosso il fade parziale anticipato per assicurare che entrambi i paragrafi
+      // salgano e si dissolvano nello stesso momento più avanti nella timeline.
 
+      // Diminuisco il gap tra p1 e p2: faccio partire p2 e la rotazione del modello prima
       tl.to(
         p2,
         {
@@ -162,10 +161,10 @@
           filter: "blur(0px)",
           y: 0,
           pointerEvents: "auto",
-          duration: 1.5,
+          duration: 1.2,
           ease: "power2.inOut",
         },
-        5.0,
+        2.6,
       );
 
       tl.to(
@@ -174,15 +173,16 @@
           rotX: Math.PI * 1.2,
           rotY: Math.PI * 2.0,
           rotZ: Math.PI * 1.1,
-          duration: 1.5,
+          duration: 1.2,
           ease: "power2.inOut",
           onUpdate: update3D,
         },
-        5.0,
+        2.6,
       );
 
       // --- FASE 7: Pausa finale di lettura sul secondo paragrafo prima dello sblocco definitivo dello scroll della sezione ---
-      tl.to({}, { duration: 1.2 });
+      // Ridotta ulteriormente per accorciare lo scroll tra p2 nitido e la sua scomparsa
+      tl.to({}, { duration: 0.3 });
 
       // ANIME TWIST SCROLL: Distorsione Twist X e Z sincronizzata con lo scorrimento complessivo (durata totale 8.9s)
       tl.to(
@@ -234,16 +234,18 @@
       );
 
       // --- FASE 8: Uscita paragrafi verso l'alto e ritorno del modello al centro dello schermo ---
+      // Far salire e scomparire entrambi i paragrafi contemporaneamente
+      // Accorcio il tempo di scroll tra p2 nitido e la sua scomparsa: anticipo le uscite dei paragrafi
       tl.to(
         p1,
         {
           opacity: 0,
           y: -80,
           filter: "blur(10px)",
-          duration: 1.2,
+          duration: 0.8,
           ease: "power2.inOut",
         },
-        8.9,
+        6.0,
       );
 
       tl.to(
@@ -252,12 +254,13 @@
           opacity: 0,
           y: -80,
           filter: "blur(10px)",
-          duration: 1.2,
+          duration: 0.8,
           ease: "power2.inOut",
         },
-        9.1,
+        6.0,
       );
 
+      // Sincronizza il ritorno del modello al centro con la scomparsa dei paragrafi
       tl.to(
         modelProps,
         {
@@ -267,25 +270,27 @@
           rotX: Math.PI * 2.0,
           rotY: Math.PI * 3.0,
           rotZ: Math.PI * 1.8,
-          duration: 1.0,
+          duration: 0.8,
           ease: "power2.inOut",
           onUpdate: update3D,
         },
-        8.9,
+        6.0,
       );
 
       // --- FASE 9: Testo full-screen sale dal basso insieme allo scroll (lineare, senza easing) ---
+      // Anticipato l'inizio del big text per ridurre il gap dopo la scomparsa dei paragrafi
+      // Anticipa l'entrata del bigText per ridurre il gap dopo la scomparsa dei paragrafi
       tl.fromTo(
         bigText,
         { yPercent: 100, opacity: 1 },
         {
           yPercent: -50,
           opacity: 1,
-          duration: 2.0,
+          duration: 1.0,
           ease: "none",
           immediateRender: false,
         },
-        9.9,
+        6.2,
       );
 
       // MODELLO 3D DURANTE TESTO: rotazione e deformazione continua mentre il testo scorre
@@ -298,15 +303,15 @@
           scale: 1.8,
           twistX: 120,
           twistZ: 320,
-          duration: 2.0,
+          duration: 1.0,
           ease: "none",
           onUpdate: update3D,
         },
-        9.9,
+        6.2,
       );
 
       // --- FASE 10: Pausa di lettura sul testo full-screen ---
-      tl.to({}, { duration: 1.3 });
+      tl.to({}, { duration: 0.6 });
 
       return () => {
         tl.kill();
