@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import gsap from "gsap";
 
-  // Static asset from /static/topbarunseen.png
   const logoSrc = "/topbarunseen.png";
   /** @type {{ onOpenAbout?: (event: MouseEvent) => any }} */
   let { onOpenAbout = () => {} } = $props();
@@ -12,7 +11,6 @@
   let scrollY = $state(0);
 
   onMount(() => {
-    // Prevent flash of content: immediately hide it offscreen and transparent
     gsap.set(navbarEl, { y: -50, opacity: 0 });
 
     let animated = false;
@@ -28,12 +26,10 @@
       });
     };
 
-    // If logo has already been clicked, show navbar immediately
     // @ts-ignore
     if (typeof window !== "undefined" && window.heroHasBeenClicked) {
       showNavbar();
     } else if (typeof window !== "undefined") {
-      // Listen for the custom event dispatched by Hero
       const handleHeroClicked = () => {
         showNavbar();
         window.removeEventListener("heroClicked", handleHeroClicked);
@@ -51,13 +47,12 @@
 <svelte:window bind:scrollY />
 
 <nav class="navbar" bind:this={navbarEl}>
-  <!-- Logo is visible only when scrolled past Hero (scrollY > 150) -->
   <div class="navbar__brand" class:visible={scrollY > 450}>
     <img src={logoSrc} alt="Unseen logo" />
   </div>
 
   <div class="navbar__links">
-    <button class="navbar__link" type="button" onclick={onOpenAbout}>ABOUT</button>
+    <button class="navbar__link" type="button" onclick={onOpenAbout}>About</button>
   </div>
 </nav>
 
@@ -75,7 +70,7 @@
     box-sizing: border-box;
     pointer-events: auto;
     background: transparent;
-    opacity: 0; /* Starts transparent for safety before GSAP runs */
+    opacity: 0;
   }
 
   .navbar__brand {
@@ -101,24 +96,37 @@
     align-items: center;
   }
 
-  .navbar__link {
-    color: #000;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    background: transparent;
-    font-size: 0.95rem;
-    font-family: var(--font-sans, system-ui, sans-serif);
-    font-weight: 700;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    transition: opacity 0.2s ease;
-  }
+.navbar__link {
+  position: relative;
+  color: #000;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  font-size: 0.95rem;
+  font-family: 'Akira Expanded', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  padding-bottom: 3px;
+  filter: blur(0px);
+  transition: filter 0.3s ease;
+}
 
-  .navbar__link:hover,
-  .navbar__link:focus-visible {
-    opacity: 0.68;
-  }
+  /* Underline animata
+  .navbar__link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background-color: #000;
+    transition: width 0.3s ease;
+  } */
+
+.navbar__link:hover,
+.navbar__link:focus-visible {
+  filter: blur(3px);
+}
 
   @media (max-width: 768px) {
     .navbar {
