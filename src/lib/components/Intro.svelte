@@ -57,35 +57,6 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      // TIMELINE DI ENTRATA DEL MODELLO 3D CON LO SCROLL (da "top bottom" a "top top")
-      const entranceTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: introContainer,
-          start: "top bottom",
-          end: "top top",
-          scrub: 2.8,
-          onEnter: () => { canvasVisible = true; },
-          onLeaveBack: () => { canvasVisible = false; },
-        },
-      });
-
-      // Il modello 3D entra salendo dal basso e ruotando leggermente in sincronia con lo scroll della pagina
-      entranceTl.fromTo(
-        modelProps,
-        {
-          posY: -4.5,
-          rotX: -Math.PI * 0.15,
-          rotY: -Math.PI * 0.25,
-        },
-        {
-          posY: 1.5,
-          rotX: 0,
-          rotY: 0,
-          ease: "none",
-          onUpdate: update3D,
-        }
-      );
-
       // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per 5000px di scorrimento, pilotando la narrazione e la rotazione del modello.
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -96,8 +67,7 @@
           scrub: 2.8,
           pin: true,
           onEnter: () => { canvasVisible = true; },
-          onLeave: () => { canvasVisible = false; },
-          onEnterBack: () => { canvasVisible = true; },
+          onLeaveBack: () => { canvasVisible = false; },
         },
       });
 
@@ -114,10 +84,10 @@
         0,
       );
 
-      // Il modello 3D è già entrato con lo scroll ed è visibile al centro dello schermo.
-      // Lo manteniamo stabile (o micro-rotazione) durante la dissolvenza del testo.
-      tl.to(
+      // Make the 3D model rise into view similarly to the text image
+      tl.fromTo(
         modelProps,
+        { posY: -2 },
         {
           posY: 1.5,
           duration: 1.5,
@@ -342,8 +312,37 @@
       // --- FASE 10: Pausa di lettura sul testo full-screen ---
       tl.to({}, { duration: 0.6 });
 
+      // --- FASE 11: Rimpicciolimento del modello 3D fino a scomparire e uscita del bigText verso l'alto ---
+      tl.to(
+        bigText,
+        {
+          yPercent: -180,
+          opacity: 0,
+          duration: 1.2,
+          ease: "power2.inOut",
+        },
+        8.9
+      );
+
+      tl.to(
+        modelProps,
+        {
+          scale: 0,
+          posY: 1.5,
+          rotX: Math.PI * 3.5,
+          rotY: Math.PI * 5.0,
+          rotZ: Math.PI * 3.0,
+          duration: 1.2,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        8.9
+      );
+
+      // Pausa finale per dare respiro prima dell'unpin della sezione e dell'entrata della gallery
+      tl.to({}, { duration: 0.4 });
+
       return () => {
-        entranceTl.kill();
         tl.kill();
       };
     });
