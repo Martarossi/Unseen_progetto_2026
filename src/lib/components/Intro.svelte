@@ -48,6 +48,44 @@
     const mm = gsap.matchMedia();
 
     mm.add("(min-width: 800px)", () => {
+      // SINCRONIZZAZIONE STATO 3D: Aggiorna reattivamente le variabili tridimensionali di Svelte basandosi sui valori correnti dell'oggetto animato da GSAP.
+      const update3D = () => {
+        modelPosition = [modelProps.posX, modelProps.posY, modelProps.posZ];
+        modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
+        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+      };
+
+      // TIMELINE DI ENTRATA DEL MODELLO 3D CON LO SCROLL (da "top bottom" a "top top")
+      const entranceTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: introContainer,
+          start: "top bottom",
+          end: "top top",
+          scrub: 2.8,
+          onEnter: () => { canvasVisible = true; },
+          onLeaveBack: () => { canvasVisible = false; },
+        },
+      });
+
+      // Il modello 3D entra salendo dal basso e ruotando leggermente in sincronia con lo scroll della pagina
+      entranceTl.fromTo(
+        modelProps,
+        {
+          posY: -4.5,
+          rotX: -Math.PI * 0.15,
+          rotY: -Math.PI * 0.25,
+        },
+        {
+          posY: 1.5,
+          rotX: 0,
+          rotY: 0,
+          ease: "none",
+          onUpdate: update3D,
+        }
+      );
+
       // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per 5000px di scorrimento, pilotando la narrazione e la rotazione del modello.
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -58,19 +96,10 @@
           scrub: 2.8,
           pin: true,
           onEnter: () => { canvasVisible = true; },
-          onLeaveBack: () => { canvasVisible = false; },
+          onLeave: () => { canvasVisible = false; },
+          onEnterBack: () => { canvasVisible = true; },
         },
       });
-
-      // SINCRONIZZAZIONE STATO 3D: Aggiorna reattivamente le variabili tridimensionali di Svelte basandosi sui valori correnti dell'oggetto animato da GSAP.
-      const update3D = () => {
-        modelPosition = [modelProps.posX, modelProps.posY, modelProps.posZ];
-        modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
-        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
-        currentTwistX = modelProps.twistX;
-        currentTwistZ = modelProps.twistZ;
-
-      };
 
       // --- FASE 1: Dissolvenza completa dell'immagine testuale centrale "non tutto ciò che conta è visibile" con traslazione e sfocatura progressiva ---
       tl.to(
@@ -85,10 +114,10 @@
         0,
       );
 
-      // Make the 3D model rise into view similarly to the text image
-      tl.fromTo(
+      // Il modello 3D è già entrato con lo scroll ed è visibile al centro dello schermo.
+      // Lo manteniamo stabile (o micro-rotazione) durante la dissolvenza del testo.
+      tl.to(
         modelProps,
-        { posY: -2 },
         {
           posY: 1.5,
           duration: 1.5,
@@ -314,6 +343,7 @@
       tl.to({}, { duration: 0.6 });
 
       return () => {
+        entranceTl.kill();
         tl.kill();
       };
     });
