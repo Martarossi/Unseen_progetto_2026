@@ -1,5 +1,5 @@
 <script>
-  import { T } from "@threlte/core";
+  import { T, useTask } from "@threlte/core";
   import { useGltf, Environment } from "@threlte/extras";
   import * as THREE from "three";
 
@@ -21,6 +21,7 @@
    * @property {[number, number, number]} [rotation]
    * @property {number} [twistX]
    * @property {number} [twistZ]
+   * @property {{ opacity: number, groupRotY: number, riseY: number }} [cardProps]
    */
 
   /** @type {SceneProps} */
@@ -30,6 +31,7 @@
     rotation = [0, 0, 0],
     twistX = 360,
     twistZ = 200,
+    cardProps = { opacity: 0, groupRotY: 0, riseY: 0 },
   } = $props();
 
   // CARICAMENTO MODELLO GLTF: Carica il modello 3D in formato GLB con URL codificato per gestire gli spazi in sicurezza.
@@ -182,6 +184,60 @@
       });
     }
   });
+
+  // ── CARD ORBIT MODEL ──────────────────────────────────────────────────────────
+
+  const cardGltf = useGltf("/CARD%20FINALE%20X%20SITO%20(1).glb");
+
+  /** @type {THREE.Object3D | null} */
+  let cardGltfScene = null;
+  /** @type {THREE.Material[]} */
+  let cardMaterials = [];
+
+  $effect(() => {
+    if ($cardGltf) {
+      cardGltfScene = $cardGltf.scene;
+      cardMaterials = [];
+      $cardGltf.scene.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const m = child.material;
+          if (Array.isArray(m)) {
+            m.forEach((mat) => {
+              mat.transparent = true;
+              mat.opacity = 0;
+              cardMaterials.push(mat);
+            });
+          } else {
+            m.transparent = true;
+            m.opacity = 0;
+            cardMaterials.push(m);
+          }
+        }
+      });
+    }
+  });
+
+  // Tilted-ellipse orbit: card sweeps a 3D arc around the central model
+  const ORBIT_R    = 4.2;
+  const ORBIT_TILT = 0.42; // ~24° — visible depth arc
+  const sinT = Math.sin(ORBIT_TILT);
+  const cosT = Math.cos(ORBIT_TILT);
+
+  // yOffset shifts the ellipse so the front stop (a=0) lands exactly at y=0.
+  const yOffset = ORBIT_R * sinT;
+
+  // Per-frame: place card on tilted ellipse, sync opacity.
+  useTask(() => {
+    if (!cardGltfScene) return;
+    const a = cardProps.groupRotY;
+    cardGltfScene.position.x =  ORBIT_R * Math.sin(a);
+    cardGltfScene.position.y = -ORBIT_R * sinT * Math.cos(a) + yOffset;
+    cardGltfScene.position.z =  ORBIT_R * cosT * Math.cos(a);
+    // +Math.PI → card -Z faces outward so viewer sees the front face
+    cardGltfScene.rotation.y = a + Math.PI;
+    const op = cardProps.opacity;
+    for (let i = 0; i < cardMaterials.length; i++) cardMaterials[i].opacity = op;
+  });
 </script>
 
 <!-- CONFIGURAZIONE DELLA CAMERA: Imposta la camera prospettica principale e vi associa una luce direzionale frontale -->
@@ -202,4 +258,8 @@
 
 {#if $gltf}
   <T is={$gltf.scene} {position} {scale} {rotation} />
+{/if}
+
+{#if $cardGltf}
+  <T is={$cardGltf.scene} scale={[1.0, 1.0, 1.0]} />
 {/if}

@@ -44,6 +44,10 @@
     twistZ: 200,
   };
 
+  // CARD ORBIT PROPS: Mutato direttamente da GSAP; Scene.svelte lo legge ogni
+  // frame in useTask senza passare per la reattività Svelte (zero overhead).
+  const cardProps = { opacity: 0, groupRotY: 0, riseY: 0 };
+
   onMount(() => {
     const mm = gsap.matchMedia();
 
@@ -53,7 +57,7 @@
         scrollTrigger: {
           trigger: introContainer,
           start: "top top",
-          end: "+=13500",
+          end: "+=20000",
           scrub: 2.8,
           pin: true,
           onEnter: () => { canvasVisible = true; },
@@ -238,10 +242,10 @@
         p1,
         {
           opacity: 0,
-          y: -80,
-          filter: "blur(10px)",
-          duration: 1.2,
-          ease: "power2.inOut",
+          y: -200,
+          filter: "blur(22px)",
+          duration: 2.0,
+          ease: "power2.in",
         },
         8.9,
       );
@@ -250,12 +254,12 @@
         p2,
         {
           opacity: 0,
-          y: -80,
-          filter: "blur(10px)",
-          duration: 1.2,
-          ease: "power2.inOut",
+          y: -200,
+          filter: "blur(22px)",
+          duration: 2.0,
+          ease: "power2.in",
         },
-        9.1,
+        9.2,
       );
 
       tl.to(
@@ -308,6 +312,87 @@
       // --- FASE 10: Pausa di lettura sul testo full-screen ---
       tl.to({}, { duration: 1.3 });
 
+      // ── FASE 11: Big-text esce verso l'alto mentre il modello si stabilizza ──
+      // Il testo scorre via in anticipo così la scena è pulita per le card.
+      tl.to(
+        bigText,
+        {
+          opacity: 0,
+          y: -80,
+          duration: 0.9,
+          ease: "power2.in",
+        },
+        13.0,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 0,
+          twistZ: 0,
+          rotX: 0,
+          rotZ: 0,
+          rotY: Math.PI * 5.2,
+          scale: 2.2,
+          duration: 1.8,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        13.0,
+      );
+
+      // ── FASE 12: Card model entra in scena (fade-in + scale) ──
+      tl.to(
+        cardProps,
+        {
+          opacity: 1,
+          duration: 1.5,
+          ease: "power2.out",
+        },
+        14.2,
+      );
+
+      // ── FASE 13: Orbita completa → stop al centro frontale ──
+      // groupRotY: 0 → 2π = un giro completo, decelera fino a fermarsi
+      // frontalmente al modello 3D centrale (power2.out = partenza veloce, stop morbido).
+      tl.to(
+        cardProps,
+        {
+          groupRotY: Math.PI * 2,
+          duration: 4.5,
+          ease: "power2.out",
+        },
+        15.2,
+      );
+
+      // Modello 3D continua a distorcersi durante l'orbita
+      tl.to(
+        modelProps,
+        {
+          twistX: -210,
+          twistZ: 430,
+          duration: 2.2,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        15.2,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 170,
+          twistZ: -260,
+          duration: 2.3,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        17.4,
+      );
+
+      // Pausa finale
+      tl.to({}, { duration: 0.5 });
+
       return () => {
         tl.kill();
       };
@@ -332,6 +417,7 @@
           rotation={modelRotation}
           twistX={currentTwistX}
           twistZ={currentTwistZ}
+          {cardProps}
         />
       </Canvas>
     {/if}
@@ -477,13 +563,11 @@
     font-size: 1.7rem;
     line-height: 1.45;
     color: #1a1a1a;
-    transition:
-      filter 0.5s ease,
-      opacity 0.5s ease;
-    opacity: 0; /* Fully hidden initially! */
+    will-change: opacity, filter, transform;
+    opacity: 0;
     transform: translateY(30px);
-    filter: blur(10px); /* Slightly stronger blur initially */
-    pointer-events: none; /* No pointer events until faded in */
+    filter: blur(10px);
+    pointer-events: none;
   }
 
   .paragraph-wrapper p {
