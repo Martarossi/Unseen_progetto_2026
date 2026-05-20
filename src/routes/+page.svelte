@@ -5,7 +5,7 @@
   import ScrollTrigger from "gsap/dist/ScrollTrigger";
   import Hero from "$lib/components/Hero.svelte";
   import Intro from "$lib/components/Intro.svelte";
-
+  
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
   }
@@ -97,4 +97,7 @@
   .page.clicked {
     background: transparent; /* Smoothly transitions to transparent to let parallax background shine */
   }
+  
+  
+                
 </style>

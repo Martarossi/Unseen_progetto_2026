@@ -15,6 +15,8 @@
   let p1 = null;
   /** @type {HTMLElement|null} */
   let p2 = null;
+  /** @type {HTMLElement|null} */
+  let bigText = null;
 
   // PROPRIETÀ TRIDIMENSIONALI: Variabili di stato reattive di Svelte 5 che controllano la posizione, la scala e la rotazione del modello 3D.
   /** @type {[number, number, number]} */
@@ -25,6 +27,9 @@
   let modelRotation = $state([0, 0, 0]);
   let currentTwistX = $state(360);
   let currentTwistZ = $state(200);
+
+  // Controlla la visibilità del canvas: diventa true solo quando l'intro entra nel viewport
+  let canvasVisible = $state(false);
 
   // OGGETTO DI SUPPORTO GSAP: Contiene i valori intermedi che GSAP anima in modo fluido durante lo scrolling e che vengono poi mappati sullo stato 3D.
   const modelProps = {
@@ -48,9 +53,11 @@
         scrollTrigger: {
           trigger: introContainer,
           start: "top top",
-          end: "+=8500", // Ampio range di scorrimento per una sensazione di spaziosità e respiro grafico
+          end: "+=13500",
           scrub: 2.8,
           pin: true,
+          onEnter: () => { canvasVisible = true; },
+          onLeaveBack: () => { canvasVisible = false; },
         },
       });
 
@@ -61,6 +68,7 @@
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
+
       };
 
       // --- FASE 1: Dissolvenza completa dell'immagine testuale centrale "non tutto ciò che conta è visibile" con traslazione e sfocatura progressiva ---
@@ -76,13 +84,13 @@
         0,
       );
 
-      // DISSOLVENZA INGRESSO MODELLO 3D: Il modello 3D in vetro compare sfumando in dissolvenza solo all'avvio del pinning dell'Intro
       tl.to(
-        ".canvas-wrapper",
+        modelProps,
         {
-          opacity: 1,
+          posY: 1.5,
           duration: 1.5,
-          ease: "power2.out",
+          ease: "power2.inOut",
+          onUpdate: update3D,
         },
         0,
       );
@@ -92,6 +100,7 @@
         modelProps,
         {
           posX: 3.2,
+          posY: 0,
           scale: 2.4,
           rotX: Math.PI * 0.4, // Rotation in X
           rotY: Math.PI * 0.7, // Rotation in Y
@@ -103,10 +112,7 @@
         1.0,
       );
 
-      // --- FASE 3: Pausa di stasi controllata per dare respiro visivo prima dell'ingresso dei successivi blocchi di testo ---
-      tl.to({}, { duration: 0.8 });
-
-      // --- FASE 4: Comparsa a sinistra del primo paragrafo descrittivo (messa a fuoco e dissolvenza) accompagnata da un'ulteriore rotazione del modello ---
+      // --- FASE 3: Comparsa a sinistra del primo paragrafo appena il modello raggiunge la destra ---
       tl.to(
         p1,
         {
@@ -117,7 +123,7 @@
           duration: 1.5,
           ease: "power2.out",
         },
-        3.8,
+        2.5,
       );
 
       tl.to(
@@ -130,13 +136,13 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        3.8,
+        2.5,
       );
 
-      // --- FASE 5: Pausa statica di lettura in cui il primo paragrafo rimane pienamente nitido e leggibile ---
+      // --- FASE 4: Pausa statica di lettura in cui il primo paragrafo rimane pienamente nitido e leggibile ---
       tl.to({}, { duration: 1.0 });
 
-      // --- FASE 6: Dissolvenza/sfocatura del primo paragrafo e contemporanea comparsa del secondo paragrafo, mentre il modello compie l'ultima rotazione ---
+      // --- FASE 5: Dissolvenza/sfocatura del primo paragrafo e contemporanea comparsa del secondo paragrafo, mentre il modello compie l'ultima rotazione ---
       tl.to(
         p1,
         {
@@ -146,7 +152,7 @@
           duration: 1.5,
           ease: "power2.inOut",
         },
-        6.2,
+        5.0,
       );
 
       tl.to(
@@ -159,7 +165,7 @@
           duration: 1.5,
           ease: "power2.inOut",
         },
-        6.2,
+        5.0,
       );
 
       tl.to(
@@ -172,7 +178,7 @@
           ease: "power2.inOut",
           onUpdate: update3D,
         },
-        6.2,
+        5.0,
       );
 
       // --- FASE 7: Pausa finale di lettura sul secondo paragrafo prima dello sblocco definitivo dello scroll della sezione ---
@@ -227,6 +233,81 @@
         7.038
       );
 
+      // --- FASE 8: Uscita paragrafi verso l'alto e ritorno del modello al centro dello schermo ---
+      tl.to(
+        p1,
+        {
+          opacity: 0,
+          y: -80,
+          filter: "blur(10px)",
+          duration: 1.2,
+          ease: "power2.inOut",
+        },
+        8.9,
+      );
+
+      tl.to(
+        p2,
+        {
+          opacity: 0,
+          y: -80,
+          filter: "blur(10px)",
+          duration: 1.2,
+          ease: "power2.inOut",
+        },
+        9.1,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          posX: 0,
+          posY: 0,
+          scale: 2.0,
+          rotX: Math.PI * 2.0,
+          rotY: Math.PI * 3.0,
+          rotZ: Math.PI * 1.8,
+          duration: 1.0,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        8.9,
+      );
+
+      // --- FASE 9: Testo full-screen sale dal basso insieme allo scroll (lineare, senza easing) ---
+      tl.fromTo(
+        bigText,
+        { yPercent: 100, opacity: 1 },
+        {
+          yPercent: -50,
+          opacity: 1,
+          duration: 2.0,
+          ease: "none",
+          immediateRender: false,
+        },
+        9.9,
+      );
+
+      // MODELLO 3D DURANTE TESTO: rotazione e deformazione continua mentre il testo scorre
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 2.6,
+          rotY: Math.PI * 4.0,
+          rotZ: Math.PI * 2.3,
+          scale: 1.8,
+          twistX: 120,
+          twistZ: 320,
+          duration: 2.0,
+          ease: "none",
+          onUpdate: update3D,
+        },
+        9.9,
+      );
+
+      // --- FASE 10: Pausa di lettura sul testo full-screen ---
+      tl.to({}, { duration: 1.3 });
+
       return () => {
         tl.kill();
       };
@@ -236,7 +317,7 @@
 
 <div class="intro-container" bind:this={introContainer}>
   <!-- CANVAS 3D DI THRELTE: Rendering in background dell'ambiente WebGL contenente la camera, le luci e il modello 3D interattivo -->
-  <div class="canvas-wrapper">
+  <div class="canvas-wrapper" class:visible={canvasVisible}>
     {#if isClicked}
       <Canvas
         rendererParameters={{
@@ -291,6 +372,11 @@
         </p>
       </div>
     </div>
+
+    <!-- TESTO FULL-SCREEN: Comparsa grande dopo l'uscita dei paragrafi -->
+    <div class="big-text" bind:this={bigText}>
+      Scopri la tecnologia che sta scrivendo il futuro dello sport
+    </div>
   </div>
 </div>
 
@@ -311,10 +397,13 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; /* Behind text */
+    z-index: 3;
     pointer-events: none;
-    opacity: 0; /* Hidden by default in the Hero section */
-    will-change: opacity;
+    opacity: 0;
+  }
+
+  .canvas-wrapper.visible {
+    opacity: 1;
   }
 
   .overlay {
@@ -323,9 +412,30 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 2; /* Above canvas */
+    z-index: 2;
     box-sizing: border-box;
     padding: var(--spacing-9, 40px) var(--spacing-11, 80px);
+  }
+
+  /* Testo full-screen finale */
+  .big-text {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 80px;
+    font-family: "Akira Expanded", sans-serif;
+    font-weight: 900;
+    font-size: 10vw;
+    text-transform: uppercase;
+    line-height: 0.88;
+    letter-spacing: -0.03em;
+    color: #1a1a1a;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    will-change: opacity, transform;
   }
 
   /* Centered Text Image in first slide */

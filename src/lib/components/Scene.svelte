@@ -46,19 +46,17 @@
   // MATERIALE IN VETRO FISICO: Crea un materiale fisico con trasmissione e rifrazione elevate per riprodurre un effetto vetro ad alta fedeltà.
   const glassMaterial = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
-    metalness: 0.0,
-    roughness: 0.0,
-    transmission: 1.0,
-    ior: 1.8, // ← più alto = più distorsione (default 1.5, max ~2.5)
-    thickness: 2.0, // ← più alto = più distorsione cromatica in profondità
-    dispersion: 0.3, // ← separa i colori RGB come un prisma (se supportato)
-    envMapIntensity: 1.5,
+    metalness: 0.05,
+    roughness: 0.05,
+    transmission: 0.95, // Highly transmissive glass
+    ior: 1.5, // Glass index of refraction
+    thickness: 1.5,
+    envMapIntensity: 2.5,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.0,
+    clearcoatRoughness: 0.05,
     transparent: true,
-    opacity: 1.0,
-    depthWrite: false,
-    side: THREE.FrontSide,
+    opacity: 1,
+    side: THREE.DoubleSide,
   });
 
   // MODIFICA SHADER (DEFORMER TWIST): Hook nella compilazione del materiale per iniettare i calcoli di deformazione sul vertex shader (posizione e normali)

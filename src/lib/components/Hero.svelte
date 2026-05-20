@@ -324,7 +324,7 @@
   <p class="description" bind:this={descriptionRef}>
     <span class="phrase">
       <b>
-        {#each splitIntoLetters("Scopri ") as char}
+        {#each splitIntoLetters("Scopri") as char}
           <span class="text-piece">{@html char}</span>
         {/each}
       </b>
@@ -387,7 +387,7 @@
   .description {
     font-family: "Helvetica", sans-serif;
     font-weight: var(--font-secondary);
-    font-size: var(--unit-80);
+    font-size: 4vh;
     line-height: normal;
     color: var(--colors-content-primary);
     margin: 0;
