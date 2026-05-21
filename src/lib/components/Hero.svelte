@@ -451,7 +451,7 @@
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
     font-size: 18px;
-    color: #333;
+    color: #F8F8F8;
     z-index: 20;
     opacity: 0;
     white-space: nowrap;
@@ -464,7 +464,7 @@
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
     font-size: 14px;
-    color: #888;
+    color: #F8F8F8;
     z-index: 20;
     opacity: 0;
   }

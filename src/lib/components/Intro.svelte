@@ -2,11 +2,23 @@
   import { onMount } from "svelte";
   import gsap from "gsap";
   import ScrollTrigger from "gsap/dist/ScrollTrigger";
-  import { Canvas } from "@threlte/core";
-  import Scene from "./Scene.svelte";
 
-  let { isClicked = false } = $props();
+  /**
+   * @typedef {{ opacity: number, groupRotY: number, riseY: number }} CardProps
+   */
 
+  let {
+    modelPosition = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    modelScale = $bindable(/** @type {[number, number, number]} */ ([1.5, 1.5, 1.5])),
+    modelRotation = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    currentTwistX = $bindable(360),
+    currentTwistZ = $bindable(200),
+    cardProps = /** @type {CardProps} */ ({ opacity: 0, groupRotY: 0, riseY: 0 }),
+    model3dVisible = $bindable(false),
+  } = $props();
+
+  /** @type {HTMLElement|null} */
+  let scrollWrapper = null;
   /** @type {HTMLElement|null} */
   let introContainer = null;
   /** @type {HTMLElement|null} */
@@ -17,19 +29,6 @@
   let p2 = null;
   /** @type {HTMLElement|null} */
   let bigText = null;
-
-  // PROPRIETÀ TRIDIMENSIONALI: Variabili di stato reattive di Svelte 5 che controllano la posizione, la scala e la rotazione del modello 3D.
-  /** @type {[number, number, number]} */
-  let modelPosition = $state([0, 0, 0]);
-  /** @type {[number, number, number]} */
-  let modelScale = $state([1.5, 1.5, 1.5]);
-  /** @type {[number, number, number]} */
-  let modelRotation = $state([0, 0, 0]);
-  let currentTwistX = $state(360);
-  let currentTwistZ = $state(200);
-
-  // Controlla la visibilità del canvas: diventa true solo quando l'intro entra nel viewport
-  let canvasVisible = $state(false);
 
   // OGGETTO DI SUPPORTO GSAP: Contiene i valori intermedi che GSAP anima in modo fluido durante lo scrolling e che vengono poi mappati sullo stato 3D.
   const modelProps = {
@@ -60,14 +59,13 @@
       // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per 5000px di scorrimento, pilotando la narrazione e la rotazione del modello.
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: introContainer,
+          trigger: scrollWrapper,
           start: "top top",
-          // Ridotto per diminuire la durata dello scroll complessivo della sezione
           end: "+=9000",
           scrub: 2.8,
-          pin: true,
-          onEnter: () => { canvasVisible = true; },
-          onLeaveBack: () => { canvasVisible = false; },
+          onEnter: () => { model3dVisible = true; },
+          onLeave: () => { model3dVisible = false; },
+          onLeaveBack: () => { model3dVisible = false; },
         },
       });
 
@@ -151,6 +149,18 @@
       // --- FASE 5: Mantieni `p1` nitido fino all'uscita simultanea con `p2`.
       // Rimosso il fade parziale anticipato per assicurare che entrambi i paragrafi
       // salgano e si dissolvano nello stesso momento più avanti nella timeline.
+
+      // Mentre p2 appare, p1 si sfoca e svanisce progressivamente
+      tl.to(
+        p1,
+        {
+          opacity: 0.12,
+          filter: "blur(14px)",
+          duration: 2.2,
+          ease: "power1.inOut",
+        },
+        2.6,
+      );
 
       // Diminuisco il gap tra p1 e p2: faccio partire p2 e la rotazione del modello prima
       tl.to(
@@ -256,7 +266,7 @@
           duration: 0.8,
           ease: "power2.inOut",
         },
-        6.0,
+        6.1,
       );
 
       // Sincronizza il ritorno del modello al centro con la scomparsa dei paragrafi
@@ -320,36 +330,13 @@
   });
 </script>
 
+<div class="intro-scroll-wrapper" bind:this={scrollWrapper}>
 <div class="intro-container" bind:this={introContainer}>
-  <!-- CANVAS 3D DI THRELTE: Rendering in background dell'ambiente WebGL contenente la camera, le luci e il modello 3D interattivo -->
-  <div class="canvas-wrapper" class:visible={canvasVisible}>
-    {#if isClicked}
-      <Canvas
-        rendererParameters={{
-          alpha: true,
-          antialias: true,
-          powerPreference: "high-performance",
-        }}
-      >
-        <Scene
-          position={modelPosition}
-          scale={modelScale}
-          rotation={modelRotation}
-          twistX={currentTwistX}
-          twistZ={currentTwistZ}
-        />
-      </Canvas>
-    {/if}
-  </div>
-
   <!-- ELEMENTI TESTUALI E INFOGRAFICA (OVERLAY HTML): Gestisce l'immagine di benvenuto e i testi narrativi disposti a cascata sulla sinistra -->
   <div class="overlay">
     <!-- IMMAGINE TESTUALE DI TAGLINE: L'immagine iniziale centrata che esprime il concetto cardine del progetto -->
     <div class="initial-text-wrapper" bind:this={textImage}>
-      <img
-        src="/nontuttociòcheconta.png"
-        alt="Non tutto ciò che conta è visibile"
-      />
+      <img src="/nontuttociòcheconta.png" alt="non tutto ciò che conta è visibile" class="tagline-image" />
     </div>
 
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
@@ -384,31 +371,32 @@
     </div>
   </div>
 </div>
+</div>
 
 <style>
+  .intro-scroll-wrapper {
+    height: 9000px;
+    position: relative;
+  }
+
   .intro-container {
     width: 100vw;
     height: 100vh;
-    position: relative;
-    background-color: transparent; /* Transparent so the home parallax background shows */
-    overflow: hidden;
-    /* margin-top: -35vh; Shift Intro up to bring sections closer on scroll */
-    pointer-events: none; /* Allow clicks to pass through to Hero underneath */
-  }
-
-  .canvas-wrapper {
-    position: absolute;
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
+    background-color: transparent;
+    overflow: hidden;
     pointer-events: none;
-    opacity: 0;
   }
 
-  .canvas-wrapper.visible {
-    opacity: 1;
+  @media (max-width: 799px) {
+    .intro-scroll-wrapper {
+      height: auto;
+    }
+
+    .intro-container {
+      position: relative;
+    }
   }
 
   .overlay {
@@ -436,7 +424,7 @@
     text-transform: uppercase;
     line-height: 0.88;
     letter-spacing: -0.03em;
-    color: #1a1a1a;
+    color: #F8F8F8;
     opacity: 0;
     pointer-events: none;
     z-index: 1;
@@ -457,7 +445,7 @@
     z-index: 10;
   }
 
-  .initial-text-wrapper img {
+  .tagline-image {
     width: 100%;
     height: auto;
     object-fit: contain;
@@ -481,11 +469,9 @@
     font-family: "Helvetica", "Arial", sans-serif;
     font-size: 1.7rem;
     line-height: 1.45;
-    color: #1a1a1a;
-    transition:
-      filter 0.5s ease,
-      opacity 0.5s ease;
-    opacity: 0; /* Fully hidden initially! */
+    color: #F8F8F8;
+    will-change: opacity, filter, transform;
+    opacity: 0;
     transform: translateY(30px);
     filter: blur(10px); /* Slightly stronger blur initially */
     pointer-events: none; /* No pointer events until faded in */
@@ -496,7 +482,7 @@
   }
 
   .highlight {
-    color: #436d80; /* Elegant blue/grey highlight color matching the storyboard */
+    color: #A7CED8; /* Elegant blue/grey highlight color matching the storyboard */
     font-weight: 500;
   }
 </style>

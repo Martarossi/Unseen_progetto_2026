@@ -4,6 +4,8 @@
   import ScrollTrigger from "gsap/dist/ScrollTrigger";
 
   /** @type {HTMLElement|null} */
+  let scrollWrapper = null;
+  /** @type {HTMLElement|null} */
   let galleryContainer = null;
   /** @type {HTMLElement|null} */
   let titlesContainer = null;
@@ -59,60 +61,56 @@
   ];
 
   /**
-   * Updates coordinates and 3D transforms for all elements based on scroll index (float)
+   * Updates coordinates and 3D transforms for all elements based on scroll index (float).
+   * Effect: cards fold like book pages — above cards hinge from their bottom edge,
+   * below cards hinge from their top edge, creating the "spine" fold shown in screenshots.
    * @param {number} index
    */
   function updateGallery(index) {
     if (!cardElements || !titleElements) return;
 
-    // 1. Update Cards 3D Transforms to match the convex barrel / cylinder scrolling of markclennon.com/motion
+    const CARD_H = 380; // must match CSS height of .gallery-card
+    const FOLD_ANGLE = 65; // degrees per step
+
+    // 1. Cards: book-spine fold animation
     cardElements.forEach((card, i) => {
       const diff = i - index;
-      
-      // Calculations for the perfect curved cylinder overlap
-      const yVal = diff * 260; // Tight vertical overlap
-      const rotXVal = -diff * 22; // Rotate around X-axis (negative below, positive above)
-      const zVal = -Math.abs(diff) * 120; // Pushed back into depth
-      const scaleVal = 1 - Math.abs(diff) * 0.04; // Minimal scale change to let 3D tilt dictate depth
-      const opacityVal = Math.max(0.12, 1 - Math.abs(diff) * 0.35); // Fade background cards
-      const zIndexVal = Math.round(100 - Math.abs(diff) * 10); // Symmetrical z-indexing (active is on top)
+      const absDiff = Math.abs(diff);
 
-      card.style.transform = `translate3d(-50%, -50%, ${zVal}px) translateY(${yVal}px) rotateX(${rotXVal}deg) scale(${scaleVal})`;
+      // Vertical offset stacks cards edge-to-edge before rotation
+      const yOffset = diff * CARD_H;
+      // Rotation: positive diff folds downward, negative folds upward
+      const rotX = diff * FOLD_ANGLE;
+
+      const opacityVal = Math.max(0.06, 1 - absDiff * 0.5);
+      const zIndexVal = Math.round(100 - absDiff * 10);
+
+      // Above/active: pivot at bottom edge so card folds up from the spine
+      // Below: pivot at top edge so card folds down from the spine
+      card.style.transformOrigin = diff <= 0 ? '50% 100%' : '50% 0%';
+      card.style.transform = `translate(-50%, calc(-50% + ${yOffset}px)) rotateX(${rotX}deg)`;
       card.style.opacity = String(opacityVal);
       card.style.zIndex = String(zIndexVal);
-      
-      // Enable mouse events only on active/near-active card
-      card.style.pointerEvents = Math.abs(diff) < 0.45 ? "auto" : "none";
-      
-      // Control transparent outline "PLAY" text opacity based on scroll distance
-      const playOverlay = /** @type {HTMLElement | null} */ (card.querySelector(".play-overlay"));
+      card.style.pointerEvents = absDiff < 0.45 ? 'auto' : 'none';
+
+      const playOverlay = /** @type {HTMLElement | null} */ (card.querySelector('.play-overlay'));
       if (playOverlay) {
-        // Appears strongly only when the card is perfectly active (centered)
-        playOverlay.style.opacity = String(Math.max(0, 1 - Math.abs(diff) * 2.5));
+        playOverlay.style.opacity = String(Math.max(0, 1 - absDiff * 2.5));
       }
     });
 
-    // 2. Update sliding vertical project titles on the left
+    // 2. Sliding vertical project titles on the left
     titleElements.forEach((title, i) => {
       const diff = i - index;
-      const opacityVal = Math.max(0.15, 1 - Math.abs(diff) * 0.85);
-      const scaleVal = Math.max(0.85, 1 - Math.abs(diff) * 0.15);
-      
-      title.style.opacity = String(opacityVal);
-      title.style.transform = `scale(${scaleVal})`;
-      
-      if (Math.abs(diff) < 0.5) {
-        title.classList.add("active");
-      } else {
-        title.classList.remove("active");
-      }
+      const absDiff = Math.abs(diff);
+      title.style.opacity = String(Math.max(0.15, 1 - absDiff * 0.85));
+      title.style.transform = `scale(${Math.max(0.85, 1 - absDiff * 0.15)})`;
+      title.classList.toggle('active', absDiff < 0.5);
     });
 
-    // 3. Move the titles inner wrapper to keep the active title perfectly vertically centered
+    // 3. Scroll the titles strip to keep active title centered
     if (titlesContainer) {
-      // 90px corresponds to the exact line height of the project titles
-      const activeTitleOffset = -index * 90;
-      titlesContainer.style.transform = `translateY(${activeTitleOffset}px)`;
+      titlesContainer.style.transform = `translateY(${-index * 90}px)`;
     }
   }
 
@@ -128,15 +126,12 @@
     mm.add("(min-width: 800px)", () => {
       const stateObj = { index: 0 };
 
-      // Pin the gallery section for 3600px of scrolling to trigger the cards wheel
       const galleryTl = gsap.timeline({
         scrollTrigger: {
-          trigger: galleryContainer,
+          trigger: scrollWrapper,
           start: "top top",
           end: "+=3600",
-          scrub: 1.8, // Elegant scrubbing
-          pin: true,
-          anticipatePin: 1,
+          scrub: 1.8,
         }
       });
 
@@ -156,6 +151,7 @@
   });
 </script>
 
+<div class="gallery-scroll-wrapper" bind:this={scrollWrapper}>
 <div class="gallery-container" bind:this={galleryContainer}>
   <div class="gallery-wrapper">
     <!-- LEFT PANEL: Sliding titles vertical deck -->
@@ -200,17 +196,34 @@
     </div>
   </div>
 </div>
+</div>
 
 <style>
+  .gallery-scroll-wrapper {
+    height: 3600px;
+    position: relative;
+  }
+
   .gallery-container {
     width: 100vw;
     height: 100vh;
-    background-color: #d5d5d5; /* Exact solid concrete light gray background from markclennon.com */
+    background-color: #d5d5d5;
     overflow: hidden;
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 10;
     box-sizing: border-box;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  @media (max-width: 799px) {
+    .gallery-scroll-wrapper {
+      height: auto;
+    }
+
+    .gallery-container {
+      position: relative;
+    }
   }
 
   .gallery-wrapper {
@@ -294,7 +307,7 @@
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
-    perspective: 1000px;
+    perspective: 700px;
     will-change: transform;
   }
 
@@ -305,13 +318,12 @@
     transform: translate(-50%, -50%);
     width: 100%;
     height: 100%;
-    border-radius: 1px; /* Minimal border radius like professional analog photos */
+    border-radius: 1px;
     overflow: hidden;
     background-color: #000;
-    box-shadow: 
-      0 35px 70px rgba(0, 0, 0, 0.22), 
+    box-shadow:
+      0 35px 70px rgba(0, 0, 0, 0.22),
       0 15px 30px rgba(0, 0, 0, 0.12);
-    transform-origin: center center;
     will-change: transform, opacity;
     cursor: pointer;
   }
