@@ -310,26 +310,8 @@
         6.2,
       );
 
-      // --- FASE 11: Rimpicciolimento del modello 3D fino a scomparire ---
-      // (bigText è già uscito a yPercent:-250, nessuna animazione separata necessaria)
-
-      tl.to(
-        modelProps,
-        {
-          scale: 0,
-          posY: 1.5,
-          rotX: Math.PI * 3.5,
-          rotY: Math.PI * 5.0,
-          rotZ: Math.PI * 3.0,
-          duration: 1.2,
-          ease: "power2.inOut",
-          onUpdate: update3D,
-        },
-        8.9
-      );
-
-      // Pausa finale per dare respiro prima dell'unpin della sezione e dell'entrata della gallery
-      tl.to({}, { duration: 0.4 });
+      // --- FASE 10: Pausa di lettura sul testo full-screen ---
+      tl.to({}, { duration: 1.3 });
 
       return () => {
         tl.kill();
