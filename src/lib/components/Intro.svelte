@@ -430,6 +430,7 @@
     z-index: 1;
     will-change: opacity, transform;
   }
+  
 
   /* Centered Text Image in first slide */
   .initial-text-wrapper {
