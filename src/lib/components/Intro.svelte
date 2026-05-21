@@ -260,7 +260,7 @@
           duration: 1.2,
           ease: "power2.inOut",
         },
-        9.1,
+        6.1,
       );
 
       // Sincronizza il ritorno del modello al centro con la scomparsa dei paragrafi
