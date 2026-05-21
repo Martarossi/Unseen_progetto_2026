@@ -4,6 +4,8 @@
   import ScrollTrigger from "gsap/dist/ScrollTrigger";
 
   /** @type {HTMLElement|null} */
+  let scrollWrapper = null;
+  /** @type {HTMLElement|null} */
   let galleryContainer = null;
   /** @type {HTMLElement|null} */
   let titlesContainer = null;
@@ -128,15 +130,12 @@
     mm.add("(min-width: 800px)", () => {
       const stateObj = { index: 0 };
 
-      // Pin the gallery section for 3600px of scrolling to trigger the cards wheel
       const galleryTl = gsap.timeline({
         scrollTrigger: {
-          trigger: galleryContainer,
+          trigger: scrollWrapper,
           start: "top top",
           end: "+=3600",
-          scrub: 1.8, // Elegant scrubbing
-          pin: true,
-          anticipatePin: 1,
+          scrub: 1.8,
         }
       });
 
@@ -156,6 +155,7 @@
   });
 </script>
 
+<div class="gallery-scroll-wrapper" bind:this={scrollWrapper}>
 <div class="gallery-container" bind:this={galleryContainer}>
   <div class="gallery-wrapper">
     <!-- LEFT PANEL: Sliding titles vertical deck -->
@@ -200,17 +200,34 @@
     </div>
   </div>
 </div>
+</div>
 
 <style>
+  .gallery-scroll-wrapper {
+    height: 3600px;
+    position: relative;
+  }
+
   .gallery-container {
     width: 100vw;
     height: 100vh;
-    background-color: #d5d5d5; /* Exact solid concrete light gray background from markclennon.com */
+    background-color: #d5d5d5;
     overflow: hidden;
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 10;
     box-sizing: border-box;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  @media (max-width: 799px) {
+    .gallery-scroll-wrapper {
+      height: auto;
+    }
+
+    .gallery-container {
+      position: relative;
+    }
   }
 
   .gallery-wrapper {
