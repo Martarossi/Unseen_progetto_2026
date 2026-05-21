@@ -11,23 +11,17 @@
     gsap.registerPlugin(ScrollTrigger);
   }
 
-  let selectedYear = $state(2026);
   let hasBeenClicked = $state(false);
-
-  /** @param {number} year */
-  function handleYearChange(year) {
-    selectedYear = year;
-  }
 
   onMount(() => {
     if (browser) {
-      // Create a highly pronounced, viewport-wide parallax scrolling effect
+      // Parallax: background scrolls up at ~50% of page speed (100vh travel over full scroll range)
       gsap.to(".parallax-bg", {
-        yPercent: -20, // Translate up by 20% of its own height
+        yPercent: -50,
         ease: "none",
         scrollTrigger: {
           start: 0,
-          end: "max", // Covers the entire scroll range including all pinned containers
+          end: "max",
           scrub: true,
         }
       });
@@ -80,7 +74,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 120vh; /* Taller to allow scrolling movement without showing borders */
+    height: 200vh; /* Extra height for 100vh of parallax travel (yPercent -50 × 200vh = -100vh) */
     z-index: -2; /* Stays fully in the background */
     background-size: cover;
     background-position: center;

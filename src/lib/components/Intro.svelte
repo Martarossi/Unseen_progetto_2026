@@ -283,20 +283,21 @@
       // --- FASE 9: Testo full-screen sale dal basso insieme allo scroll (lineare, senza easing) ---
       // Anticipato l'inizio del big text per ridurre il gap dopo la scomparsa dei paragrafi
       // Anticipa l'entrata del bigText per ridurre il gap dopo la scomparsa dei paragrafi
+      // Text scrolls continuously bottom→top with no pause (ease:"none" keeps it 1:1 with scroll)
       tl.fromTo(
         bigText,
         { yPercent: 100, opacity: 1 },
         {
-          yPercent: -50,
+          yPercent: -250,
           opacity: 1,
-          duration: 1.0,
+          duration: 2.7,
           ease: "none",
           immediateRender: false,
         },
         6.2,
       );
 
-      // MODELLO 3D DURANTE TESTO: rotazione e deformazione continua mentre il testo scorre
+      // MODELLO 3D DURANTE TESTO: deformazione continua per tutta la durata del testo in scorrimento
       tl.to(
         modelProps,
         {
@@ -306,7 +307,7 @@
           scale: 1.8,
           twistX: 120,
           twistZ: 320,
-          duration: 1.0,
+          duration: 2.5,
           ease: "none",
           onUpdate: update3D,
         },
@@ -396,7 +397,7 @@
     position: relative;
     background-color: transparent; /* Transparent so the home parallax background shows */
     overflow: hidden;
-    margin-top: -35vh; /* Shift Intro up to bring sections closer on scroll */
+    /* margin-top: -35vh; Shift Intro up to bring sections closer on scroll */
     pointer-events: none; /* Allow clicks to pass through to Hero underneath */
   }
 
@@ -420,7 +421,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100dvh;
     z-index: 2;
     box-sizing: border-box;
     padding: var(--spacing-9, 40px) var(--spacing-11, 80px);
