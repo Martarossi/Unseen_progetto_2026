@@ -2,7 +2,6 @@
   import { T } from "@threlte/core";
   import { useGltf, Environment } from "@threlte/extras";
   import * as THREE from "three";
-
   import { useRenderer } from "@threlte/core";
 
   const { renderer } = useRenderer();
@@ -32,87 +31,48 @@
     twistZ = 200,
   } = $props();
 
-  // CARICAMENTO MODELLO GLTF: Carica il modello 3D in formato GLB con URL codificato per gestire gli spazi in sicurezza.
+  // CARICAMENTO MODELLO GLTF
   const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb");
 
-  // UNIFORMS PERSONALIZZATI: Definisce i parametri passati alla GPU per controllare la distorsione Twist X e Z e il bounding box
   const customUniforms = {
     twistXAngle: { value: (360 * Math.PI) / 180 },
     twistZAngle: { value: (200 * Math.PI) / 180 },
     bboxMin: { value: new THREE.Vector3(-1.5, -1.5, -1.5) },
-    bboxMax: { value: new THREE.Vector3(1.5, 1.5, 1.5) }
+    bboxMax: { value: new THREE.Vector3(1.5, 1.5, 1.5) },
+    uTime: { value: 0 },
+    uScrollActivity: { value: 0 }
   };
 
-  // MATERIALE IN VETRO FISICO: Crea un materiale fisico con trasmissione e rifrazione elevate per riprodurre un effetto vetro ad alta fedeltà.
-  const glassMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,
-    metalness: 0.05,
-    roughness: 0.05,
-    transmission: 0.95, // Highly transmissive glass
-    ior: 1.5, // Glass index of refraction
-    thickness: 1.5,
-    envMapIntensity: 2.5,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.05,
+  // MATERIALE PARTICELLARE "VISION" GLOWING: Crea un materiale particellare ad alte prestazioni con blending additivo per un effetto olografico neon.
+  const particleMaterial = new THREE.PointsMaterial({
+    color: 0xC9D7DC,          // Elegante colore Silver-Blue/Grey richiesto (invece di neon cyan)
+    size: 0.09,               // Dimensione ideale delle particelle (aumentata per una silhouette solida e ben definita)
+    sizeAttenuation: true,    // Le particelle rimpiccioliscono in base alla distanza per creare profondità
     transparent: true,
-    opacity: 1,
-    side: THREE.DoubleSide,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending, // Sovrapposizione additiva per creare hotspot luminosi sui contorni
+    depthWrite: false,        // Impedisce il clipping trasparente delle particelle
   });
 
-  // MODIFICA SHADER (DEFORMER TWIST): Hook nella compilazione del materiale per iniettare i calcoli di deformazione sul vertex shader (posizione e normali)
-  glassMaterial.onBeforeCompile = (shader) => {
+  // MODIFICA SHADER (DEFORMER TWIST ALLO SCROLL + FLUID TURBULENCE PER PARTICELLE)
+  particleMaterial.onBeforeCompile = (shader) => {
     shader.uniforms.twistXAngle = customUniforms.twistXAngle;
     shader.uniforms.twistZAngle = customUniforms.twistZAngle;
     shader.uniforms.bboxMin = customUniforms.bboxMin;
     shader.uniforms.bboxMax = customUniforms.bboxMax;
+    shader.uniforms.uTime = customUniforms.uTime;
+    shader.uniforms.uScrollActivity = customUniforms.uScrollActivity;
 
     shader.vertexShader = `
       uniform float twistXAngle;
       uniform float twistZAngle;
       uniform vec3 bboxMin;
       uniform vec3 bboxMax;
-      varying float vRoughnessFactor;
+      uniform float uTime;
+      uniform float uScrollActivity;
     ` + shader.vertexShader;
 
-    // Distorsione Twist X + Z sulle Normali in beginnormal_vertex
-    shader.vertexShader = shader.vertexShader.replace(
-      '#include <beginnormal_vertex>',
-      `
-      #include <beginnormal_vertex>
-      
-      // TWIST X
-      float factorX = (position.x - bboxMin.x) / (bboxMax.x - bboxMin.x);
-      factorX = clamp(factorX, 0.0, 1.0);
-      float angleX = twistXAngle * factorX;
-      
-      float cosX = cos(angleX);
-      float sinX = sin(angleX);
-      
-      vec3 twistedNormal = objectNormal;
-      twistedNormal.y = objectNormal.y * cosX - objectNormal.z * sinX;
-      twistedNormal.z = objectNormal.y * sinX + objectNormal.z * cosX;
-      
-      // TWIST Z (calcolato sulla coordinata Z ruotata per coerenza dell'ordine dei modificatori di Blender)
-      float twistedPosZ = position.y * sinX + position.z * cosX;
-      float factorZ = (twistedPosZ - bboxMin.z) / (bboxMax.z - bboxMin.z);
-      factorZ = clamp(factorZ, 0.0, 1.0);
-      float angleZ = twistZAngle * factorZ;
-      
-      float cosZ = cos(angleZ);
-      float sinZ = sin(angleZ);
-      
-      objectNormal.x = twistedNormal.x * cosZ - twistedNormal.y * sinZ;
-      objectNormal.y = twistedNormal.x * sinZ + twistedNormal.y * cosZ;
-      objectNormal.z = twistedNormal.z;
-      
-      // CALCOLO SFOCATURA FISICA (VETRO SATINATO DINAMICO SU ALCUNE ZONE CON LO SCROLL)
-      float spatialPattern = 0.5 + 0.5 * sin(position.x * 3.5 + position.y * 3.5);
-      float twistIntensity = clamp((abs(twistXAngle) + abs(twistZAngle)) / 30.0, 0.0, 1.0);
-      vRoughnessFactor = twistIntensity * spatialPattern * 0.95;
-      `
-    );
-
-    // Distorsione Twist X + Z sulle Posizioni in begin_vertex
+    // Distorsione Twist X + Z sulle posizioni delle particelle in begin_vertex
     shader.vertexShader = shader.vertexShader.replace(
       '#include <begin_vertex>',
       `
@@ -141,27 +101,278 @@
       transformed.x = twistedPos.x * cosZ_p - twistedPos.y * sinZ_p;
       transformed.y = twistedPos.x * sinZ_p + twistedPos.y * cosZ_p;
       transformed.z = twistedPos.z;
+
+      // DISLOCAMENTO ORGANICO WAVE/TURBULLENCE (FLUIDO):
+      // Crea onde tridimensionali fluide combinate per dare un movimento organico continuo
+      vec3 wave;
+      wave.x = sin(transformed.y * 3.5 + uTime * 2.2) * cos(transformed.z * 3.0 + uTime * 1.7);
+      wave.y = cos(transformed.x * 3.0 + uTime * 2.0) * sin(transformed.z * 3.5 + uTime * 2.2);
+      wave.z = sin(transformed.x * 3.5 + uTime * 1.7) * cos(transformed.y * 3.0 + uTime * 2.5);
+
+      // Micro-shimmer continuo a riposo (0.045) + forte turbolenza allo scroll (fino a 0.38)
+      float noiseScale = 0.045 + uScrollActivity * 0.34;
+      transformed += wave * noiseScale;
       `
     );
 
-    // Iniettiamo la variabile nel fragment shader per influenzare la rugosità fisica del materiale in tempo reale
-    shader.fragmentShader = `
-      varying float vRoughnessFactor;
-    ` + shader.fragmentShader;
-
+    // Modifica del fragment shader per disegnare particelle circolari sfocate e brillanti
     shader.fragmentShader = shader.fragmentShader.replace(
-      'float roughnessFactor = roughness;',
-      'float roughnessFactor = roughness + vRoughnessFactor;'
+      '#include <color_fragment>',
+      `
+      #include <color_fragment>
+      
+      // Disegna un cerchio sfocato con decadimento radiale morbido
+      vec2 center = gl_PointCoord - vec2(0.5);
+      float dist = length(center);
+      if (dist > 0.5) discard;
+      float intensity = smoothstep(0.5, 0.0, dist);
+      diffuseColor.a *= intensity;
+      `
     );
   };
 
-  // AGGIORNAMENTO REATTIVO UNIFORMS: Aggiorna i valori nella GPU quando cambiano gli angoli passati come prop, impostando un coefficiente bilanciato di distorsione
+  // --- SISTEMA DI EMISSIONE PARTICELLE GPU (DALLA SUPERFICIE DELL'OGGETTO 3D) ---
+  const ambientParticleCount = 180;
+  
+  const positions = new Float32Array(ambientParticleCount * 3);
+  const driftDirs = new Float32Array(ambientParticleCount * 3);
+  const driftSpeeds = new Float32Array(ambientParticleCount);
+  const driftPhases = new Float32Array(ambientParticleCount);
+  const driftMaxLifes = new Float32Array(ambientParticleCount);
+
+  for (let i = 0; i < ambientParticleCount; i++) {
+    // Direzione casuale tridimensionale (preferenza verso l'alto e l'esterno)
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI * 0.45; // spinge all'insù e in fuori
+    
+    const dx = Math.sin(phi) * Math.cos(theta);
+    const dy = Math.cos(phi) * 0.7 + 0.6; // deriva verticale marcata
+    const dz = Math.sin(phi) * Math.sin(theta);
+    
+    const len = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
+    driftDirs[i * 3] = dx / len;
+    driftDirs[i * 3 + 1] = dy / len;
+    driftDirs[i * 3 + 2] = dz / len;
+
+    driftSpeeds[i] = 0.35 + Math.random() * 0.45;  // velocità della particella
+    driftPhases[i] = Math.random() * 50.0;         // fase temporale casuale per sfasare gli avvii
+    driftMaxLifes[i] = 2.0 + Math.random() * 3.5;  // vita massima della particella (2s a 5.5s)
+  }
+
+  const ambientGeometry = new THREE.BufferGeometry();
+  ambientGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  ambientGeometry.setAttribute('aDriftDir', new THREE.BufferAttribute(driftDirs, 3));
+  ambientGeometry.setAttribute('aDriftSpeed', new THREE.BufferAttribute(driftSpeeds, 1));
+  ambientGeometry.setAttribute('aDriftPhase', new THREE.BufferAttribute(driftPhases, 1));
+  ambientGeometry.setAttribute('aDriftMaxLife', new THREE.BufferAttribute(driftMaxLifes, 1));
+
+  const ambientMaterial = new THREE.PointsMaterial({
+    color: 0xC9D7DC,          // Stesso elegante colore silver-grey richiesto delle particelle dense
+    size: 0.22,               // Notevolmente ingrandito per renderle luminose e super visibili!
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0.95,            // Quasi completamente opache per massimizzare il contrasto e il brio
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  ambientMaterial.onBeforeCompile = (shader) => {
+    shader.uniforms.twistXAngle = customUniforms.twistXAngle;
+    shader.uniforms.twistZAngle = customUniforms.twistZAngle;
+    shader.uniforms.bboxMin = customUniforms.bboxMin;
+    shader.uniforms.bboxMax = customUniforms.bboxMax;
+    shader.uniforms.uTime = customUniforms.uTime;
+    shader.uniforms.uScrollActivity = customUniforms.uScrollActivity;
+
+    shader.vertexShader = `
+      attribute vec3 aDriftDir;
+      attribute float aDriftSpeed;
+      attribute float aDriftPhase;
+      attribute float aDriftMaxLife;
+
+      uniform float twistXAngle;
+      uniform float twistZAngle;
+      uniform vec3 bboxMin;
+      uniform vec3 bboxMax;
+      uniform float uTime;
+      uniform float uScrollActivity;
+    ` + shader.vertexShader;
+
+    // Distorsione Twist X + Z sulle posizioni delle particelle ambientali in begin_vertex (così si avvitano in sincrono con la macchina)
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `
+      #include <begin_vertex>
+      
+      // 1. Calcola il twist sulla posizione ORIGINALE della particella (che si trova sulla vettura)
+      vec3 twistedPos = transformed;
+      
+      // TWIST X
+      float factorX_p = (position.x - bboxMin.x) / (bboxMax.x - bboxMin.x);
+      factorX_p = clamp(factorX_p, 0.0, 1.0);
+      float angleX_p = twistXAngle * factorX_p;
+      
+      float cosX_p = cos(angleX_p);
+      float sinX_p = sin(angleX_p);
+      
+      twistedPos.y = transformed.y * cosX_p - transformed.z * sinX_p;
+      twistedPos.z = transformed.y * sinX_p + transformed.z * cosX_p;
+      
+      // TWIST Z
+      float factorZ_p = (twistedPos.z - bboxMin.z) / (bboxMax.z - bboxMin.z);
+      factorZ_p = clamp(factorZ_p, 0.0, 1.0);
+      float angleZ_p = twistZAngle * factorZ_p;
+      
+      float cosZ_p = cos(angleZ_p);
+      float sinZ_p = sin(angleZ_p);
+      
+      transformed.x = twistedPos.x * cosZ_p - twistedPos.y * sinZ_p;
+      transformed.y = twistedPos.x * sinZ_p + twistedPos.y * cosZ_p;
+      transformed.z = twistedPos.z;
+
+      // 2. Calcola il drift progressivo su GPU AFTER TWIST!
+      // In questo modo le particelle si staccano e seguono perfettamente la deformazione dell'auto!
+      float life = mod(uTime * aDriftSpeed + aDriftPhase, aDriftMaxLife);
+      float progress = life / aDriftMaxLife; // da 0 a 1
+      
+      // Moltiplicatore di velocità basato sull'attività cinetica reale dello scorrimento
+      float speedMult = 1.0 + uScrollActivity * 5.5;
+      
+      // Calcola direzione di allontanamento radiale dal centro del modello già deformato
+      vec3 radialDir = normalize(transformed);
+      
+      // Combina la direzione radiale di distacco con la deriva predefinita
+      vec3 finalDriftDir = normalize(aDriftDir + radialDir * uScrollActivity * 0.85);
+      
+      // La distanza aumenta nel tempo, accelerata dallo scroll
+      vec3 driftOffset = finalDriftDir * (progress * 1.5 * speedMult);
+      
+      // Aggiungi una fluttuazione sinusoidale fine
+      driftOffset.x += sin(uTime * 1.2 + aDriftPhase) * 0.05;
+      driftOffset.y += cos(uTime * 0.8 + aDriftPhase) * 0.04;
+      driftOffset.z += sin(uTime * 1.5 + aDriftPhase) * 0.05;
+
+      // Applica il dislocamento finale al vertice già deformato!
+      transformed += driftOffset;
+      `
+    );
+
+    // Fragment shader per particelle rotonde e sfocate ai bordi
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <color_fragment>',
+      `
+      #include <color_fragment>
+      vec2 center = gl_PointCoord - vec2(0.5);
+      float dist = length(center);
+      if (dist > 0.5) discard;
+      float intensity = smoothstep(0.5, 0.0, dist);
+      diffuseColor.a *= intensity;
+      `
+    );
+  };
+
+  // Funzione ultra-rapida per campionare punti in modo uniforme sulla superficie dei triangoli (Barycentric Sampling)
+  function samplePointsFromGeometry(geometry, count) {
+    const positionAttr = geometry.attributes.position;
+    if (!positionAttr) return geometry;
+
+    const indexAttr = geometry.index;
+    const vertexCount = positionAttr.count;
+    const sampledPositions = new Float32Array(count * 3);
+    
+    const vA = new THREE.Vector3();
+    const vB = new THREE.Vector3();
+    const vC = new THREE.Vector3();
+    const point = new THREE.Vector3();
+
+    if (indexAttr) {
+      const indexCount = indexAttr.count;
+      const triangleCount = indexCount / 3;
+
+      for (let i = 0; i < count; i++) {
+        const triIndex = Math.floor(Math.random() * triangleCount) * 3;
+        const idxA = indexAttr.getX(triIndex);
+        const idxB = indexAttr.getY(triIndex);
+        const idxC = indexAttr.getZ(triIndex);
+
+        vA.fromBufferAttribute(positionAttr, idxA);
+        vB.fromBufferAttribute(positionAttr, idxB);
+        vC.fromBufferAttribute(positionAttr, idxC);
+
+        const r1 = Math.random();
+        const r2 = Math.random();
+        const sqrtR1 = Math.sqrt(r1);
+        const u = 1 - sqrtR1;
+        const v = r2 * sqrtR1;
+        const w = 1 - u - v;
+
+        point.set(0, 0, 0)
+          .addScaledVector(vA, u)
+          .addScaledVector(vB, v)
+          .addScaledVector(vC, w);
+
+        sampledPositions[i * 3] = point.x;
+        sampledPositions[i * 3 + 1] = point.y;
+        sampledPositions[i * 3 + 2] = point.z;
+      }
+    } else {
+      const triangleCount = vertexCount / 3;
+      for (let i = 0; i < count; i++) {
+        const triIndex = Math.floor(Math.random() * triangleCount) * 3;
+        vA.fromBufferAttribute(positionAttr, triIndex);
+        vB.fromBufferAttribute(positionAttr, triIndex + 1);
+        vC.fromBufferAttribute(positionAttr, triIndex + 2);
+
+        const r1 = Math.random();
+        const r2 = Math.random();
+        const sqrtR1 = Math.sqrt(r1);
+        const u = 1 - sqrtR1;
+        const v = r2 * sqrtR1;
+        const w = 1 - u - v;
+
+        point.set(0, 0, 0)
+          .addScaledVector(vA, u)
+          .addScaledVector(vB, v)
+          .addScaledVector(vC, w);
+
+        sampledPositions[i * 3] = point.x;
+        sampledPositions[i * 3 + 1] = point.y;
+        sampledPositions[i * 3 + 2] = point.z;
+      }
+    }
+
+    const sampledGeom = new THREE.BufferGeometry();
+    sampledGeom.setAttribute('position', new THREE.BufferAttribute(sampledPositions, 3));
+    return sampledGeom;
+  }
+
   $effect(() => {
     customUniforms.twistXAngle.value = (twistX * 2.8 * Math.PI) / 180;
     customUniforms.twistZAngle.value = (twistZ * 2.8 * Math.PI) / 180;
   });
 
-  // AGGIORNAMENTO BOUNDING BOX: Calcola dinamicamente le dimensioni del modello per scalare correttamente la deformazione Twist
+  // ANIMAZIONE UNIFORMS: Loop continuo per uTime e interpolazione morbida dell'attività di scorrimento
+  $effect(() => {
+    let rafId;
+    const animate = () => {
+      customUniforms.uTime.value += 0.015;
+
+      // Misura quanto è attiva la deformazione rispetto ai valori di default (360 e 200)
+      const activityX = Math.abs(twistX - 360) / 360.0;
+      const activityZ = Math.abs(twistZ - 200) / 200.0;
+      const targetActivity = Math.max(activityX, activityZ);
+
+      // Interpolazione fluida della turbolenza (effetto lerp ridotto a 0.035 per una decelerazione estremamente morbida!)
+      customUniforms.uScrollActivity.value += (targetActivity - customUniforms.uScrollActivity.value) * 0.035;
+
+      rafId = requestAnimationFrame(animate);
+    };
+    rafId = requestAnimationFrame(animate);
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  });
+
   $effect(() => {
     if ($gltf && $gltf.scene) {
       const box = new THREE.Box3().setFromObject($gltf.scene);
@@ -170,33 +381,79 @@
     }
   });
 
-  // APPLICAZIONE MATERIALE RICORSIVA: Attraversa tutti i nodi del modello caricato e applica il materiale vetro a ogni mesh trovata tramite reattività Svelte 5.
+  // CONVERSIONE MESH -> POINTS PARTICELLE DENSE: Nasconde le mesh solide originali del modello e le sostituisce con un sistema ad alta densità.
   $effect(() => {
     if ($gltf && $gltf.scene) {
+      const meshesToConvert = [];
       $gltf.scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material = glassMaterial;
-          child.castShadow = false; // era true → le ombre opache rompono l'illusione
-          child.receiveShadow = false; // era true → idem
+        if (child instanceof THREE.Mesh && !child.userData.isParticleConverted) {
+          meshesToConvert.push(child);
         }
+      });
+
+      if (meshesToConvert.length > 0 && !ambientGeometry.userData.hasOrigins) {
+        const posAttr = ambientGeometry.attributes.position;
+        const posArr = posAttr.array;
+
+        // Campioniamo 800 punti di origine direttamente sulla superficie reale della vettura
+        let sampledCount = 0;
+        while (sampledCount < ambientParticleCount) {
+          const randomMesh = meshesToConvert[Math.floor(Math.random() * meshesToConvert.length)];
+          const geom = randomMesh.geometry;
+
+          // Campiona un punto singolo
+          const sampledGeom = samplePointsFromGeometry(geom, 1);
+          const pos = sampledGeom.attributes.position.array;
+
+          // Trasforma il punto locale applicando la matrice locale del componente rispetto al baricentro del modello
+          const localPoint = new THREE.Vector3(pos[0], pos[1], pos[2]);
+          localPoint.applyMatrix4(randomMesh.matrix);
+
+          posArr[sampledCount * 3] = localPoint.x;
+          posArr[sampledCount * 3 + 1] = localPoint.y;
+          posArr[sampledCount * 3 + 2] = localPoint.z;
+
+          sampledCount++;
+        }
+
+        posAttr.needsUpdate = true;
+        ambientGeometry.userData.hasOrigins = true; // Segnala all'effetto di animazione che le origini sono pronte!
+
+        // Aggiungiamo le particelle ambientali emesse direttamente all'interno dello scene-group del modello GLTF
+        // In questo modo ereditano automaticamente posizionamento, scala, rotazione ed easing di scorrimento dell'auto!
+        const ambientPoints = new THREE.Points(ambientGeometry, ambientMaterial);
+        $gltf.scene.add(ambientPoints);
+      }
+
+      meshesToConvert.forEach((mesh) => {
+        mesh.visible = false; // Nascondi la mesh originale
+        mesh.userData.isParticleConverted = true;
+
+        // Campiona 20000 particelle distribuite uniformemente per ogni mesh (super denso!)
+        const denseGeometry = samplePointsFromGeometry(mesh.geometry, 20000);
+        
+        const points = new THREE.Points(denseGeometry, particleMaterial);
+        points.position.copy(mesh.position);
+        points.rotation.copy(mesh.rotation);
+        points.scale.copy(mesh.scale);
+        
+        mesh.parent.add(points);
       });
     }
   });
 </script>
 
-<!-- CONFIGURAZIONE DELLA CAMERA: Imposta la camera prospettica principale e vi associa una luce direzionale frontale -->
 <T.PerspectiveCamera makeDefault position={[0, 0, 10]}>
   <T.DirectionalLight position={[5, 10, 5]} intensity={3} />
 </T.PerspectiveCamera>
 
-<!-- SISTEMA DI ILLUMINAZIONE: Dispone le luci ambientali, direzionali e puntiformi necessarie per esaltare le trasparenze e le ombre del vetro -->
 <T.AmbientLight intensity={0.8} />
 <T.DirectionalLight position={[-5, -5, -5]} intensity={1.0} color="#b0c4de" />
 <T.PointLight position={[0, 0, 5]} intensity={1.5} distance={15} />
 
-<!-- AMBIENTE HDR STUDIO (REFLECTIONS): Carica una mappa HDR da Polyhaven per fornire riflessioni fisicamente accurate sulla superficie vetrosa -->
+<!-- STUDIO GARDEN ENVIRONMENT (Riflessi spettacolari per il vetro liquido) -->
 <Environment
-  url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/aerodynamics_workshop_1k.hdr"
+  url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_garden_1k.hdr"
   isBackground={false}
 />
 

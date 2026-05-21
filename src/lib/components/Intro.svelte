@@ -57,14 +57,13 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per 5000px di scorrimento, pilotando la narrazione e la rotazione del modello.
+      // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per uno scorrimento ottimizzato, pilotando la narrazione e la rotazione del modello.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: introContainer,
           start: "top top",
-          // Ridotto per diminuire la durata dello scroll complessivo della sezione
-          end: "+=9000",
-          scrub: 2.8,
+          end: "+=6500", // Ridotto per rendere lo scorrimento complessivo più rapido ed energico
+          scrub: 1.6,    // Impostato a 1.6 per offrire una risposta pronta all'avvio ed un rilascio morbidissimo con inerzia quando si smette di scrollare!
           pin: true,
           onEnter: () => { canvasVisible = true; },
           onLeaveBack: () => { canvasVisible = false; },
