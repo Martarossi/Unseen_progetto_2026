@@ -173,8 +173,8 @@
     hoverProgress += (hoverTarget - hoverProgress) * Math.min(1, delta * 8);
 
     // Scale up + push toward camera on hover
-    cardGroup.scale.setScalar(1 + hoverProgress * 0.4);
-    cardGroup.position.z = baseZ + hoverProgress * 0.9;
+    cardGroup.scale.setScalar(1 + hoverProgress * 0.12);
+    cardGroup.position.z = baseZ + hoverProgress * 0.5;
   });
 </script>
 

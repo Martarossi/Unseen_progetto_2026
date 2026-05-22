@@ -73,9 +73,9 @@
           start: "top top",
           end: "+=15000",
           scrub: 2.8,
-          onEnter: () => { model3dVisible = true; },
-          onLeave: () => { model3dVisible = false; },
-          onLeaveBack: () => { model3dVisible = false; },
+          onEnter:      () => { model3dVisible = true; },
+          onEnterBack:  () => { model3dVisible = true; },
+          onLeaveBack:  () => { model3dVisible = false; },
         },
       });
 
@@ -377,18 +377,18 @@
         8.9
       );
 
-      // --- Modello 3D: scompare rimpicciolendosi con rotazione e deformazione accelerate (14.5 → 15.5) ---
+      // --- Modello 3D: si rimpicciolisce fino a diventare minuscolo, continuando a ruotare e distorcersi moltissimo (14.5 → 15.5) ---
       tl.to(
         modelProps,
         {
-          scale: 0,
-          rotX: Math.PI * 3.6,
-          rotY: Math.PI * 7.2,
-          rotZ: Math.PI * 3.6,
-          twistX: 220,
-          twistZ: 380,
+          scale: 0.04,
+          rotX: Math.PI * 6.0,
+          rotY: Math.PI * 12.0,
+          rotZ: Math.PI * 6.0,
+          twistX: 720,
+          twistZ: 900,
           duration: 1.0,
-          ease: "power2.in",
+          ease: "power3.in",
           onUpdate: update3D,
         },
         14.5

@@ -70,8 +70,6 @@
     pointer-events: none;
     z-index: 50;
     opacity: 0;
-    transition: opacity 0.5s ease;
-    will-change: opacity;
   }
 
   .model3d-layer.visible {

@@ -6,6 +6,7 @@
   import Hero from "$lib/components/Hero.svelte";
   import Intro from "$lib/components/Intro.svelte";
   import Gallery from "$lib/components/Gallery.svelte";
+  import Stats from "$lib/components/Stats.svelte";
   import Modello3D from "$lib/components/Modello3D.svelte";
 
   if (browser) {
@@ -104,6 +105,8 @@
   />
 
   {#if hasBeenClicked}
+    <Stats />
+
     <!--
       SEZIONE GALLERY (Sezione Finale):
       Un mazzo di card tridimensionali prospettiche che scorrono verticalmente a imbuto (wheel),
