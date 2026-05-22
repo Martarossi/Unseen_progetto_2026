@@ -14,6 +14,9 @@
     currentTwistX = $bindable(360),
     currentTwistZ = $bindable(200),
     cardProps = /** @type {CardProps} */ ({ opacity: 0, groupRotY: 0, riseY: 0 }),
+    orbitProps  = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps2 = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps3 = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     model3dVisible = $bindable(false),
   } = $props();
 
@@ -54,6 +57,13 @@
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
+        // Sincronizza il centro dell'orbita di tutte e 3 le card con la posizione dell'oggetto 3D
+        orbitProps.centerX  = modelProps.posX;
+        orbitProps.centerY  = modelProps.posY;
+        orbitProps2.centerX = modelProps.posX;
+        orbitProps2.centerY = modelProps.posY;
+        orbitProps3.centerX = modelProps.posX;
+        orbitProps3.centerY = modelProps.posY;
       };
 
       // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per 5000px di scorrimento, pilotando la narrazione e la rotazione del modello.
@@ -61,7 +71,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=9000",
+          end: "+=15000",
           scrub: 2.8,
           onEnter: () => { model3dVisible = true; },
           onLeave: () => { model3dVisible = false; },
@@ -320,8 +330,69 @@
         6.2,
       );
 
-      // --- FASE 10: Pausa di lettura sul testo full-screen ---
-      tl.to({}, { duration: 1.3 });
+      // --- VIDEOAI1: Card compare subito dopo la fine del bigText (t=8.9 → 12.9) ---
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.9);
+      tl.fromTo(
+        orbitProps,
+        { angle: Math.PI, y: -3 },
+        { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
+        8.9
+      );
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.3);
+
+      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=9.7 → 13.7) ---
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.7);
+      tl.fromTo(
+        orbitProps2,
+        { angle: Math.PI, y: -3 },
+        { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
+        9.7
+      );
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.1);
+
+      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=10.5 → 14.5) ---
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 10.5);
+      tl.fromTo(
+        orbitProps3,
+        { angle: Math.PI, y: -3 },
+        { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
+        10.5
+      );
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.9);
+
+      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (8.9 → 14.5) ---
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 3.0,
+          rotY: Math.PI * 5.5,
+          rotZ: Math.PI * 3.0,
+          twistX: 90,
+          twistZ: 240,
+          scale: 2.0,
+          duration: 5.6,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        8.9
+      );
+
+      // --- Modello 3D: scompare rimpicciolendosi con rotazione e deformazione accelerate (14.5 → 15.5) ---
+      tl.to(
+        modelProps,
+        {
+          scale: 0,
+          rotX: Math.PI * 3.6,
+          rotY: Math.PI * 7.2,
+          rotZ: Math.PI * 3.6,
+          twistX: 220,
+          twistZ: 380,
+          duration: 1.0,
+          ease: "power2.in",
+          onUpdate: update3D,
+        },
+        14.5
+      );
 
       return () => {
         tl.kill();
@@ -375,7 +446,7 @@
 
 <style>
   .intro-scroll-wrapper {
-    height: 9000px;
+    height: 15000px;
     position: relative;
   }
 

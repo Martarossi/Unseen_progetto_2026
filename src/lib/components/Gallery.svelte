@@ -207,7 +207,7 @@
   .gallery-container {
     width: 100vw;
     height: 100vh;
-    background-color: #d5d5d5;
+    background-color: transparent;
     overflow: hidden;
     position: sticky;
     top: 0;
@@ -274,7 +274,7 @@
     font-size: 3.6vw;
     font-weight: 900;
     letter-spacing: -0.03em;
-    color: #1a1a1a;
+    color: #F8F8F8;
     text-transform: uppercase;
     white-space: nowrap;
     opacity: 0.15;
@@ -284,7 +284,7 @@
   }
 
   .project-title-item.active {
-    color: #000000;
+    color: #A7CED8;
     opacity: 1;
   }
 
@@ -402,20 +402,20 @@
   .project-num {
     font-family: "Impact", "Arial Black", sans-serif;
     font-size: 14px;
-    color: #1a1a1a;
+    color: #A7CED8;
   }
 
   .project-year {
     font-size: 11px;
     font-weight: 600;
-    color: #666;
+    color: rgba(255, 255, 255, 0.45);
     letter-spacing: 0.05em;
   }
 
   .project-subtitle {
     font-size: 12px;
     font-weight: 800;
-    color: #111;
+    color: #F8F8F8;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin: 0 0 6px 0;
@@ -424,7 +424,7 @@
   .project-desc {
     font-size: 13px;
     line-height: 1.45;
-    color: #444;
+    color: rgba(255, 255, 255, 0.65);
     margin: 0;
   }
 

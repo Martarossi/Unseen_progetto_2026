@@ -6,6 +6,8 @@
    * @typedef {{ opacity: number, groupRotY: number, riseY: number }} CardProps
    */
 
+  /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
+
   /** @type {{
    *   position?: [number, number, number],
    *   scale?: [number, number, number],
@@ -13,6 +15,9 @@
    *   twistX?: number,
    *   twistZ?: number,
    *   cardProps?: CardProps,
+   *   orbitProps?: OrbitProps,
+   *   orbitProps2?: OrbitProps,
+   *   orbitProps3?: OrbitProps,
    *   visible?: boolean,
    *   isClicked?: boolean
    * }} */
@@ -23,6 +28,9 @@
     twistX = 360,
     twistZ = 200,
     cardProps = { opacity: 0, groupRotY: 0, riseY: 0 },
+    orbitProps  = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     visible = false,
     isClicked = false,
   } = $props();
@@ -44,6 +52,9 @@
         {twistX}
         {twistZ}
         {cardProps}
+        {orbitProps}
+        {orbitProps2}
+        {orbitProps3}
       />
     </Canvas>
   {/if}

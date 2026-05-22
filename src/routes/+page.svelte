@@ -25,6 +25,10 @@
   let currentTwistZ = $state(200);
   // Oggetto plain mutato direttamente da GSAP in Intro, letto ogni frame da Scene via useTask
   const cardProps = { opacity: 0, groupRotY: 0, riseY: 0 };
+  // Orbit props per le card VIDEOAI: GSAP muta le proprietà, VideoCard le legge via useTask ogni frame
+  const orbitProps  = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
+  const orbitProps2 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
+  const orbitProps3 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
   let model3dVisible = $state(false);
 
   onMount(() => {
@@ -62,6 +66,9 @@
   twistX={currentTwistX}
   twistZ={currentTwistZ}
   {cardProps}
+  {orbitProps}
+  {orbitProps2}
+  {orbitProps3}
   visible={model3dVisible}
   isClicked={hasBeenClicked}
 />
@@ -90,6 +97,9 @@
     bind:currentTwistX
     bind:currentTwistZ
     {cardProps}
+    {orbitProps}
+    {orbitProps2}
+    {orbitProps3}
     bind:model3dVisible
   />
 

@@ -4,6 +4,7 @@
   import * as THREE from "three";
 
   import { useRenderer } from "@threlte/core";
+  import VideoCard from "./VideoCard.svelte";
 
   const { renderer } = useRenderer();
 
@@ -23,6 +24,8 @@
    * @property {number} [twistZ]
    */
 
+  /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
+
   /** @type {SceneProps} */
   let {
     position = [0, 0, 0],
@@ -30,6 +33,9 @@
     rotation = [0, 0, 0],
     twistX = 360,
     twistZ = 200,
+    orbitProps  = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
   } = $props();
 
   // CARICAMENTO MODELLO GLTF: Carica il modello 3D in formato GLB con URL codificato per gestire gli spazi in sicurezza.
@@ -203,3 +209,7 @@
 {#if $gltf}
   <T is={$gltf.scene} {position} {scale} {rotation} />
 {/if}
+
+<VideoCard {orbitProps} label="VIDEOAI1" />
+<VideoCard orbitProps={orbitProps2} label="VIDEOAI2" />
+<VideoCard orbitProps={orbitProps3} label="VIDEOAI3" />
