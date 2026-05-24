@@ -9,12 +9,14 @@
   import Stats from "$lib/components/Stats.svelte";
   import Modello3D from "$lib/components/Modello3D.svelte";
   import ModelShrink from "$lib/components/ModelShrink.svelte";
+  import CardDetailOverlay from "$lib/components/CardDetailOverlay.svelte";
 
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
   }
 
   let hasBeenClicked = $state(false);
+  let showCardOverlay = $state(false);
 
   // Stato del modello 3D condiviso tra Intro (lo anima via GSAP) e Modello3D (lo renderizza)
   /** @type {[number, number, number]} */
@@ -73,7 +75,15 @@
   {orbitProps3}
   visible={model3dVisible}
   isClicked={hasBeenClicked}
+  onCardClick={() => showCardOverlay = true}
 />
+
+{#if showCardOverlay}
+  <CardDetailOverlay
+    closeOverlay={() => showCardOverlay = false}
+    videoSrc="/video_card/spacetime_slices.mov"
+  />
+{/if}
 
 <!-- LAYER 2 (z-index 1): Contenuti e testi delle sezioni -->
 <div class="page" class:clicked={hasBeenClicked}>

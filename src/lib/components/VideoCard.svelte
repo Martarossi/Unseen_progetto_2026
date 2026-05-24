@@ -2,8 +2,22 @@
   import { T, useTask, useThrelte } from '@threlte/core';
   import * as THREE from 'three';
 
-  /** @type {{ orbitProps?: { angle: number, y: number, opacity: number, centerX: number, centerY: number }, label?: string }} */
-  let { orbitProps = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }, label = 'VIDEOAI1' } = $props();
+  /** @type {{
+   *   orbitProps?: { angle: number, y: number, opacity: number, centerX: number, centerY: number },
+   *   label?: string,
+   *   videoSrc?: string,
+   *   cardTitle?: string,
+   *   cardSubtitle?: string,
+   *   onCardClick?: () => void
+   * }} */
+  let {
+    orbitProps = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 },
+    label = 'VIDEOAI1',
+    videoSrc = '',
+    cardTitle = '',
+    cardSubtitle = '',
+    onCardClick = undefined
+  } = $props();
 
   const { camera } = useThrelte();
 
@@ -24,8 +38,29 @@
     depthWrite: false,
   });
 
-  // Disegno dentro $effect: label è letta in una closure, warning sparisce
+  // Video element per le card con video
+  /** @type {HTMLVideoElement | null} */
+  let videoEl = $state(null);
+
   $effect(() => {
+    if (!videoSrc) return;
+    const el = document.createElement('video');
+    el.src = videoSrc;
+    el.muted = true;
+    el.loop = true;
+    el.playsInline = true;
+    el.play().catch(() => {});
+    videoEl = el;
+    return () => {
+      el.pause();
+      el.src = '';
+      videoEl = null;
+    };
+  });
+
+  // Disegno statico - saltato se la card ha un video
+  $effect(() => {
+    if (videoSrc) return;
     const ctx = cvs.getContext('2d');
     if (!ctx) return;
 
@@ -111,6 +146,32 @@
     return () => document.removeEventListener('mousemove', onMouseMove);
   });
 
+  // Click detection per aprire l'overlay
+  $effect(() => {
+    if (!onCardClick) return;
+
+    const clickNDC = new THREE.Vector2();
+    const clickRaycaster = new THREE.Raycaster();
+
+    /** @param {MouseEvent} e */
+    function onClick(e) {
+      if (!cardMesh || !camera.current) return;
+      const clamped = Math.max(0, Math.min(1, orbitProps.opacity));
+      if (clamped <= 0.01) return;
+
+      clickNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+      clickNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      clickRaycaster.setFromCamera(clickNDC, camera.current);
+
+      if (clickRaycaster.intersectObject(cardMesh).length > 0) {
+        onCardClick?.();
+      }
+    }
+
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  });
+
   useTask((delta) => {
     if (!cardGroup) return;
 
@@ -157,6 +218,35 @@
 
     cardGroup.scale.setScalar(1 + hoverProgress * 0.12);
     cardGroup.position.z = baseZ + hoverProgress * 0.5;
+
+    // Disegno del frame video sulla texture Three.js
+    if (videoEl && videoEl.readyState >= 2) {
+      const ctx = cvs.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoEl, 0, 0, 640, 360);
+
+        // Gradiente scuro sul fondo per leggibilità del testo
+        const grad = ctx.createLinearGradient(0, 160, 0, 360);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.68)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 640, 360);
+
+        if (cardTitle) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 52px Arial, Helvetica, sans-serif';
+          ctx.fillText(cardTitle, 28, 294);
+        }
+
+        if (cardSubtitle) {
+          ctx.fillStyle = 'rgba(255,255,255,0.78)';
+          ctx.font = '15px Arial, Helvetica, sans-serif';
+          ctx.fillText(cardSubtitle, 28, 322);
+        }
+
+        cardTexture.needsUpdate = true;
+      }
+    }
   });
 </script>
 

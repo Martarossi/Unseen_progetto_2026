@@ -20,7 +20,8 @@
    *   orbitProps2?: OrbitProps,
    *   orbitProps3?: OrbitProps,
    *   visible?: boolean,
-   *   isClicked?: boolean
+   *   isClicked?: boolean,
+   *   onCardClick?: () => void
    * }} */
   let {
     position = [0, 0, 0],
@@ -34,6 +35,7 @@
     orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     visible = false,
     isClicked = false,
+    onCardClick = undefined,
   } = $props();
 </script>
 
@@ -56,6 +58,7 @@
         {orbitProps}
         {orbitProps2}
         {orbitProps3}
+        {onCardClick}
       />
     </Canvas>
   {/if}
