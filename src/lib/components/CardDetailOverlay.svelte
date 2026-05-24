@@ -1,336 +1,284 @@
 <script>
   import { onMount, tick } from 'svelte';
 
-  /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
+  /** @typedef {{ x: number, y: number, width: number, height: number } | null} CardRect */
 
-  /** @type {{ closeOverlay: () => void, videoSrc?: string, clickRect?: CardRect | null }} */
+  /** @type {{ closeOverlay: () => void, videoSrc?: string, clickRect?: CardRect }} */
   let { closeOverlay, videoSrc = '', clickRect = null } = $props();
 
+  // Calcola la posizione iniziale sincronizzata con la card 3D nello spazio
+  const initialTransform = (() => {
+    if (!clickRect || typeof window === 'undefined') return '';
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const sx = clickRect.width / vw;
+    const sy = clickRect.height / vh;
+    const dx = clickRect.x + clickRect.width / 2 - vw / 2;
+    const dy = clickRect.y + clickRect.height / 2 - vh / 2;
+    return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+  })();
+
+  let opening = $state(false);
   /** @type {HTMLVideoElement|null} */
   let videoEl = $state(null);
-  let clipPath = $state('');
-  let initialClip = '';
-  let wrapper = $state(null);
-  let isOpen = $state(false);
-  let isClosing = $state(false);
 
   onMount(async () => {
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-
-    if (clickRect) {
-      const top    = Math.max(0, clickRect.y);
-      const right  = Math.max(0, W - (clickRect.x + clickRect.width));
-      const bottom = Math.max(0, H - (clickRect.y + clickRect.height));
-      const left   = Math.max(0, clickRect.x);
-      initialClip = `inset(${top}px ${right}px ${bottom}px ${left}px round 14px)`;
-      clipPath = initialClip;
-    } else {
-      initialClip = `inset(${H / 2}px ${W / 2}px ${H / 2}px ${W / 2}px round 0px)`;
-      clipPath = initialClip;
-    }
-
     await tick();
-
+    // Il doppio frame garantisce che il browser disegni la posizione di partenza prima dell'espansione
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        clipPath = 'inset(0px 0px 0px 0px round 0px)';
-        setTimeout(() => {
-          isOpen = true;
-          if (videoEl) videoEl.play().catch(() => {});
-        }, 380);
+        opening = true;
+        if (videoEl) {
+          videoEl.play().catch(() => {});
+        }
       });
     });
   });
-
-  async function handleClose() {
-    isOpen = false;
-    isClosing = true;
-
-    if (videoEl) {
-      try { videoEl.pause(); } catch (e) {}
-    }
-
-    await new Promise(r => setTimeout(r, 180));
-
-    clipPath = initialClip;
-
-    await new Promise((resolve) => {
-      let settled = false;
-      const done = () => { if (settled) return; settled = true; resolve(); };
-
-      if (wrapper && wrapper.addEventListener) {
-        const onEnd = (e) => {
-          if (e.propertyName && e.propertyName.indexOf('clip-path') === -1) return;
-          wrapper.removeEventListener('transitionend', onEnd);
-          done();
-        };
-        wrapper.addEventListener('transitionend', onEnd);
-      }
-
-      setTimeout(done, 1000);
-    });
-
-    try { closeOverlay(); } catch (e) { /* ignore */ }
-  }
 </script>
 
-<div class="overlay-wrapper" bind:this={wrapper} style="clip-path: {clipPath}">
-  <div class="overlay-inner" class:is-open={isOpen} class:is-closing={isClosing}>
-    <button class="close-btn" onclick={handleClose}>&times;</button>
+<div
+  class="overlay-wrapper"
+  class:opening
+  style:transform={opening ? 'none' : (initialTransform || 'scale(0.08)')}
+  style:border-radius={opening ? '0px' : '32px'}
+>
+  <button class="close-btn" onclick={closeOverlay} aria-label="Chiudi overlay">&times;</button>
 
+  <div class="overlay-inner">
     <div class="grid">
-      <!-- Left column -->
-      <div class="left-col">
-        <div class="video-card glass-card">
+
+      <div class="col left-col">
+        <div class="card video-card">
           <video
             bind:this={videoEl}
             src={videoSrc}
             loop
+            muted
             playsinline
             class="video-el"
           ></video>
         </div>
 
-        <div class="glass-card segm-card">
-          <div class="segm-inner">
+        <div class="card segm-card">
+          <div class="segm-body">
             <div class="segm-text">
-              <h3>SEGMENTAZIONE</h3>
-              <div class="divider"></div>
-              <p>L'IA identifica e ritaglia la sagoma dell'atleta in diverse fasi del salto.</p>
+              <h3 class="label">Segmentazione</h3>
+              <p>L'IA identifica e ritaglia la sagoma dell'atleta in diverse fases del salto.</p>
             </div>
-            <div class="segm-accent"></div>
+            <div class="segm-rule">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Right column -->
-      <div class="right-col">
-        <div class="glass-card main-card">
-          <h2>SPACETIME<br>SLICE</h2>
-          <p class="main-subtitle"><strong>Scomposizione gesto sportivo in fotogrammi simultanei</strong></p>
+      <div class="col right-col">
+        <div class="card main-card">
+          <h2>Spacetime<br>Slice</h2>
+          <div class="divider"></div>
+          <p class="subtitle">Scomposizione gesto sportivo in fotogrammi simultanei</p>
         </div>
 
-        <div class="glass-card info-card">
-          <h3>L'ESERCITO DI LENTI</h3>
+        <div class="card info-card">
+          <h3 class="label">L'Esercito di Lenti</h3>
           <p>Oltre 60 telecamere 4K sincronizzate al millisecondo catturano l'azione da ogni angolazione possibile.</p>
         </div>
 
-        <div class="glass-card info-card">
-          <h3>VELOCITÀ RECORD</h3>
+        <div class="card info-card">
+          <h3 class="label">Velocità Record</h3>
           <p>In soli 15-20 secondi, il sistema crea una ricostruzione 3D dell'azione, rendendo il replay disponibile quasi in tempo reale per il commento tecnico in diretta e per la diretta TV.</p>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
 <style>
+  /* ── Wrapper con effetto Sfocatura Sfondo ── */
   .overlay-wrapper {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: radial-gradient(circle at 50% 50%, #4a565e 0%, #293035 100%);
-    transition: clip-path 0.95s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: clip-path;
+    background: rgba(10, 20, 28, 0.4);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    box-sizing: border-box;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    transition:
+      transform 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+      border-radius 0.65s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* ── Bottone chiudi ── */
+  .close-btn {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 64px;
+    font-family: Arial, sans-serif;
+    font-weight: 300;
+    line-height: 0.7;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10000;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .close-btn:hover { 
+    opacity: 0.6; 
+    transform: scale(1.05);
+  }
+
+  /* ── Inner (Aumentato max-width e max-height) ── */
   .overlay-inner {
     position: relative;
     width: 100%;
+    max-width: 1360px;
     height: 100%;
-    padding: 28px 40px 32px;
-    box-sizing: border-box;
-  }
-
-  /* Content reveal base state */
-  .close-btn,
-  .left-col,
-  .right-col {
-    opacity: 0;
-    transform: translateY(22px);
-    filter: blur(6px);
-    pointer-events: none;
-    transition:
-      opacity 0.65s ease,
-      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-      filter 0.65s ease;
-    will-change: opacity, transform, filter;
-  }
-
-  /* Staggered reveal on open */
-  .is-open .left-col {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-    pointer-events: auto;
-    transition-delay: 0.1s;
-  }
-
-  .is-open .right-col {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-    pointer-events: auto;
-    transition-delay: 0.26s;
-  }
-
-  .is-open .close-btn {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-    pointer-events: auto;
-    transition-delay: 0.52s;
-  }
-
-  /* Quick fade-out on close */
-  .is-closing .close-btn,
-  .is-closing .left-col,
-  .is-closing .right-col {
-    opacity: 0;
-    filter: blur(5px);
-    transform: translateY(10px);
-    pointer-events: none;
-    transition:
-      opacity 0.18s ease,
-      filter 0.18s ease,
-      transform 0.18s ease;
-    transition-delay: 0s;
-  }
-
-  .close-btn:hover {
-    opacity: 0.7;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 14px;
-    height: calc(100vh - 60px);
-    margin-top: 52px;
-  }
-
-  .left-col,
-  .right-col {
+    max-height: 680px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    height: 100%;
-  }
-
-  .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    border-radius: 20px;
-    color: #f0f0f0;
     box-sizing: border-box;
   }
 
-  /* Left col: video takes most space */
+  /* ── Griglia (Aumentato il gap) ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 24px;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── Colonne (Aumentato il gap) ── */
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%;
+  }
+
+  /* ── Card base ── */
+  .card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 32px;
+    color: #ffffff;
+    box-sizing: border-box;
+  }
+
+  /* ── Video ── */
   .video-card {
     flex: 1;
-    padding: 0;
     overflow: hidden;
-    min-height: 0;
   }
 
   .video-el {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 20px;
     display: block;
   }
 
+  /* ── Segmentazione (Aumentato padding) ── */
   .segm-card {
     flex: 0 0 auto;
-    padding: 0;
   }
 
-  .segm-inner {
+  .segm-body {
     display: flex;
-    height: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px;
   }
 
   .segm-text {
     flex: 1;
-    padding: 20px 22px;
+    padding-right: 28px;
   }
 
-  .segm-accent {
+  .segm-rule {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .segm-rule span {
     width: 3px;
-    flex: 0 0 3px;
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 0 20px 20px 0;
-    margin: 16px 16px 16px 0;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 1.5px;
+  }
+  .segm-rule span:first-child {
+    background: #ffffff;
   }
 
-  .segm-card h3 {
-    font-family: var(--font-primary), 'Helvetica Neue', Helvetica, sans-serif;
-    font-size: 13px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin: 0 0 10px 0;
-  }
-
-  .divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.14);
-    margin-bottom: 10px;
-  }
-
-  .segm-card p {
-    font-size: 13px;
-    line-height: 1.55;
-    opacity: 0.82;
-    margin: 0;
-  }
-
-  /* Right col */
+  /* ── Main card (Aumentato padding e font) ── */
   .main-card {
-    flex: 1.2;
-    padding: 28px 28px 24px;
+    flex: 1;
+    padding: 36px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
   }
 
   .main-card h2 {
-    font-family: var(--font-primary), 'Helvetica Neue', Helvetica, sans-serif;
-    font-size: clamp(30px, 3.5vw, 54px);
+    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
+    font-size: clamp(28px, 3vw, 44px);
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    line-height: 1.05;
-    margin: 0 0 18px 0;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    margin: 0 0 20px 0;
   }
 
-  .main-subtitle {
-    font-size: 14px;
-    line-height: 1.5;
-    opacity: 0.9;
+  .main-card .divider {
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    width: 60px;
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    font-size: 17px;
+    line-height: 1.45;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
     margin: 0;
   }
 
+  /* ── Info cards (Aumentato padding) ── */
   .info-card {
-    flex: 1;
-    padding: 20px 22px;
+    flex: 0 0 auto;
+    padding: 28px 32px;
   }
 
-  .info-card h3 {
-    font-family: var(--font-primary), 'Helvetica Neue', Helvetica, sans-serif;
-    font-size: 13px;
+  .label {
+    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
+    font-size: 14px;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin: 0 0 10px 0;
+    letter-spacing: 0.6px;
+    color: #ffffff;
+    margin: 0 0 12px 0;
   }
 
+  /* Testi generali portati a 16px */
+  .segm-text p,
   .info-card p {
-    font-size: 13px;
-    line-height: 1.6;
-    opacity: 0.82;
+    font-size: 16px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.75);
     margin: 0;
+    font-weight: 400;
   }
 </style>

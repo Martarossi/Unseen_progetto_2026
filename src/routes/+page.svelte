@@ -19,6 +19,9 @@
   let showCardOverlay = $state(false);
   /** @type {{ x: number, y: number, width: number, height: number } | null} */
   let clickRect = $state(null);
+  
+  // Stato dinamico per passare il video corretto all'overlay separato
+  let activeVideoSrc = $state("");
 
   // Stato del modello 3D condiviso tra Intro (lo anima via GSAP) e Modello3D (lo renderizza)
   /** @type {[number, number, number]} */
@@ -36,6 +39,18 @@
   const orbitProps2 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
   const orbitProps3 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
   let model3dVisible = $state(false);
+
+  /**
+   * Gestisce il click sulle card tridimensionali salvando le coordinate dello schermo
+   * e la sorgente video passata dinamicamente dal componente interno della card.
+   * @param {{ x: number, y: number, width: number, height: number } | null} rect
+   * @param {string} videoSrc
+   */
+  function handleCardClick(rect, videoSrc) {
+    clickRect = rect;
+    activeVideoSrc = videoSrc || "/video_card/spacetime_slices.mov"; // Fallback se vuoto
+    showCardOverlay = true;
+  }
 
   onMount(() => {
     if (browser) {
@@ -61,10 +76,8 @@
   />
 </svelte:head>
 
-<!-- LAYER 1 (z-index -2): Sfondo parallax globale -->
 <div class="parallax-bg" class:visible={hasBeenClicked} style="background-image: url('/SFONDO.png');"></div>
 
-<!-- LAYER 3 (z-index 50): Modello 3D fisso su tutta la pagina, pointer-events disabilitati -->
 <Modello3D
   position={modelPosition}
   scale={modelScale}
@@ -77,34 +90,20 @@
   {orbitProps3}
   visible={model3dVisible}
   isClicked={hasBeenClicked}
-  onCardClick={(rect) => { clickRect = rect; showCardOverlay = true; }}
+  onCardClick={(rect, videoSrc) => handleCardClick(rect, videoSrc)}
 />
 
 {#if showCardOverlay}
   <CardDetailOverlay
     closeOverlay={() => showCardOverlay = false}
-    videoSrc="/video_card/spacetime_slices.mov"
+    videoSrc={activeVideoSrc}
     {clickRect}
   />
 {/if}
 
-<!-- LAYER 2 (z-index 1): Contenuti e testi delle sezioni -->
 <div class="page" class:clicked={hasBeenClicked}>
-  <!--
-    SEZIONE HERO (Schermata Iniziale):
-    Gestisce l'ingresso delle scritte in dissolvenza su sfondo bianco solido, il blocco temporaneo dello scorrimento,
-    la maschera radiale interattiva che svela il logo "UNSEEN" e lo sfondo al movimento del mouse, e la transizione
-    di sblocco globale (click dell'utente) che avvia la dissolvenza incrociata dello sfondo e della top bar.
-  -->
   <Hero onClicked={() => hasBeenClicked = true} />
 
-  <!--
-    SEZIONE INTRO (Sezione Narrativa):
-    Fissa la schermata e accompagna l'utente in un'esperienza interattiva dove, attraverso lo scroll della pagina:
-    1. L'immagine centrale scompare.
-    2. Il modello 3D in vetro (renderizzato nel LAYER 3) ruota su tutti e tre gli assi e si sposta a destra.
-    3. I paragrafi descrittivi compaiono uno dopo l'altro sfocandosi e mettendosi a fuoco in modo alternato.
-  -->
   <Intro
     bind:modelPosition
     bind:modelScale
@@ -128,10 +127,6 @@
       bind:model3dVisible
     />
 
-    <!--
-      TRANSIZIONE MODELLO 3D: Spazio tra numeri e gallery dove il modello appare centrato
-      e si rimpicciolisce fino a sparire con lo scroll.
-    -->
     <ModelShrink
       bind:modelPosition
       bind:modelScale
@@ -141,11 +136,6 @@
       bind:model3dVisible
     />
 
-    <!--
-      SEZIONE GALLERY (Sezione Finale):
-      Un mazzo di card tridimensionali prospettiche che scorrono verticalmente a imbuto (wheel),
-      sincronizzate con la lista dei titoli dei progetti sulla sinistra e con i dettagli descrittivi.
-    -->
     <Gallery />
   {/if}
 </div>
