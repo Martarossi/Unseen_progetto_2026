@@ -153,7 +153,7 @@
 
     .about-container {
         height: 200vh;
-        color: #ffffff;
+        color: #F8F8F8;
         font-family: "Helvetica", sans-serif;
     }
 
