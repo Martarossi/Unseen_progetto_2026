@@ -26,6 +26,34 @@
   const ORBIT_RADIUS = 3.5;
   const CARD_W = 3.6;
   const CARD_H = 2.025; // 16:9
+  const CARD_DEPTH = 0.07;
+  const CORNER_R = 0.22; // raggio angoli fronte – non clampato dalla depth con ExtrudeGeometry
+
+  // Forma arrotondata: angoli esatti anche sullo spessore
+  const hw = CARD_W / 2;
+  const hh = CARD_H / 2;
+  const cardShape = new THREE.Shape();
+  cardShape.moveTo(-hw + CORNER_R, -hh);
+  cardShape.lineTo( hw - CORNER_R, -hh);
+  cardShape.quadraticCurveTo( hw, -hh,  hw, -hh + CORNER_R);
+  cardShape.lineTo( hw,  hh - CORNER_R);
+  cardShape.quadraticCurveTo( hw,  hh,  hw - CORNER_R,  hh);
+  cardShape.lineTo(-hw + CORNER_R,  hh);
+  cardShape.quadraticCurveTo(-hw,  hh, -hw,  hh - CORNER_R);
+  cardShape.lineTo(-hw, -hh + CORNER_R);
+  cardShape.quadraticCurveTo(-hw, -hh, -hw + CORNER_R, -hh);
+  cardShape.closePath();
+
+  const cardGeom = new THREE.ExtrudeGeometry(cardShape, { depth: CARD_DEPTH, bevelEnabled: false });
+  // Centra sull'asse Z
+  cardGeom.translate(0, 0, -CARD_DEPTH / 2);
+  // Normalizza UV dal coord world-space [-hw,hw]×[-hh,hh] → [0,1]×[0,1]
+  const _uv = cardGeom.attributes.uv;
+  for (let i = 0; i < _uv.count; i++) {
+    _uv.setX(i, (_uv.getX(i) + hw) / CARD_W);
+    _uv.setY(i, (_uv.getY(i) + hh) / CARD_H);
+  }
+  _uv.needsUpdate = true;
 
   const cvs = document.createElement('canvas');
   cvs.width = 640;
@@ -33,11 +61,36 @@
 
   const cardTexture = new THREE.CanvasTexture(cvs);
 
-  const cardMat = new THREE.MeshBasicMaterial({
+  const cardMatFront = new THREE.MeshBasicMaterial({
     map: cardTexture,
+    transparent: true,
+    side: THREE.FrontSide,
+    depthWrite: false,
+  });
+
+  // Stesso canvas del fronte: il back cap di ExtrudeGeometry ha UV invertiti per
+  // winding order, quindi appare automaticamente specchiato quando il retro è verso la camera.
+  const cardMatBack = new THREE.MeshBasicMaterial({
+    map: cardTexture,
+    transparent: true,
+    side: THREE.BackSide,
+    depthWrite: false,
+  });
+
+  // Materiale vetro fisico sui lati: IOR elevato e transmission per rifrazione visibile sullo spessore della card.
+  const cardGlassMat = new THREE.MeshPhysicalMaterial({
+    color: 0xA7CED8,
+    metalness: 0.0,
+    roughness: 0.0,
+    transmission: 0.7,
+    ior: 2.0,
+    thickness: CARD_DEPTH * 6,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.0,
     transparent: true,
     side: THREE.DoubleSide,
     depthWrite: false,
+    envMapIntensity: 3.5,
   });
 
   // Video element per le card con video
@@ -231,7 +284,9 @@
     cardGroup.rotation.y = selfRot;
 
     const clamped = Math.max(0, Math.min(1, opacity));
-    cardMat.opacity = clamped;
+    cardMatFront.opacity = clamped;
+    cardMatBack.opacity = clamped;
+    cardGlassMat.opacity = clamped;
     cardGroup.visible = clamped > 0.01;
 
     let hovered = false;
@@ -254,27 +309,42 @@
     if (videoEl && videoEl.readyState >= 2) {
       const ctx = cvs.getContext('2d');
       if (ctx) {
+        ctx.clearRect(0, 0, 640, 360);
+
+        // Clip a rounded rect — stesso ratio del CORNER_RADIUS della geometria (~6%)
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 640, 360, [39]);
+        ctx.clip();
+
+        // Video
         ctx.drawImage(videoEl, 0, 0, 640, 360);
 
-        // Gradiente scuro sul fondo per leggibilità del testo
-        const grad = ctx.createLinearGradient(0, 160, 0, 360);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.68)');
+        // Tinta brand leggera su tutto il video (non altera la saturazione del gradiente)
+        ctx.fillStyle = 'rgba(39, 59, 66, 0.12)';
+        ctx.fillRect(0, 0, 640, 360);
+
+        // Overlay gradiente #273B42: 100% dal basso fino al 28%, poi fade a trasparente
+        const grad = ctx.createLinearGradient(0, 360, 0, 0);
+        grad.addColorStop(0,    '#273B42');              // 100% in basso
+        grad.addColorStop(0.28, '#273B42');              // ancora 100% al 28%
+        grad.addColorStop(1,    'rgba(39, 59, 66, 0)'); // trasparente in cima
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 640, 360);
 
         if (cardTitle) {
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 52px Arial, Helvetica, sans-serif';
-          ctx.fillText(cardTitle, 28, 294);
+          ctx.font = 'bold 44px "Akira Expanded", Arial, sans-serif';
+          ctx.fillText(cardTitle, 28, 302);
         }
 
         if (cardSubtitle) {
-          ctx.fillStyle = 'rgba(255,255,255,0.78)';
+          ctx.fillStyle = 'rgba(255,255,255,0.82)';
           ctx.font = '15px Arial, Helvetica, sans-serif';
-          ctx.fillText(cardSubtitle, 28, 322);
+          ctx.fillText(cardSubtitle, 28, 328);
         }
 
+        ctx.restore();
         cardTexture.needsUpdate = true;
       }
     }
@@ -282,8 +352,19 @@
 </script>
 
 <T.Group bind:ref={cardGroup}>
+  <!-- Vetro lati: renderizzato per primo, coperto dai cap texture — visibile solo sui lati in prospettiva -->
+  <T.Mesh>
+    <T is={cardGeom} />
+    <T is={cardGlassMat} />
+  </T.Mesh>
+  <!-- Retro: BackSide con stesso canvas — UV del back cap sono invertiti, appare specchiato -->
+  <T.Mesh>
+    <T is={cardGeom} />
+    <T is={cardMatBack} />
+  </T.Mesh>
+  <!-- Fronte: disegnato per ultimo (sopra) — UV corretti quando la faccia frontale è verso la camera -->
   <T.Mesh bind:ref={cardMesh}>
-    <T.PlaneGeometry args={[CARD_W, CARD_H]} />
-    <T is={cardMat} />
+    <T is={cardGeom} />
+    <T is={cardMatFront} />
   </T.Mesh>
 </T.Group>
