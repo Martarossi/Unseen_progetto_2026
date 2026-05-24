@@ -155,7 +155,8 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
+    align-items: center;
     padding: 12vh 6vw 8vh;
     box-sizing: border-box;
   }
@@ -173,13 +174,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 3vw;
     align-items: start;
-    width: calc(100% - 12vw);
-    
-    /* Centratura verticale e orizzontale alla pagina */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 100%;
   }
 
   .stat-col {
@@ -227,27 +222,20 @@
   }
 
   .stats-label {
+    position: absolute;
+    bottom: 8vh;
+    left: 0;
+    right: 0;
     text-align: center;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(9px, 0.7vw, 12px);
     letter-spacing: 0.2em;
     color: rgba(255, 255, 255, 0.4);
-    margin-top: 5vh;
     text-transform: uppercase;
-    width: 100%;
   }
 
   @media (max-width: 799px) {
-    .stats-section {
-      justify-content: center;
-    }
-
     .stats-grid {
-      position: relative;
-      top: unset;
-      left: unset;
-      transform: unset;
-      width: 100%;
       grid-template-columns: 1fr;
       gap: 6vh;
     }
