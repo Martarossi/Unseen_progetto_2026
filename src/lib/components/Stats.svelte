@@ -59,7 +59,6 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      // Pin the section and animate the model during the pinned scroll
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionEl,
@@ -84,7 +83,6 @@
         onUpdate: update3D,
       });
 
-      // Counters start when pin begins
       stats.forEach((stat, i) => {
         const el = counterEls[i];
         if (!el) return;
@@ -111,7 +109,6 @@
       };
     });
 
-    // Mobile: counters only (no pin, no model animation)
     mm.add("(max-width: 799px)", () => {
       stats.forEach((stat, i) => {
         const el = counterEls[i];
@@ -153,11 +150,13 @@
 
 <style>
   .stats-section {
+    position: relative;
     width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     padding: 12vh 6vw 8vh;
     box-sizing: border-box;
   }
@@ -184,7 +183,7 @@
   }
 
   .stat-title {
-    font-family: "Akira Expanded", "Impact", "Arial Black", sans-serif;
+    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
     font-size: clamp(11px, 1.1vw, 18px);
     font-weight: 900;
     color: #f8f8f8;
@@ -200,7 +199,8 @@
     font-size: clamp(10px, 0.82vw, 14px);
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.62);
-    max-width: 75%;
+    text-align: left;        /* Allineamento a sinistra (bandiera a sinistra) */
+    max-width: 45ch;         /* Misura ottimale per bloccare il testo su 3 righe su desktop */
     margin: 0 0 1.6rem;
   }
 
@@ -212,8 +212,8 @@
   }
 
   .stat-counter {
-    font-family: "Impact", "Arial Black", sans-serif;
-    font-size: 13vw;
+    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
+    font-size: 8vw;
     font-weight: 900;
     color: #f8f8f8;
     line-height: 0.88;
@@ -222,12 +222,15 @@
   }
 
   .stats-label {
+    position: absolute;
+    bottom: 8vh;
+    left: 0;
+    right: 0;
     text-align: center;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(9px, 0.7vw, 12px);
     letter-spacing: 0.2em;
     color: rgba(255, 255, 255, 0.4);
-    margin-top: 5vh;
     text-transform: uppercase;
   }
 
@@ -237,12 +240,12 @@
       gap: 6vh;
     }
 
-    .stat-counter {
-      font-size: 28vw;
+    .stat-desc {
+      max-width: 42ch;       /* Mantiene la proporzione di 3/4 righe anche su mobile */
     }
 
-    .stat-desc {
-      max-width: 100%;
+    .stat-counter {
+      font-size: 28vw;
     }
 
     .stat-title {
