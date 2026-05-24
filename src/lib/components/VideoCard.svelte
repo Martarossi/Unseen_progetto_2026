@@ -114,8 +114,6 @@
   useTask((delta) => {
     if (!cardGroup) return;
 
-    cardGroup.renderOrder = 1;
-
     const { angle, y, opacity, centerX, centerY } = orbitProps;
 
     const baseZ = ORBIT_RADIUS * Math.sin(angle);
@@ -124,6 +122,9 @@
       centerY + y,
       baseZ
     );
+
+    // Primo piano (davanti al modello) quando baseZ > 0, secondo piano (dietro) quando baseZ < 0
+    cardGroup.renderOrder = baseZ > 0 ? 1 : -1;
 
     let selfRot;
     if (angle <= 3 * Math.PI / 2) {
