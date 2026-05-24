@@ -3,6 +3,15 @@
   import gsap from 'gsap';
   import ScrollTrigger from 'gsap/dist/ScrollTrigger';
 
+  let {
+    modelPosition = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    modelScale = $bindable(/** @type {[number, number, number]} */ ([1.5, 1.5, 1.5])),
+    modelRotation = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    currentTwistX = $bindable(360),
+    currentTwistZ = $bindable(200),
+    model3dVisible = $bindable(false),
+  } = $props();
+
   const stats = [
     {
       title: "TEMPO GENERAZIONE\nREPLAY 3D",
@@ -30,26 +39,99 @@
   /** @type {(HTMLElement|null)[]} */
   let counterEls = [];
 
+  const modelProps = {
+    rotX: Math.PI * 4.5,
+    rotY: Math.PI * 7.5,
+    rotZ: Math.PI * 4.5,
+    twistX: 270,
+    twistZ: 420,
+  };
+
   onMount(() => {
-    stats.forEach((stat, i) => {
-      const el = counterEls[i];
-      if (!el) return;
+    const mm = gsap.matchMedia();
 
-      const proxy = { val: 0 };
+    mm.add("(min-width: 800px)", () => {
+      const update3D = () => {
+        modelPosition = [0, 0, 0];
+        modelScale = [2.0, 2.0, 2.0];
+        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+      };
 
-      gsap.to(proxy, {
-        val: stat.target,
-        duration: stat.duration,
-        ease: 'power1.out',
+      // Pin the section and animate the model during the pinned scroll
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionEl,
-          // Parte quando la sezione è già ben visibile: l'utente vede 000 prima che inizi
-          start: 'top 25%',
-          toggleActions: 'play none none reset',
+          start: "top top",
+          end: "+=3000",
+          scrub: 2.8,
+          pin: true,
+          onEnter:     () => { model3dVisible = true; },
+          onEnterBack: () => { model3dVisible = true; },
+          onLeaveBack: () => { model3dVisible = false; },
         },
-        onUpdate() {
-          if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
-        },
+      });
+
+      tl.to(modelProps, {
+        rotX: Math.PI * 6.0,
+        rotY: Math.PI * 9.5,
+        rotZ: Math.PI * 6.0,
+        twistX: 400,
+        twistZ: 560,
+        duration: 4.0,
+        ease: "none",
+        onUpdate: update3D,
+      });
+
+      // Counters start when pin begins
+      stats.forEach((stat, i) => {
+        const el = counterEls[i];
+        if (!el) return;
+
+        const proxy = { val: 0 };
+
+        gsap.to(proxy, {
+          val: stat.target,
+          duration: stat.duration,
+          ease: 'power1.out',
+          scrollTrigger: {
+            trigger: sectionEl,
+            start: 'top top',
+            toggleActions: 'play none none reset',
+          },
+          onUpdate() {
+            if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
+          },
+        });
+      });
+
+      return () => {
+        tl.kill();
+      };
+    });
+
+    // Mobile: counters only (no pin, no model animation)
+    mm.add("(max-width: 799px)", () => {
+      stats.forEach((stat, i) => {
+        const el = counterEls[i];
+        if (!el) return;
+
+        const proxy = { val: 0 };
+
+        gsap.to(proxy, {
+          val: stat.target,
+          duration: stat.duration,
+          ease: 'power1.out',
+          scrollTrigger: {
+            trigger: sectionEl,
+            start: 'top 25%',
+            toggleActions: 'play none none reset',
+          },
+          onUpdate() {
+            if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
+          },
+        });
       });
     });
   });
@@ -78,6 +160,14 @@
     justify-content: center;
     padding: 12vh 6vw 8vh;
     box-sizing: border-box;
+  }
+
+  @media (min-width: 800px) {
+    .stats-section {
+      height: 100vh;
+      min-height: unset;
+      overflow: hidden;
+    }
   }
 
   .stats-grid {
@@ -110,7 +200,6 @@
     font-size: clamp(10px, 0.82vw, 14px);
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.62);
-    /* Testo leggermente più stretto: si avvolge su ~3 righe */
     max-width: 75%;
     margin: 0 0 1.6rem;
   }

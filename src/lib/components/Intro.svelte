@@ -23,8 +23,6 @@
   /** @type {HTMLElement|null} */
   let scrollWrapper = null;
   /** @type {HTMLElement|null} */
-  let introContainer = null;
-  /** @type {HTMLElement|null} */
   let textImage = null;
   /** @type {HTMLElement|null} */
   let p1 = null;
@@ -330,37 +328,37 @@
         6.2,
       );
 
-      // --- VIDEOAI1: Card compare subito dopo la fine del bigText (t=8.9 → 12.9) ---
-      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.9);
+      // --- VIDEOAI1: Card compare leggermente prima della fine del bigText (t=8.2 → 12.2) ---
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.2);
       tl.fromTo(
         orbitProps,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        8.9
+        8.2
       );
-      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.3);
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.6);
 
-      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=9.7 → 13.7) ---
-      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.7);
+      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=9.0 → 13.0) ---
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.0);
       tl.fromTo(
         orbitProps2,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        9.7
+        9.0
       );
-      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.1);
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.4);
 
-      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=10.5 → 14.5) ---
-      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 10.5);
+      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=9.8 → 13.8) ---
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.8);
       tl.fromTo(
         orbitProps3,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        10.5
+        9.8
       );
-      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.9);
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.2);
 
-      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (8.9 → 14.5) ---
+      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (8.2 → 13.8) ---
       tl.to(
         modelProps,
         {
@@ -374,24 +372,25 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        8.9
+        8.2
       );
 
-      // --- Modello 3D: si rimpicciolisce fino a diventare minuscolo, continuando a ruotare e distorcersi moltissimo (14.5 → 15.5) ---
+      // Buffer: le card finiscono a t=13.8; il modello continua a ruotare/deformarsi
+      // fino a t=17.0 (3.2 unità ≈ 2823px di scroll) così lo scrub ha tempo di completarsi
+      // prima che il wrapper termini e Stats appaia.
       tl.to(
         modelProps,
         {
-          scale: 0.04,
-          rotX: Math.PI * 6.0,
-          rotY: Math.PI * 12.0,
-          rotZ: Math.PI * 6.0,
-          twistX: 720,
-          twistZ: 900,
-          duration: 1.0,
-          ease: "power3.in",
+          rotX: Math.PI * 4.5,
+          rotY: Math.PI * 7.5,
+          rotZ: Math.PI * 4.5,
+          twistX: 270,
+          twistZ: 420,
+          duration: 2.0,
+          ease: "power1.inOut",
           onUpdate: update3D,
         },
-        14.5
+        13.8,
       );
 
       return () => {
@@ -402,7 +401,7 @@
 </script>
 
 <div class="intro-scroll-wrapper" bind:this={scrollWrapper}>
-<div class="intro-container" bind:this={introContainer}>
+<div class="intro-container">
   <!-- ELEMENTI TESTUALI E INFOGRAFICA (OVERLAY HTML): Gestisce l'immagine di benvenuto e i testi narrativi disposti a cascata sulla sinistra -->
   <div class="overlay">
     <!-- IMMAGINE TESTUALE DI TAGLINE: L'immagine iniziale centrata che esprime il concetto cardine del progetto -->
@@ -414,12 +413,10 @@
     <div class="texts-container">
       <div class="paragraph-wrapper" bind:this={p1}>
         <p>
-          Per la prima volta nella storia, le <span class="highlight"
-            >Olimpiadi di Milano-Cortina 2026</span
-          >
-          ridefiniscono l'esperienza olimpica attraverso un'<span
-            class="highlight">anima digitale</span
-          >
+          Per la prima volta nella storia le Olimpiadi<br />
+          <span class="akira-brand">Milano–Cortina 2026</span><br />
+          ridefiniscono l'esperienza olimpica attraverso un'<br />
+          <span class="akira-brand">Anima Digitale</span><br />
           che trasforma la visione in immersione.
         </p>
       </div>
@@ -427,11 +424,9 @@
       <div class="paragraph-wrapper" bind:this={p2}>
         <p>
           Ogni evento olimpico è costruito su ciò che vediamo:<br />
-          <span class="highlight">velocità, performance, emozione.</span><br />
-          Ma dietro ogni immagine esiste un
-          <span class="highlight">sistema invisibile</span><br />
-          fatto di
-          <span class="highlight">dati, connessioni e tecnologia.</span>
+          <span class="akira-brand">Velocità Performance Emozione</span><br />
+          Ma dietro ogni immagine esiste un sistema invisibile di<br />
+          <span class="akira-brand">Dati Connessioni e Tecnologia</span>
         </p>
       </div>
     </div>
@@ -553,8 +548,13 @@
     margin: 0;
   }
 
-  .highlight {
-    color: #A7CED8; /* Elegant blue/grey highlight color matching the storyboard */
-    font-weight: 500;
+  .akira-brand {
+    font-family: "Akira Expanded", sans-serif;
+    font-weight: 800;
+    font-size: 1.4em;
+    line-height: 1.0;
+    text-transform: uppercase;
+    color: #030404;
+    display: inline-block;
   }
 </style>

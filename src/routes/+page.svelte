@@ -8,6 +8,7 @@
   import Gallery from "$lib/components/Gallery.svelte";
   import Stats from "$lib/components/Stats.svelte";
   import Modello3D from "$lib/components/Modello3D.svelte";
+  import ModelShrink from "$lib/components/ModelShrink.svelte";
 
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
@@ -105,7 +106,27 @@
   />
 
   {#if hasBeenClicked}
-    <Stats />
+    <Stats
+      bind:modelPosition
+      bind:modelScale
+      bind:modelRotation
+      bind:currentTwistX
+      bind:currentTwistZ
+      bind:model3dVisible
+    />
+
+    <!--
+      TRANSIZIONE MODELLO 3D: Spazio tra numeri e gallery dove il modello appare centrato
+      e si rimpicciolisce fino a sparire con lo scroll.
+    -->
+    <ModelShrink
+      bind:modelPosition
+      bind:modelScale
+      bind:modelRotation
+      bind:currentTwistX
+      bind:currentTwistZ
+      bind:model3dVisible
+    />
 
     <!--
       SEZIONE GALLERY (Sezione Finale):
