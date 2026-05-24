@@ -1,6 +1,7 @@
 <script>
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
+  import * as THREE from "three";
 
   /**
    * @typedef {{ opacity: number, groupRotY: number, riseY: number }} CardProps
@@ -27,7 +28,7 @@
     rotation = [0, 0, 0],
     twistX = 360,
     twistZ = 200,
-    cardProps = { opacity: 0, groupRotY: 0, riseY: 0 },
+    cardProps: _cardProps = { opacity: 0, groupRotY: 0, riseY: 0 },
     orbitProps  = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
@@ -39,11 +40,12 @@
 <div class="model3d-layer" class:visible>
   {#if isClicked}
     <Canvas
-      rendererParameters={{
+      createRenderer={(canvas) => new THREE.WebGLRenderer({
+        canvas,
         alpha: true,
         antialias: true,
         powerPreference: "high-performance",
-      }}
+      })}
     >
       <Scene
         {position}
@@ -51,7 +53,6 @@
         {rotation}
         {twistX}
         {twistZ}
-        {cardProps}
         {orbitProps}
         {orbitProps2}
         {orbitProps3}

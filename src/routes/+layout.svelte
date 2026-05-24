@@ -1,7 +1,7 @@
 <script>
 	import { tick } from "svelte";
 	import favicon from "$lib/assets/favicon.svg";
-	import NavBar from "$lib/components/NavBar.svelte";
+	import NavBar from "$lib/components/Navbar.svelte";
 	import About from "$lib/components/About.svelte";
 
 	let { children } = $props();

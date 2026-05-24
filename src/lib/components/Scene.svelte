@@ -22,6 +22,9 @@
    * @property {[number, number, number]} [rotation]
    * @property {number} [twistX]
    * @property {number} [twistZ]
+   * @property {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} [orbitProps]
+   * @property {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} [orbitProps2]
+   * @property {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} [orbitProps3]
    */
 
   /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
