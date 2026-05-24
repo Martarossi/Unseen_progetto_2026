@@ -13,6 +13,8 @@
 
   let mouseX = $state(0);
   let mouseY = $state(0);
+  let hintX = $state(0);
+  let hintY = $state(0);
   let showLogo = $state(false);
   let isClicked = $state(false);
   let canvasBgOpacity = $state(1);
@@ -187,6 +189,8 @@
     const rect = heroRef.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
+    hintX = e.clientX;
+    hintY = e.clientY;
     lastMoveTime = Date.now();
     isIdle = false;
   }
@@ -368,6 +372,15 @@
   ></div>
 </div>
 
+{#if showLogo && !isClicked}
+  <div
+    class="click-hint"
+    style="left: {hintX}px; top: {hintY}px;"
+  >
+    click to reveal
+  </div>
+{/if}
+
 <style>
   .hero {
     --mask-radius: 180px;
@@ -467,6 +480,19 @@
     color: #F8F8F8;
     z-index: 20;
     opacity: 0;
+  }
+
+  .click-hint {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, 28px);
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: rgba(248, 248, 248, 0.65);
+    white-space: nowrap;
   }
 
   .transition-overlay {
