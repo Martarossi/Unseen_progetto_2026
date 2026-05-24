@@ -21,7 +21,7 @@
    *   orbitProps3?: OrbitProps,
    *   visible?: boolean,
    *   isClicked?: boolean,
-   *   onCardClick?: () => void
+   *   onCardClick?: (rect: { x: number, y: number, width: number, height: number } | null) => void
    * }} */
   let {
     position = [0, 0, 0],

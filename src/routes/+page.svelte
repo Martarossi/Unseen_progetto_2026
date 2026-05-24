@@ -17,6 +17,8 @@
 
   let hasBeenClicked = $state(false);
   let showCardOverlay = $state(false);
+  /** @type {{ x: number, y: number, width: number, height: number } | null} */
+  let clickRect = $state(null);
 
   // Stato del modello 3D condiviso tra Intro (lo anima via GSAP) e Modello3D (lo renderizza)
   /** @type {[number, number, number]} */
@@ -75,13 +77,14 @@
   {orbitProps3}
   visible={model3dVisible}
   isClicked={hasBeenClicked}
-  onCardClick={() => showCardOverlay = true}
+  onCardClick={(rect) => { clickRect = rect; showCardOverlay = true; }}
 />
 
 {#if showCardOverlay}
   <CardDetailOverlay
     closeOverlay={() => showCardOverlay = false}
     videoSrc="/video_card/spacetime_slices.mov"
+    {clickRect}
   />
 {/if}
 

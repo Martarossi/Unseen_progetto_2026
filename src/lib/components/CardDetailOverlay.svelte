@@ -1,24 +1,83 @@
 <script>
   import { onMount, tick } from 'svelte';
 
-  let { closeOverlay, videoSrc = '' } = $props();
+  /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
 
-  let opening = $state(false);
+  /** @type {{ closeOverlay: () => void, videoSrc?: string, clickRect?: CardRect | null }} */
+  let { closeOverlay, videoSrc = '', clickRect = null } = $props();
+
   /** @type {HTMLVideoElement|null} */
   let videoEl = $state(null);
+  let clipPath = $state('');
+  let initialClip = '';
+  let wrapper = $state(null);
+  let isOpen = $state(false);
+  let isClosing = $state(false);
 
   onMount(async () => {
-    await tick();
-    opening = true;
-    if (videoEl) {
-      videoEl.play().catch(() => {});
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    if (clickRect) {
+      const top    = Math.max(0, clickRect.y);
+      const right  = Math.max(0, W - (clickRect.x + clickRect.width));
+      const bottom = Math.max(0, H - (clickRect.y + clickRect.height));
+      const left   = Math.max(0, clickRect.x);
+      initialClip = `inset(${top}px ${right}px ${bottom}px ${left}px round 14px)`;
+      clipPath = initialClip;
+    } else {
+      initialClip = `inset(${H / 2}px ${W / 2}px ${H / 2}px ${W / 2}px round 0px)`;
+      clipPath = initialClip;
     }
+
+    await tick();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        clipPath = 'inset(0px 0px 0px 0px round 0px)';
+        setTimeout(() => {
+          isOpen = true;
+          if (videoEl) videoEl.play().catch(() => {});
+        }, 380);
+      });
+    });
   });
+
+  async function handleClose() {
+    isOpen = false;
+    isClosing = true;
+
+    if (videoEl) {
+      try { videoEl.pause(); } catch (e) {}
+    }
+
+    await new Promise(r => setTimeout(r, 180));
+
+    clipPath = initialClip;
+
+    await new Promise((resolve) => {
+      let settled = false;
+      const done = () => { if (settled) return; settled = true; resolve(); };
+
+      if (wrapper && wrapper.addEventListener) {
+        const onEnd = (e) => {
+          if (e.propertyName && e.propertyName.indexOf('clip-path') === -1) return;
+          wrapper.removeEventListener('transitionend', onEnd);
+          done();
+        };
+        wrapper.addEventListener('transitionend', onEnd);
+      }
+
+      setTimeout(done, 1000);
+    });
+
+    try { closeOverlay(); } catch (e) { /* ignore */ }
+  }
 </script>
 
-<div class="overlay-wrapper" class:opening>
-  <div class="overlay-inner">
-    <button class="close-btn" onclick={closeOverlay}>&times;</button>
+<div class="overlay-wrapper" bind:this={wrapper} style="clip-path: {clipPath}">
+  <div class="overlay-inner" class:is-open={isOpen} class:is-closing={isClosing}>
+    <button class="close-btn" onclick={handleClose}>&times;</button>
 
     <div class="grid">
       <!-- Left column -->
@@ -72,12 +131,8 @@
     inset: 0;
     z-index: 9999;
     background: radial-gradient(circle at 50% 50%, #4a565e 0%, #293035 100%);
-    clip-path: circle(0% at calc(100% - 60px) 40px);
-    transition: clip-path 0.7s ease-out;
-  }
-
-  .overlay-wrapper.opening {
-    clip-path: circle(150% at calc(100% - 60px) 40px);
+    transition: clip-path 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: clip-path;
   }
 
   .overlay-inner {
@@ -88,19 +143,59 @@
     box-sizing: border-box;
   }
 
-  .close-btn {
-    position: absolute;
-    top: 16px;
-    right: 40px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 52px;
-    cursor: pointer;
-    line-height: 0.85;
-    padding: 0;
-    z-index: 10;
-    transition: opacity 0.2s;
+  /* Content reveal base state */
+  .close-btn,
+  .left-col,
+  .right-col {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(6px);
+    pointer-events: none;
+    transition:
+      opacity 0.65s ease,
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.65s ease;
+    will-change: opacity, transform, filter;
+  }
+
+  /* Staggered reveal on open */
+  .is-open .left-col {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+    pointer-events: auto;
+    transition-delay: 0.1s;
+  }
+
+  .is-open .right-col {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+    pointer-events: auto;
+    transition-delay: 0.26s;
+  }
+
+  .is-open .close-btn {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+    pointer-events: auto;
+    transition-delay: 0.52s;
+  }
+
+  /* Quick fade-out on close */
+  .is-closing .close-btn,
+  .is-closing .left-col,
+  .is-closing .right-col {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(10px);
+    pointer-events: none;
+    transition:
+      opacity 0.18s ease,
+      filter 0.18s ease,
+      transform 0.18s ease;
+    transition-delay: 0s;
   }
 
   .close-btn:hover {

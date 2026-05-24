@@ -29,7 +29,8 @@
 
   /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
 
-  /** @type {SceneProps & { onCardClick?: () => void }} */
+  /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
+  /** @type {SceneProps & { onCardClick?: (rect: CardRect | null) => void }} */
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],

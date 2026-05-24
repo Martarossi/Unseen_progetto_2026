@@ -2,13 +2,15 @@
   import { T, useTask, useThrelte } from '@threlte/core';
   import * as THREE from 'three';
 
+  /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
+
   /** @type {{
    *   orbitProps?: { angle: number, y: number, opacity: number, centerX: number, centerY: number },
    *   label?: string,
    *   videoSrc?: string,
    *   cardTitle?: string,
    *   cardSubtitle?: string,
-   *   onCardClick?: () => void
+   *   onCardClick?: (rect: CardRect | null) => void
    * }} */
   let {
     orbitProps = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 },
@@ -135,6 +137,7 @@
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2(-9999, -9999);
   let hoverProgress = 0;
+  let clickPulse = 0;
 
   $effect(() => {
     /** @param {MouseEvent} e */
@@ -145,6 +148,32 @@
     document.addEventListener('mousemove', onMouseMove);
     return () => document.removeEventListener('mousemove', onMouseMove);
   });
+
+  /** @returns {CardRect | null} */
+  function computeCardScreenRect() {
+    if (!cardGroup || !camera.current) return null;
+    const cam = camera.current;
+    const halfW = CARD_W / 2;
+    const halfH = CARD_H / 2;
+    const corners = [
+      new THREE.Vector3(-halfW, -halfH, 0),
+      new THREE.Vector3( halfW, -halfH, 0),
+      new THREE.Vector3( halfW,  halfH, 0),
+      new THREE.Vector3(-halfW,  halfH, 0),
+    ];
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const c of corners) {
+      c.applyMatrix4(cardGroup.matrixWorld);
+      c.project(cam);
+      const sx = (c.x + 1) / 2 * window.innerWidth;
+      const sy = (-c.y + 1) / 2 * window.innerHeight;
+      if (sx < minX) minX = sx;
+      if (sx > maxX) maxX = sx;
+      if (sy < minY) minY = sy;
+      if (sy > maxY) maxY = sy;
+    }
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+  }
 
   // Click detection per aprire l'overlay
   $effect(() => {
@@ -164,7 +193,8 @@
       clickRaycaster.setFromCamera(clickNDC, camera.current);
 
       if (clickRaycaster.intersectObject(cardMesh).length > 0) {
-        onCardClick?.();
+        clickPulse = 1;
+        onCardClick?.(computeCardScreenRect());
       }
     }
 
@@ -215,8 +245,9 @@
 
     const hoverTarget = hovered ? 1 : 0;
     hoverProgress += (hoverTarget - hoverProgress) * Math.min(1, delta * 8);
+    clickPulse *= Math.max(0, 1 - delta * 14);
 
-    cardGroup.scale.setScalar(1 + hoverProgress * 0.12);
+    cardGroup.scale.setScalar(1 + hoverProgress * 0.12 + clickPulse * 0.07);
     cardGroup.position.z = baseZ + hoverProgress * 0.5;
 
     // Disegno del frame video sulla texture Three.js
