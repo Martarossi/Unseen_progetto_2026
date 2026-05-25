@@ -335,7 +335,7 @@
 
         if (cardTitle) {
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 44px "Akira Expanded", Arial, sans-serif';
+          ctx.font = 'bold 40px "Akira Expanded", Arial, sans-serif';
           ctx.fillText(cardTitle, 28, 302);
         }
 

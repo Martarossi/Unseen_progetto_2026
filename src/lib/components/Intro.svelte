@@ -413,7 +413,7 @@
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
     <div class="texts-container">
       <div class="paragraph-wrapper" bind:this={p1}>
-        <span class="para-label"><span class="label-main">MILANO–CORTINA</span><span class="label-suffix"> // 2026</span></span>
+        <span class="para-label"><span class="label-main">MILANO–CORTINA</span><span class="label-suffix"> // </span><span class="label-suffix"> 2026</span></span>
         <h2 class="para-title">ANIMA DIGITALE</h2>
         <p>
           Per la prima volta nella storia, le Olimpiadi di
@@ -424,7 +424,7 @@
       </div>
 
       <div class="paragraph-wrapper" bind:this={p2}>
-        <span class="para-label"><span class="label-main">SISTEMA INVISIBILE</span><span class="label-suffix"> // AI</span></span>
+        <span class="para-label"><span class="label-main">SISTEMA INVISIBILE</span><span class="label-suffix"> // </span><span class="label-suffix"> AI</span></span>
         <h2 class="para-title">CONNESSIONI</h2>
         <p>
           Dietro ogni immagine di velocità, performance
@@ -546,17 +546,19 @@
   }
 
   .para-label {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 24px;
     font-family: "Akira Expanded", sans-serif;
     font-size: 0.82rem;
     font-weight: 900;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.2rem;
   }
 
   .label-main {
-    color: var(--colors-brand-900, #273b42);
+    color: var(--colors-brand-900, #F8F8F8);
   }
 
   .label-suffix {

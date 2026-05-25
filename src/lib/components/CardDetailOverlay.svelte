@@ -6,7 +6,6 @@
   /** @type {{ closeOverlay: () => void, videoSrc?: string, clickRect?: CardRect }} */
   let { closeOverlay, videoSrc = '', clickRect = null } = $props();
 
-  // Calcola la posizione iniziale sincronizzata con la card 3D nello spazio
   const initialTransform = (() => {
     if (!clickRect || typeof window === 'undefined') return '';
     const vw = window.innerWidth;
@@ -22,9 +21,14 @@
   /** @type {HTMLVideoElement|null} */
   let videoEl = $state(null);
 
+  const cardType = $derived(
+    videoSrc.includes('tracker') ? 'tracker' :
+    (videoSrc.includes('Bullet') || videoSrc.includes('bullet')) ? 'bullet' :
+    'spacetime'
+  );
+
   onMount(async () => {
     await tick();
-    // Il doppio frame garantisce che il browser disegni la posizione di partenza prima dell'espansione
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         opening = true;
@@ -62,8 +66,16 @@
         <div class="card segm-card">
           <div class="segm-body">
             <div class="segm-text">
-              <h3 class="label">Segmentazione</h3>
-              <p>L'IA identifica e ritaglia la sagoma dell'atleta in diverse fases del salto.</p>
+              {#if cardType === 'tracker'}
+                <h3 class="label">Identità in Movimento</h3>
+                <p>Grazie alla Computer Vision, il sistema riconosce e segue ogni singolo atleta senza bisogno di sensori fisici.</p>
+              {:else if cardType === 'bullet'}
+                <h3 class="label">360°</h3>
+                <p>L'AI permette di congelare il tempo nel momento di massima tensione sportiva e ruotare l'inquadratura a 360° attorno all'atleta per vedere ogni dettaglio.</p>
+              {:else}
+                <h3 class="label">Segmentazione</h3>
+                <p>L'IA identifica e ritaglia la sagoma dell'atleta in diverse fasi del salto.</p>
+              {/if}
             </div>
             <div class="segm-rule">
               <span></span>
@@ -76,21 +88,49 @@
       </div>
 
       <div class="col right-col">
-        <div class="card main-card">
-          <h2>Spacetime<br>Slice</h2>
+        <div class="card main-card" class:main-card--compact={cardType === 'bullet'}>
+          {#if cardType === 'tracker'}
+            <h2>Tracker<br>Athletes</h2>
+          {:else if cardType === 'bullet'}
+            <h2>Bullet<br>Timing</h2>
+          {:else}
+            <h2>Spacetime<br>Slice</h2>
+          {/if}
           <div class="divider"></div>
-          <p class="subtitle">Scomposizione gesto sportivo in fotogrammi simultanei</p>
+          <p class="subtitle">
+            {#if cardType === 'tracker'}
+              Analisi istantanea dell'azione sportiva
+            {:else if cardType === 'bullet'}
+              Scansione orbitale di un istante sospeso
+            {:else}
+              Scomposizione gesto sportivo in fotogrammi simultanei
+            {/if}
+          </p>
         </div>
 
-        <div class="card info-card">
-          <h3 class="label">L'Esercito di Lenti</h3>
-          <p>Oltre 60 telecamere 4K sincronizzate al millisecondo catturano l'azione da ogni angolazione possibile.</p>
-        </div>
-
-        <div class="card info-card">
-          <h3 class="label">Velocità Record</h3>
-          <p>In soli 15-20 secondi, il sistema crea una ricostruzione 3D dell'azione, rendendo il replay disponibile quasi in tempo reale per il commento tecnico in diretta e per la diretta TV.</p>
-        </div>
+        {#if cardType === 'bullet'}
+          <div class="card figure-card">
+            <img src="/bullet_timing_figure.png" alt="3D athlete figure" class="figure-img" />
+          </div>
+        {:else if cardType === 'tracker'}
+          <div class="card info-card">
+            <h3 class="label">X-Ray delle Performance</h3>
+            <p>Velocità di punta, altezza dei salti, accelerazione e traiettorie vengono proiettate direttamente sullo schermo mentre l'azione si compie.</p>
+          </div>
+          <div class="card info-card">
+            <h3 class="label">Big Data</h3>
+            <p>L'AI elabora oltre 30 data-point al secondo per ogni atleta, trasformando la fatica in grafiche interattive istantanee.</p>
+          </div>
+        {:else}
+          <div class="card info-card">
+            <h3 class="label">L'Esercito di Lenti</h3>
+            <p>Oltre 60 telecamere 4K sincronizzate al millisecondo catturano l'azione da ogni angolazione possibile.</p>
+          </div>
+          <div class="card info-card">
+            <h3 class="label">Velocità Record</h3>
+            <p>In soli 15-20 secondi, il sistema crea una ricostruzione 3D dell'azione, rendendo il replay disponibile quasi in tempo reale per il commento tecnico in diretta e per la diretta TV.</p>
+          </div>
+        {/if}
       </div>
 
     </div>
@@ -134,12 +174,12 @@
     z-index: 10000;
     transition: opacity 0.2s, transform 0.2s;
   }
-  .close-btn:hover { 
-    opacity: 0.6; 
+  .close-btn:hover {
+    opacity: 0.6;
     transform: scale(1.05);
   }
 
-  /* ── Inner (Aumentato max-width e max-height) ── */
+  /* ── Inner ── */
   .overlay-inner {
     position: relative;
     width: 100%;
@@ -151,7 +191,7 @@
     box-sizing: border-box;
   }
 
-  /* ── Griglia (Aumentato il gap) ── */
+  /* ── Griglia ── */
   .grid {
     display: grid;
     grid-template-columns: 1.25fr 0.75fr;
@@ -160,7 +200,7 @@
     height: 100%;
   }
 
-  /* ── Colonne (Aumentato il gap) ── */
+  /* ── Colonne ── */
   .col {
     display: flex;
     flex-direction: column;
@@ -190,7 +230,7 @@
     display: block;
   }
 
-  /* ── Segmentazione (Aumentato padding) ── */
+  /* ── Segmentazione ── */
   .segm-card {
     flex: 0 0 auto;
   }
@@ -222,13 +262,17 @@
     background: #ffffff;
   }
 
-  /* ── Main card (Aumentato padding e font) ── */
+  /* ── Main card ── */
   .main-card {
     flex: 1;
     padding: 36px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+  }
+
+  .main-card--compact {
+    flex: 0 0 auto;
   }
 
   .main-card h2 {
@@ -256,10 +300,27 @@
     margin: 0;
   }
 
-  /* ── Info cards (Aumentato padding) ── */
+  /* ── Info cards ── */
   .info-card {
     flex: 0 0 auto;
     padding: 28px 32px;
+  }
+
+  /* ── Figure card (Bullet Timing) ── */
+  .figure-card {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .figure-img {
+    max-height: 100%;
+    max-width: 85%;
+    object-fit: contain;
+    display: block;
   }
 
   .label {
@@ -272,7 +333,6 @@
     margin: 0 0 12px 0;
   }
 
-  /* Testi generali portati a 16px */
   .segm-text p,
   .info-card p {
     font-size: 16px;

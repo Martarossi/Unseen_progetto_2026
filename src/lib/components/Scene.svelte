@@ -29,7 +29,7 @@
   /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
 
   /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
-  /** @type {SceneProps & { onCardClick?: (rect: CardRect | null) => void }} */
+  /** @type {SceneProps & { onCardClick?: (rect: CardRect | null, videoSrc?: string) => void }} */
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],
@@ -478,7 +478,21 @@
   videoSrc="/video_card/spacetime_slices.mov"
   cardTitle="SPACETIME SLICES"
   cardSubtitle="Scomposizione gesto sportivo in fotogrammi simultanei"
-  {onCardClick}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/spacetime_slices.mov')}
 />
-<VideoCard orbitProps={orbitProps2} label="VIDEOAI2" />
-<VideoCard orbitProps={orbitProps3} label="VIDEOAI3" />
+<VideoCard
+  orbitProps={orbitProps2}
+  label="VIDEOAI2"
+  videoSrc="/video_card/tracker.mov"
+  cardTitle="TRACKER ATHLETES"
+  cardSubtitle="Analisi istantanea dell'azione sportiva"
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/tracker.mov')}
+/>
+<VideoCard
+  orbitProps={orbitProps3}
+  label="VIDEOAI3"
+  videoSrc="/video_card/Bullet_time.mov"
+  cardTitle="BULLET TIMING"
+  cardSubtitle="Scansione orbitale di un istante sospeso"
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/Bullet_time.mov')}
+/>
