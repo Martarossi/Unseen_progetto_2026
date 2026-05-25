@@ -2,18 +2,21 @@
   /* Background */
   --colors-background-primary: #FFFFFF;
   --colors-background-secondary: #EDEEEF;
-  
+
   /* Content */
   --colors-content-primary: #030404;
   --colors-content-secondary: #797f88;
-  
+
   /* Filters */
   --colors-filters-selected: #4e7785;
   --colors-filters-text-selected: #FFFFFF;
-  
+
   /* Interactive */
   --colors-interactive-hover: #273b42;
   --colors-interactive-active: #273b42;
+
+  /* Brand */
+  --colors-brand-900: #273b42;
 }
 
 
