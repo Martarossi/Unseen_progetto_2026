@@ -143,8 +143,8 @@
       const bgScale = canvas.width / bgImg.width;
       const bgDrawHeight = bgImg.height * bgScale;
       const scrollY = window.scrollY;
-      const parallaxSpeed = 0.3; // Velocità differente rispetto allo scroll
-      const bgY = -scrollY * parallaxSpeed;
+      const parallaxSpeed = 1.2; // Velocità differente rispetto allo scroll
+      const bgY = scrollY * parallaxSpeed;
 
       ctx.globalAlpha = canvasBgOpacity;
       ctx.drawImage(bgImg, 0, bgY, canvas.width, bgDrawHeight);
@@ -488,10 +488,10 @@
     z-index: 9999;
     transform: translate(-50%, 28px);
     font-family: "Helvetica", "Arial", sans-serif;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     font-weight: 400;
     letter-spacing: 0.1em;
-    color: rgba(248, 248, 248, 0.65);
+    color: rgba(248, 248, 248, 0.92);
     white-space: nowrap;
   }
 
