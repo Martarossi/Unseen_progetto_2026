@@ -56,7 +56,7 @@
     if (browser) {
       // Parallax: background scrolls up at ~50% of page speed (100vh travel over full scroll range)
       gsap.to(".parallax-bg", {
-        yPercent: -80,
+        yPercent: -70,
         ease: "none",
         scrollTrigger: {
           start: 0,
@@ -147,7 +147,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 250vh; /* Extra height for 100vh of parallax travel (yPercent -80 × 250vh = -200vh) */
+    height: 340vh; /* Must satisfy: height × (1 - |yPercent|/100) ≥ 100vh → 340 × 0.3 = 102vh */
     z-index: -2;
     background-size: cover;
     background-position: center;
