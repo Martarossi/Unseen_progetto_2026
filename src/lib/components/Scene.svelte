@@ -28,7 +28,8 @@
 
   /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
 
-  /** @type {SceneProps} */
+  /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
+  /** @type {SceneProps & { onCardClick?: (rect: CardRect | null) => void }} */
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],
@@ -38,6 +39,7 @@
     orbitProps  = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    onCardClick = undefined,
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
@@ -470,6 +472,13 @@
   <T is={$gltf.scene} {position} {scale} {rotation} />
 {/if}
 
-<VideoCard {orbitProps} label="VIDEOAI1" />
+<VideoCard
+  {orbitProps}
+  label="VIDEOAI1"
+  videoSrc="/video_card/spacetime_slices.mov"
+  cardTitle="SPACETIME SLICES"
+  cardSubtitle="Scomposizione gesto sportivo in fotogrammi simultanei"
+  {onCardClick}
+/>
 <VideoCard orbitProps={orbitProps2} label="VIDEOAI2" />
 <VideoCard orbitProps={orbitProps3} label="VIDEOAI3" />

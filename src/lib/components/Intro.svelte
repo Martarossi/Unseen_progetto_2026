@@ -397,6 +397,7 @@
         tl.kill();
       };
     });
+
   });
 </script>
 
@@ -412,21 +413,25 @@
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
     <div class="texts-container">
       <div class="paragraph-wrapper" bind:this={p1}>
+        <span class="para-label"><span class="label-main">MILANO–CORTINA</span><span class="label-suffix"> // 2026</span></span>
+        <h2 class="para-title">ANIMA DIGITALE</h2>
         <p>
-          Per la prima volta nella storia le Olimpiadi<br />
-          <span class="akira-brand">Milano–Cortina 2026</span><br />
-          ridefiniscono l'esperienza olimpica attraverso un'<br />
-          <span class="akira-brand">Anima Digitale</span><br />
-          che trasforma la visione in immersione.
+          Per la prima volta nella storia, le Olimpiadi di
+          Milano-Cortina 2026 ridefiniscono l'esperienza
+          olimpica attraverso una visione che si
+          trasforma in totale immersione.
         </p>
       </div>
 
       <div class="paragraph-wrapper" bind:this={p2}>
+        <span class="para-label"><span class="label-main">SISTEMA INVISIBILE</span><span class="label-suffix"> // AI</span></span>
+        <h2 class="para-title">CONNESSIONI</h2>
         <p>
-          Ogni evento olimpico è costruito su ciò che vediamo:<br />
-          <span class="akira-brand">Velocità Performance Emozione</span><br />
-          Ma dietro ogni immagine esiste un sistema invisibile di<br />
-          <span class="akira-brand">Dati Connessioni e Tecnologia</span>
+          Dietro ogni immagine di velocità, performance
+          ed emozione che caratterizza l'evento
+          olimpico, si nasconde un'infrastruttura
+          fondamentale fatta di dati, connessioni e
+          tecnologia.
         </p>
       </div>
     </div>
@@ -533,28 +538,48 @@
   }
 
   .paragraph-wrapper {
-    font-family: "Helvetica", "Arial", sans-serif;
-    font-size: 1.7rem;
-    line-height: 1.45;
-    color: #F8F8F8;
     will-change: opacity, filter, transform;
     opacity: 0;
     transform: translateY(30px);
-    filter: blur(10px); /* Slightly stronger blur initially */
-    pointer-events: none; /* No pointer events until faded in */
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .para-label {
+    display: block;
+    font-family: "Akira Expanded", sans-serif;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .label-main {
+    color: var(--colors-brand-900, #273b42);
+  }
+
+  .label-suffix {
+    color: #F8F8F8;
+  }
+
+  .para-title {
+    font-family: "Akira Expanded", sans-serif;
+    font-weight: 900;
+    font-size: 2.6rem;
+    text-transform: uppercase;
+    color: var(--colors-brand-900, #273b42);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.1rem 0;
   }
 
   .paragraph-wrapper p {
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #F8F8F8;
     margin: 0;
-  }
-
-  .akira-brand {
-    font-family: "Akira Expanded", sans-serif;
-    font-weight: 800;
-    font-size: 1.4em;
-    line-height: 1.0;
-    text-transform: uppercase;
-    color: #030404;
-    display: inline-block;
+    max-width: 420px;
   }
 </style>
