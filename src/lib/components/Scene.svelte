@@ -3,6 +3,7 @@
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
   import { useRenderer } from "@threlte/core";
+  import VideoCard from "./VideoCard.svelte";
 
   const { renderer } = useRenderer();
 
@@ -20,15 +21,25 @@
    * @property {[number, number, number]} [rotation]
    * @property {number} [twistX]
    * @property {number} [twistZ]
+   * @property {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} [orbitProps]
+   * @property {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} [orbitProps2]
+   * @property {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} [orbitProps3]
    */
 
-  /** @type {SceneProps} */
+  /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
+
+  /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
+  /** @type {SceneProps & { onCardClick?: (rect: CardRect | null, videoSrc?: string) => void }} */
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],
     rotation = [0, 0, 0],
     twistX = 360,
     twistZ = 200,
+    orbitProps  = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    onCardClick = undefined,
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
@@ -279,3 +290,28 @@
 {#if $gltf}
   <T is={$gltf.scene} {position} {scale} {rotation} />
 {/if}
+
+<VideoCard
+  {orbitProps}
+  label="VIDEOAI1"
+  videoSrc="/video_card/spacetime_slices.mov"
+  cardTitle="SPACETIME SLICES"
+  cardSubtitle="Scomposizione gesto sportivo in fotogrammi simultanei"
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/spacetime_slices.mov')}
+/>
+<VideoCard
+  orbitProps={orbitProps2}
+  label="VIDEOAI2"
+  videoSrc="/video_card/tracker.mov"
+  cardTitle="TRACKER ATHLETES"
+  cardSubtitle="Analisi istantanea dell'azione sportiva"
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/tracker.mov')}
+/>
+<VideoCard
+  orbitProps={orbitProps3}
+  label="VIDEOAI3"
+  videoSrc="/video_card/Bullet_time.mov"
+  cardTitle="BULLET TIMING"
+  cardSubtitle="Scansione orbitale di un istante sospeso"
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/Bullet_time.mov')}
+/>

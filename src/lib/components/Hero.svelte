@@ -13,6 +13,8 @@
 
   let mouseX = $state(0);
   let mouseY = $state(0);
+  let hintX = $state(0);
+  let hintY = $state(0);
   let showLogo = $state(false);
   let isClicked = $state(false);
   let canvasBgOpacity = $state(1);
@@ -141,8 +143,8 @@
       const bgScale = canvas.width / bgImg.width;
       const bgDrawHeight = bgImg.height * bgScale;
       const scrollY = window.scrollY;
-      const parallaxSpeed = 0.3; // Velocità differente rispetto allo scroll
-      const bgY = -scrollY * parallaxSpeed;
+      const parallaxSpeed = 1.2; // Velocità differente rispetto allo scroll
+      const bgY = scrollY * parallaxSpeed;
 
       ctx.globalAlpha = canvasBgOpacity;
       ctx.drawImage(bgImg, 0, bgY, canvas.width, bgDrawHeight);
@@ -187,6 +189,8 @@
     const rect = heroRef.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
+    hintX = e.clientX;
+    hintY = e.clientY;
     lastMoveTime = Date.now();
     isIdle = false;
   }
@@ -368,6 +372,15 @@
   ></div>
 </div>
 
+{#if showLogo && !isClicked}
+  <div
+    class="click-hint"
+    style="left: {hintX}px; top: {hintY}px;"
+  >
+    click to reveal
+  </div>
+{/if}
+
 <style>
   .hero {
     --mask-radius: 180px;
@@ -451,7 +464,7 @@
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
     font-size: 18px;
-    color: #333;
+    color: #F8F8F8;
     z-index: 20;
     opacity: 0;
     white-space: nowrap;
@@ -464,9 +477,22 @@
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
     font-size: 14px;
-    color: #888;
+    color: #F8F8F8;
     z-index: 20;
     opacity: 0;
+  }
+
+  .click-hint {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, 28px);
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: rgba(248, 248, 248, 0.92);
+    white-space: nowrap;
   }
 
   .transition-overlay {

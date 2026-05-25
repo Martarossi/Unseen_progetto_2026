@@ -2,13 +2,26 @@
   import { onMount } from "svelte";
   import gsap from "gsap";
   import ScrollTrigger from "gsap/dist/ScrollTrigger";
-  import { Canvas } from "@threlte/core";
-  import Scene from "./Scene.svelte";
 
-  let { isClicked = false } = $props();
+  /**
+   * @typedef {{ opacity: number, groupRotY: number, riseY: number }} CardProps
+   */
+
+  let {
+    modelPosition = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    modelScale = $bindable(/** @type {[number, number, number]} */ ([1.5, 1.5, 1.5])),
+    modelRotation = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    currentTwistX = $bindable(360),
+    currentTwistZ = $bindable(200),
+    cardProps = /** @type {CardProps} */ ({ opacity: 0, groupRotY: 0, riseY: 0 }),
+    orbitProps  = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps2 = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    orbitProps3 = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
+    model3dVisible = $bindable(false),
+  } = $props();
 
   /** @type {HTMLElement|null} */
-  let introContainer = null;
+  let scrollWrapper = null;
   /** @type {HTMLElement|null} */
   let textImage = null;
   /** @type {HTMLElement|null} */
@@ -17,19 +30,6 @@
   let p2 = null;
   /** @type {HTMLElement|null} */
   let bigText = null;
-
-  // PROPRIETÀ TRIDIMENSIONALI: Variabili di stato reattive di Svelte 5 che controllano la posizione, la scala e la rotazione del modello 3D.
-  /** @type {[number, number, number]} */
-  let modelPosition = $state([0, 0, 0]);
-  /** @type {[number, number, number]} */
-  let modelScale = $state([1.5, 1.5, 1.5]);
-  /** @type {[number, number, number]} */
-  let modelRotation = $state([0, 0, 0]);
-  let currentTwistX = $state(360);
-  let currentTwistZ = $state(200);
-
-  // Controlla la visibilità del canvas: diventa true solo quando l'intro entra nel viewport
-  let canvasVisible = $state(false);
 
   // OGGETTO DI SUPPORTO GSAP: Contiene i valori intermedi che GSAP anima in modo fluido durante lo scrolling e che vengono poi mappati sullo stato 3D.
   const modelProps = {
@@ -55,18 +55,25 @@
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
+        // Sincronizza il centro dell'orbita di tutte e 3 le card con la posizione dell'oggetto 3D
+        orbitProps.centerX  = modelProps.posX;
+        orbitProps.centerY  = modelProps.posY;
+        orbitProps2.centerX = modelProps.posX;
+        orbitProps2.centerY = modelProps.posY;
+        orbitProps3.centerX = modelProps.posX;
+        orbitProps3.centerY = modelProps.posY;
       };
 
       // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per uno scorrimento ottimizzato, pilotando la narrazione e la rotazione del modello.
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: introContainer,
+          trigger: scrollWrapper,
           start: "top top",
-          end: "+=6500", // Ridotto per rendere lo scorrimento complessivo più rapido ed energico
-          scrub: 1.6,    // Impostato a 1.6 per offrire una risposta pronta all'avvio ed un rilascio morbidissimo con inerzia quando si smette di scrollare!
-          pin: true,
-          onEnter: () => { canvasVisible = true; },
-          onLeaveBack: () => { canvasVisible = false; },
+          end: "+=15000",
+          scrub: 2.8,
+          onEnter:      () => { model3dVisible = true; },
+          onEnterBack:  () => { model3dVisible = true; },
+          onLeaveBack:  () => { model3dVisible = false; },
         },
       });
 
@@ -150,6 +157,18 @@
       // --- FASE 5: Mantieni `p1` nitido fino all'uscita simultanea con `p2`.
       // Rimosso il fade parziale anticipato per assicurare che entrambi i paragrafi
       // salgano e si dissolvano nello stesso momento più avanti nella timeline.
+
+      // Mentre p2 appare, p1 si sfoca e svanisce progressivamente
+      tl.to(
+        p1,
+        {
+          opacity: 0.12,
+          filter: "blur(14px)",
+          duration: 2.2,
+          ease: "power1.inOut",
+        },
+        2.6,
+      );
 
       // Diminuisco il gap tra p1 e p2: faccio partire p2 e la rotazione del modello prima
       tl.to(
@@ -255,7 +274,7 @@
           duration: 0.8,
           ease: "power2.inOut",
         },
-        6.0,
+        6.1,
       );
 
       // Sincronizza il ritorno del modello al centro con la scomparsa dei paragrafi
@@ -309,70 +328,110 @@
         6.2,
       );
 
-      // --- FASE 10: Pausa di lettura sul testo full-screen ---
-      tl.to({}, { duration: 1.3 });
+      // --- VIDEOAI1: Card compare leggermente prima della fine del bigText (t=8.2 → 12.2) ---
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.2);
+      tl.fromTo(
+        orbitProps,
+        { angle: Math.PI, y: -3 },
+        { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
+        8.2
+      );
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.6);
+
+      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=9.0 → 13.0) ---
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.0);
+      tl.fromTo(
+        orbitProps2,
+        { angle: Math.PI, y: -3 },
+        { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
+        9.0
+      );
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.4);
+
+      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=9.8 → 13.8) ---
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.8);
+      tl.fromTo(
+        orbitProps3,
+        { angle: Math.PI, y: -3 },
+        { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
+        9.8
+      );
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.2);
+
+      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (8.2 → 13.8) ---
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 3.0,
+          rotY: Math.PI * 5.5,
+          rotZ: Math.PI * 3.0,
+          twistX: 90,
+          twistZ: 240,
+          scale: 2.0,
+          duration: 5.6,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        8.2
+      );
+
+      // Buffer: le card finiscono a t=13.8; il modello continua a ruotare/deformarsi
+      // fino a t=17.0 (3.2 unità ≈ 2823px di scroll) così lo scrub ha tempo di completarsi
+      // prima che il wrapper termini e Stats appaia.
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 4.5,
+          rotY: Math.PI * 7.5,
+          rotZ: Math.PI * 4.5,
+          twistX: 270,
+          twistZ: 420,
+          duration: 2.0,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        13.8,
+      );
 
       return () => {
         tl.kill();
       };
     });
+
   });
 </script>
 
-<div class="intro-container" bind:this={introContainer}>
-  <!-- CANVAS 3D DI THRELTE: Rendering in background dell'ambiente WebGL contenente la camera, le luci e il modello 3D interattivo -->
-  <div class="canvas-wrapper" class:visible={canvasVisible}>
-    {#if isClicked}
-      <Canvas
-        rendererParameters={{
-          alpha: true,
-          antialias: true,
-          powerPreference: "high-performance",
-        }}
-      >
-        <Scene
-          position={modelPosition}
-          scale={modelScale}
-          rotation={modelRotation}
-          twistX={currentTwistX}
-          twistZ={currentTwistZ}
-        />
-      </Canvas>
-    {/if}
-  </div>
-
+<div class="intro-scroll-wrapper" bind:this={scrollWrapper}>
+<div class="intro-container">
   <!-- ELEMENTI TESTUALI E INFOGRAFICA (OVERLAY HTML): Gestisce l'immagine di benvenuto e i testi narrativi disposti a cascata sulla sinistra -->
   <div class="overlay">
     <!-- IMMAGINE TESTUALE DI TAGLINE: L'immagine iniziale centrata che esprime il concetto cardine del progetto -->
     <div class="initial-text-wrapper" bind:this={textImage}>
-      <img
-        src="/nontuttociòcheconta.png"
-        alt="Non tutto ciò che conta è visibile"
-      />
+      <img src="/nontuttociòcheconta.png" alt="non tutto ciò che conta è visibile" class="tagline-image" />
     </div>
 
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
     <div class="texts-container">
       <div class="paragraph-wrapper" bind:this={p1}>
+        <span class="para-label"><span class="label-main">MILANO–CORTINA</span><span class="label-suffix"> // </span><span class="label-suffix"> 2026</span></span>
+        <h2 class="para-title">ANIMA DIGITALE</h2>
         <p>
-          Per la prima volta nella storia, le <span class="highlight"
-            >Olimpiadi di Milano-Cortina 2026</span
-          >
-          ridefiniscono l'esperienza olimpica attraverso un'<span
-            class="highlight">anima digitale</span
-          >
-          che trasforma la visione in immersione.
+          Per la prima volta nella storia, le Olimpiadi di
+          Milano-Cortina 2026 ridefiniscono l'esperienza
+          olimpica attraverso una visione che si
+          trasforma in totale immersione.
         </p>
       </div>
 
       <div class="paragraph-wrapper" bind:this={p2}>
+        <span class="para-label"><span class="label-main">SISTEMA INVISIBILE</span><span class="label-suffix"> // </span><span class="label-suffix"> AI</span></span>
+        <h2 class="para-title">CONNESSIONI</h2>
         <p>
-          Ogni evento olimpico è costruito su ciò che vediamo:<br />
-          <span class="highlight">velocità, performance, emozione.</span><br />
-          Ma dietro ogni immagine esiste un
-          <span class="highlight">sistema invisibile</span><br />
-          fatto di
-          <span class="highlight">dati, connessioni e tecnologia.</span>
+          Dietro ogni immagine di velocità, performance
+          ed emozione che caratterizza l'evento
+          olimpico, si nasconde un'infrastruttura
+          fondamentale fatta di dati, connessioni e
+          tecnologia.
         </p>
       </div>
     </div>
@@ -383,31 +442,32 @@
     </div>
   </div>
 </div>
+</div>
 
 <style>
+  .intro-scroll-wrapper {
+    height: 15000px;
+    position: relative;
+  }
+
   .intro-container {
     width: 100vw;
     height: 100vh;
-    position: relative;
-    background-color: transparent; /* Transparent so the home parallax background shows */
-    overflow: hidden;
-    /* margin-top: -35vh; Shift Intro up to bring sections closer on scroll */
-    pointer-events: none; /* Allow clicks to pass through to Hero underneath */
-  }
-
-  .canvas-wrapper {
-    position: absolute;
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
+    background-color: transparent;
+    overflow: hidden;
     pointer-events: none;
-    opacity: 0;
   }
 
-  .canvas-wrapper.visible {
-    opacity: 1;
+  @media (max-width: 799px) {
+    .intro-scroll-wrapper {
+      height: auto;
+    }
+
+    .intro-container {
+      position: relative;
+    }
   }
 
   .overlay {
@@ -435,12 +495,13 @@
     text-transform: uppercase;
     line-height: 0.88;
     letter-spacing: -0.03em;
-    color: #1a1a1a;
+    color: #F8F8F8;
     opacity: 0;
     pointer-events: none;
     z-index: 1;
     will-change: opacity, transform;
   }
+  
 
   /* Centered Text Image in first slide */
   .initial-text-wrapper {
@@ -456,7 +517,7 @@
     z-index: 10;
   }
 
-  .initial-text-wrapper img {
+  .tagline-image {
     width: 100%;
     height: auto;
     object-fit: contain;
@@ -477,25 +538,50 @@
   }
 
   .paragraph-wrapper {
-    font-family: "Helvetica", "Arial", sans-serif;
-    font-size: 1.7rem;
-    line-height: 1.45;
-    color: #1a1a1a;
-    transition:
-      filter 0.5s ease,
-      opacity 0.5s ease;
-    opacity: 0; /* Fully hidden initially! */
+    will-change: opacity, filter, transform;
+    opacity: 0;
     transform: translateY(30px);
-    filter: blur(10px); /* Slightly stronger blur initially */
-    pointer-events: none; /* No pointer events until faded in */
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .para-label {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-family: "Akira Expanded", sans-serif;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+
+  .label-main {
+    color: var(--colors-brand-900, #F8F8F8);
+  }
+
+  .label-suffix {
+    color: #F8F8F8;
+  }
+
+  .para-title {
+    font-family: "Akira Expanded", sans-serif;
+    font-weight: 900;
+    font-size: 2.6rem;
+    text-transform: uppercase;
+    color: var(--colors-brand-900, #273b42);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.1rem 0;
   }
 
   .paragraph-wrapper p {
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #F8F8F8;
     margin: 0;
-  }
-
-  .highlight {
-    color: #436d80; /* Elegant blue/grey highlight color matching the storyboard */
-    font-weight: 500;
+    max-width: 420px;
   }
 </style>

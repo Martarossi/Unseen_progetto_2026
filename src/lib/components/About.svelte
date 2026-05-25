@@ -118,11 +118,11 @@
             </div>
 
             <div class="footer-names">
-                <span>HERNANDEZ</span>
-                <span>MARCOLIN</span>
-                <span>PIZZIGONI</span>
-                <span>ROSSI</span>
-                <span>SACANNA</span>
+                <span>DYLAN HERNANDEZ</span>
+                <span>DENISE MARCOLIN</span>
+                <span>RICCARDO PIZZIGONI</span>
+                <span>MARTA ROSSI</span>
+                <span>DAVIDE SACANNA</span>
             </div>
         </div>
     </div>
@@ -153,7 +153,7 @@
 
     .about-container {
         height: 200vh;
-        color: #ffffff;
+        color: #F8F8F8;
         font-family: "Helvetica", sans-serif;
     }
 
@@ -208,7 +208,7 @@
     }
 
     .col h2 {
-        font-family: var(--font-primary), "Akira Expanded", sans-serif;
+        font-family: 'Akira Expanded', 'Arial Black', sans-serif;
         font-size: 28px;
         margin-bottom: 24px;
         font-weight: 900;
@@ -234,18 +234,20 @@
     }
 
     .huge-about-img {
-        width: 100%;
+        width: 92%;
         height: auto;
         object-fit: contain;
     }
 
     .footer-names {
+        font-family: 'Akira Expanded', 'Arial Black', sans-serif;
         display: flex;
         justify-content: space-between;
         font-size: 14px;
         font-weight: 900;
         text-transform: uppercase;
-        padding: 0 2%;
+        padding: 0 6% 0 4%; 
+        /* padding: primo numero in alto, secondo destra, terzo basso, quarto sinistra */
         opacity: 0.9;
     }
 
