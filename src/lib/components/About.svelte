@@ -118,11 +118,26 @@
             </div>
 
             <div class="footer-names">
-                <span>DYLAN HERNANDEZ</span>
-                <span>DENISE MARCOLIN</span>
-                <span>RICCARDO PIZZIGONI</span>
-                <span>MARTA ROSSI</span>
-                <span>DAVIDE SACANNA</span>
+                <div class="footer-person">
+                    <a href="https://www.instagram.com/dylanmeendez/" target="_blank" rel="noopener noreferrer">DYLAN HERNANDEZ</a>
+                    <a href="tel:+393206165915" class="footer-phone">320 616 5915</a>
+                </div>
+                <div class="footer-person">
+                    <a href="https://www.instagram.com/denimarcolin/" target="_blank" rel="noopener noreferrer">DENISE MARCOLIN</a>
+                    <a href="tel:+393279544765" class="footer-phone">327 954 4765</a>
+                </div>
+                <div class="footer-person">
+                    <a href="https://www.instagram.com/richi_pizzi/" target="_blank" rel="noopener noreferrer">RICCARDO PIZZIGONI</a>
+                    <a href="tel:+393409784270" class="footer-phone">340 978 4270</a>
+                </div>
+                <div class="footer-person">
+                    <a href="https://www.instagram.com/martarossi_9/" target="_blank" rel="noopener noreferrer">MARTA ROSSI</a>
+                    <a href="tel:+393348937521" class="footer-phone">334 893 7521</a>
+                </div>
+                <div class="footer-person">
+                    <a href="https://www.instagram.com/___.dxvide._/" target="_blank" rel="noopener noreferrer">DAVIDE SACANNA</a>
+                    <a href="tel:+393512454661" class="footer-phone">351 245 4661</a>
+                </div>
             </div>
         </div>
     </div>
@@ -246,9 +261,34 @@
         font-size: 14px;
         font-weight: 900;
         text-transform: uppercase;
-        padding: 0 6% 0 4%; 
+        padding: 0 6% 0 4%;
         /* padding: primo numero in alto, secondo destra, terzo basso, quarto sinistra */
         opacity: 0.9;
+    }
+
+    .footer-person {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .footer-names a {
+        color: inherit;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .footer-names a:hover {
+        opacity: 0.6;
+    }
+
+    .footer-phone {
+        font-size: 15px;
+        font-weight: 400;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        letter-spacing: 0.5px;
+        opacity: 0.6;
+        text-transform: none;
     }
 
     @media (max-width: 768px) {
