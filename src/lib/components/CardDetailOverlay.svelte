@@ -26,9 +26,9 @@
 
   async function handleClose() {
     closing = true;
-    // Aspetta che il fade-out sia quasi completato (la card 3D snap è coperta dall'overlay)
-    await new Promise(r => setTimeout(r, 490));
-    // Rimuove l'overlay e resetta expandCardIndex (card snappa all'orbita, non visibile)
+    // Fase 1: contenuto sparisce + card-glass-bg torna (0.35s)
+    // Fase 2: wrapper si dissolve (0.65s con 0.2s delay) → totale ~870ms
+    await new Promise(r => setTimeout(r, 870));
     closeOverlay();
   }
 </script>
@@ -155,11 +155,27 @@
     opacity: 1;
   }
 
-  /* Fade-out alla chiusura: copre il ritorno della card 3D all'orbita */
+  /* Chiusura: specchio inverso dell'apertura */
   .overlay-wrapper.closing {
-    opacity: 0;
     pointer-events: none;
-    transition: opacity 0.5s ease !important;
+    opacity: 0 !important;
+    transition: opacity 0.65s ease 0.2s !important;
+  }
+
+  .overlay-wrapper.closing .close-btn {
+    opacity: 0 !important;
+    transition: opacity 0.2s ease !important;
+  }
+
+  .overlay-wrapper.closing .overlay-inner {
+    opacity: 0 !important;
+    transform: scale(0.97) !important;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  .overlay-wrapper.closing .card-glass-bg {
+    opacity: 1 !important;
+    transition: opacity 0.35s ease !important;
   }
 
   /* Layer che replica l'aspetto della card 3D glass durante l'espansione, poi si dissolve */
