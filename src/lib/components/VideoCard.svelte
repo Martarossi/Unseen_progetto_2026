@@ -1,6 +1,7 @@
 <script>
   import { T, useTask, useThrelte } from '@threlte/core';
   import * as THREE from 'three';
+  import gsap from 'gsap';
 
   /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
 
@@ -18,7 +19,9 @@
     videoSrc = '',
     cardTitle = '',
     cardSubtitle = '',
-    onCardClick = undefined
+    onCardClick = undefined,
+    isExpanding = false,
+    onCardExpanded = undefined,
   } = $props();
 
   const { camera } = useThrelte();
@@ -187,6 +190,45 @@
   /** @type {THREE.Mesh | undefined} */
   let cardMesh = $state(undefined);
 
+  // Flag non-reattivo: evita di avviare l'animazione GSAP più di una volta
+  let _expandStarted = false;
+
+  // Quando isExpanding diventa true: anima cardGroup in Three.js fino a riempire lo schermo
+  $effect(() => {
+    if (!isExpanding) {
+      _expandStarted = false;
+      return;
+    }
+    const group = cardGroup;
+    if (!group || _expandStarted) return;
+    _expandStarted = true;
+
+    const cam = camera.current;
+    if (!cam) { onCardExpanded?.(); return; }
+
+    // Calcola scala target: la card deve coprire l'intero viewport
+    const z_dist = cam.position.z - group.position.z;
+    const fov_rad = (cam.fov * Math.PI) / 180;
+    const focalLength = 1 / Math.tan(fov_rad / 2);
+    const aspect = window.innerWidth / window.innerHeight;
+    const scaleH = z_dist / ((CARD_H / 2) * focalLength);
+    const scaleW = (z_dist * aspect) / ((CARD_W / 2) * focalLength);
+    const targetScale = Math.max(scaleH, scaleW) * 1.08;
+
+    // GSAP anima la card 3D reale: posizione → centro, rotazione → frontale, scala → schermo pieno
+    const t1 = gsap.to(group.position, { x: 0, y: 0, duration: 0.9, ease: 'power3.inOut' });
+    const t2 = gsap.to(group.rotation, { y: 0, duration: 0.9, ease: 'power3.inOut' });
+    const t3 = gsap.to(group.scale, {
+      x: targetScale, y: targetScale, z: targetScale,
+      duration: 0.9,
+      ease: 'power3.inOut',
+    });
+    // Avvia il dissolve overlay al 60% dell'animazione: la dissolvenza si sovrappone alla fine dell'espansione
+    const expandTimer = gsap.delayedCall(0.42, () => onCardExpanded?.());
+
+    return () => { t1.kill(); t2.kill(); t3.kill(); expandTimer.kill(); };
+  });
+
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2(-9999, -9999);
   let hoverProgress = 0;
@@ -257,6 +299,8 @@
 
   useTask((delta) => {
     if (!cardGroup) return;
+    // GSAP gestisce position/rotation/scale durante l'espansione — non sovrascrivere
+    if (isExpanding) return;
 
     cardGroup.renderOrder = 1;
 

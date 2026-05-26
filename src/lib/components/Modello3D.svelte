@@ -21,7 +21,9 @@
    *   orbitProps3?: OrbitProps,
    *   visible?: boolean,
    *   isClicked?: boolean,
-   *   onCardClick?: (rect: { x: number, y: number, width: number, height: number } | null, videoSrc?: string) => void
+   *   onCardClick?: (rect: { x: number, y: number, width: number, height: number } | null, videoSrc?: string, cardIndex?: number) => void,
+   *   expandCardIndex?: number,
+   *   onCardExpanded?: () => void
    * }} */
   let {
     position = [0, 0, 0],
@@ -36,6 +38,8 @@
     visible = false,
     isClicked = false,
     onCardClick = undefined,
+    expandCardIndex = -1,
+    onCardExpanded = undefined,
   } = $props();
 </script>
 
@@ -59,6 +63,8 @@
         {orbitProps2}
         {orbitProps3}
         {onCardClick}
+        {expandCardIndex}
+        {onCardExpanded}
       />
     </Canvas>
   {/if}
