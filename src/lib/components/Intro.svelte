@@ -64,7 +64,7 @@
         orbitProps3.centerY = modelProps.posY;
       };
 
-      // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per 5000px di scorrimento, pilotando la narrazione e la rotazione del modello.
+      // TIMELINE GSAP CON PINNING: Fissa la sezione intro sullo schermo per uno scorrimento ottimizzato, pilotando la narrazione e la rotazione del modello.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
