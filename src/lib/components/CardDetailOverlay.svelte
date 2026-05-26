@@ -1,23 +1,11 @@
 <script>
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
 
-  /** @typedef {{ x: number, y: number, width: number, height: number } | null} CardRect */
-
-  /** @type {{ closeOverlay: () => void, videoSrc?: string, clickRect?: CardRect }} */
-  let { closeOverlay, videoSrc = '', clickRect = null } = $props();
-
-  const initialTransform = (() => {
-    if (!clickRect || typeof window === 'undefined') return '';
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const sx = clickRect.width / vw;
-    const sy = clickRect.height / vh;
-    const dx = clickRect.x + clickRect.width / 2 - vw / 2;
-    const dy = clickRect.y + clickRect.height / 2 - vh / 2;
-    return `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-  })();
+  /** @type {{ closeOverlay: () => void, videoSrc?: string }} */
+  let { closeOverlay, videoSrc = '' } = $props();
 
   let opening = $state(false);
+  let closing = $state(false);
   /** @type {HTMLVideoElement|null} */
   let videoEl = $state(null);
 
@@ -27,26 +15,33 @@
     'spacetime'
   );
 
+  // La card 3D ha già riempito lo schermo: l'overlay monta a schermo pieno e fa il dissolve
   onMount(async () => {
-    await tick();
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        opening = true;
-        if (videoEl) {
-          videoEl.play().catch(() => {});
-        }
-      });
-    });
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    opening = true;
+    setTimeout(() => {
+      if (videoEl) videoEl.play().catch(() => {});
+    }, 300);
   });
+
+  async function handleClose() {
+    closing = true;
+    // Fase 1: contenuto sparisce + card-glass-bg torna (0.35s)
+    // Fase 2: wrapper si dissolve (0.65s con 0.2s delay) → totale ~870ms
+    await new Promise(r => setTimeout(r, 870));
+    closeOverlay();
+  }
 </script>
 
 <div
   class="overlay-wrapper"
   class:opening
-  style:transform={opening ? 'none' : (initialTransform || 'scale(0.08)')}
-  style:border-radius={opening ? '0px' : '32px'}
+  class:closing
 >
-  <button class="close-btn" onclick={closeOverlay} aria-label="Chiudi overlay">&times;</button>
+  <!-- Layer scuro che corrisponde alla card 3D: si dissolve quando il contenuto appare -->
+  <div class="card-glass-bg"></div>
+
+  <button class="close-btn" onclick={handleClose} aria-label="Chiudi overlay">&times;</button>
 
   <div class="overlay-inner">
     <div class="grid">
@@ -138,26 +133,66 @@
 </div>
 
 <style>
-  /* ── Wrapper con effetto Sfocatura Sfondo ── */
   .overlay-wrapper {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(10, 20, 28, 0.4);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 60px;
     box-sizing: border-box;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    transition:
-      transform 0.65s cubic-bezier(0.4, 0, 0.2, 1),
-      border-radius 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+
+    background: rgba(7, 14, 22, 0.82);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    opacity: 0;
+    transition: opacity 0.75s ease;
   }
 
-  /* ── Bottone chiudi ── */
+  .overlay-wrapper.opening {
+    opacity: 1;
+  }
+
+  /* Chiusura: specchio inverso dell'apertura */
+  .overlay-wrapper.closing {
+    pointer-events: none;
+    opacity: 0 !important;
+    transition: opacity 0.65s ease 0.2s !important;
+  }
+
+  .overlay-wrapper.closing .close-btn {
+    opacity: 0 !important;
+    transition: opacity 0.2s ease !important;
+  }
+
+  .overlay-wrapper.closing .overlay-inner {
+    opacity: 0 !important;
+    transform: scale(0.97) !important;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  .overlay-wrapper.closing .card-glass-bg {
+    opacity: 1 !important;
+    transition: opacity 0.35s ease !important;
+  }
+
+  /* Layer che replica l'aspetto della card 3D glass durante l'espansione, poi si dissolve */
+  .card-glass-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, #07101f 0%, #0b1829 55%, #273B42 100%);
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+  .overlay-wrapper.opening .card-glass-bg {
+    opacity: 0;
+  }
+
   .close-btn {
     position: absolute;
     top: 50px;
@@ -172,16 +207,22 @@
     cursor: pointer;
     padding: 0;
     z-index: 10000;
-    transition: opacity 0.2s, transform 0.2s;
+    opacity: 0;
+    transition: opacity 0.35s ease, transform 0.2s;
   }
+
+  .overlay-wrapper.opening .close-btn {
+    opacity: 1;
+  }
+
   .close-btn:hover {
     opacity: 0.6;
     transform: scale(1.05);
   }
 
-  /* ── Inner ── */
   .overlay-inner {
     position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 1360px;
     height: 100%;
@@ -189,9 +230,17 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    opacity: 0;
+    transform: scale(0.97);
+    /* Nessun delay: il dissolve parte subito quando opening diventa true */
+    transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* ── Griglia ── */
+  .overlay-wrapper.opening .overlay-inner {
+    opacity: 1;
+    transform: scale(1);
+  }
+
   .grid {
     display: grid;
     grid-template-columns: 1.25fr 0.75fr;
@@ -200,7 +249,6 @@
     height: 100%;
   }
 
-  /* ── Colonne ── */
   .col {
     display: flex;
     flex-direction: column;
@@ -208,7 +256,6 @@
     height: 100%;
   }
 
-  /* ── Card base ── */
   .card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -217,7 +264,6 @@
     box-sizing: border-box;
   }
 
-  /* ── Video ── */
   .video-card {
     flex: 1;
     overflow: hidden;
@@ -230,7 +276,6 @@
     display: block;
   }
 
-  /* ── Segmentazione ── */
   .segm-card {
     flex: 0 0 auto;
   }
@@ -262,7 +307,6 @@
     background: #ffffff;
   }
 
-  /* ── Main card ── */
   .main-card {
     flex: 1;
     padding: 36px;
@@ -300,13 +344,11 @@
     margin: 0;
   }
 
-  /* ── Info cards ── */
   .info-card {
     flex: 0 0 auto;
     padding: 28px 32px;
   }
 
-  /* ── Figure card (Bullet Timing) ── */
   .figure-card {
     flex: 1;
     overflow: hidden;
