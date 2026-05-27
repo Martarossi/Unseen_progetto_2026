@@ -40,8 +40,8 @@
     rotX: 0,
     rotY: 0,
     rotZ: 0,
-    twistX: 360,
-    twistZ: 200,
+    twistX: 180,
+    twistZ: 120,
   };
 
   onMount(() => {
@@ -106,16 +106,15 @@
       );
 
       // --- FASE 2: Spostamento del modello 3D sulla destra ed avvio della rotazione orbitale tridimensionale simultanea su X, Y e Z ---
-      // Accelerate model movement to the right so the first paragraph can appear earlier
       tl.to(
         modelProps,
         {
           posX: 3.2,
           posY: 0,
           scale: 2.4,
-          rotX: Math.PI * 0.4, // Rotation in X
-          rotY: Math.PI * 0.7, // Rotation in Y
-          rotZ: Math.PI * 0.3, // Rotation in Z
+          rotX: Math.PI * 0.3,
+          rotY: Math.PI * 0.5,
+          rotZ: Math.PI * 0.2,
           duration: 1.6,
           ease: "power2.inOut",
           onUpdate: update3D,
@@ -138,13 +137,12 @@
         1.8,
       );
 
-      // Slightly shorten the rotation timing to match earlier p1 appearance
       tl.to(
         modelProps,
         {
-          rotX: Math.PI * 0.7,
-          rotY: Math.PI * 1.3,
-          rotZ: Math.PI * 0.6,
+          rotX: Math.PI * 0.55,
+          rotY: Math.PI * 1.0,
+          rotZ: Math.PI * 0.45,
           duration: 1.2,
           ease: "power1.inOut",
           onUpdate: update3D,
@@ -189,9 +187,9 @@
       tl.to(
         modelProps,
         {
-          rotX: Math.PI * 1.2,
-          rotY: Math.PI * 2.0,
-          rotZ: Math.PI * 1.1,
+          rotX: Math.PI * 0.9,
+          rotY: Math.PI * 1.5,
+          rotZ: Math.PI * 0.85,
           duration: 1.2,
           ease: "power2.inOut",
           onUpdate: update3D,
@@ -207,8 +205,8 @@
       tl.to(
         modelProps,
         {
-          twistX: 45.9,
-          twistZ: 270,
+          twistX: 20,
+          twistZ: 140,
           duration: 2.197,
           ease: "power2.inOut",
           onUpdate: update3D,
@@ -219,8 +217,8 @@
       tl.to(
         modelProps,
         {
-          twistX: -360,
-          twistZ: 360,
+          twistX: -150,
+          twistZ: 180,
           duration: 2.607,
           ease: "power2.inOut",
           onUpdate: update3D,
@@ -231,8 +229,8 @@
       tl.to(
         modelProps,
         {
-          twistX: 43.7,
-          twistZ: 270,
+          twistX: 20,
+          twistZ: 140,
           duration: 2.234,
           ease: "power2.inOut",
           onUpdate: update3D,
@@ -243,8 +241,8 @@
       tl.to(
         modelProps,
         {
-          twistX: 360,
-          twistZ: 200,
+          twistX: 180,
+          twistZ: 120,
           duration: 1.862,
           ease: "power2.inOut",
           onUpdate: update3D,
@@ -253,8 +251,6 @@
       );
 
       // --- FASE 8: Uscita paragrafi verso l'alto e ritorno del modello al centro dello schermo ---
-      // Far salire e scomparire entrambi i paragrafi contemporaneamente
-      // Accorcio il tempo di scroll tra p2 nitido e la sua scomparsa: anticipo le uscite dei paragrafi
       tl.to(
         p1,
         {
@@ -264,7 +260,7 @@
           duration: 0.8,
           ease: "power2.inOut",
         },
-        6.0,
+        4.8,
       );
 
       tl.to(
@@ -276,7 +272,7 @@
           duration: 0.8,
           ease: "power2.inOut",
         },
-        6.1,
+        4.9,
       );
 
       // Sincronizza il ritorno del modello al centro con la scomparsa dei paragrafi
@@ -286,20 +282,17 @@
           posX: 0,
           posY: 0,
           scale: 2.0,
-          rotX: Math.PI * 2.0,
-          rotY: Math.PI * 3.0,
-          rotZ: Math.PI * 1.8,
+          rotX: Math.PI * 1.5,
+          rotY: Math.PI * 2.2,
+          rotZ: Math.PI * 1.4,
           duration: 0.8,
           ease: "power2.inOut",
           onUpdate: update3D,
         },
-        6.0,
+        4.8,
       );
 
       // --- FASE 9: Testo full-screen sale dal basso insieme allo scroll (lineare, senza easing) ---
-      // Anticipato l'inizio del big text per ridurre il gap dopo la scomparsa dei paragrafi
-      // Anticipa l'entrata del bigText per ridurre il gap dopo la scomparsa dei paragrafi
-      // Text scrolls continuously bottom→top with no pause (ease:"none" keeps it 1:1 with scroll)
       tl.fromTo(
         bigText,
         { yPercent: 100, opacity: 1 },
@@ -310,89 +303,87 @@
           ease: "none",
           immediateRender: false,
         },
-        6.2,
+        5.0,
       );
 
       // MODELLO 3D DURANTE TESTO: deformazione continua per tutta la durata del testo in scorrimento
       tl.to(
         modelProps,
         {
-          rotX: Math.PI * 2.6,
-          rotY: Math.PI * 4.0,
-          rotZ: Math.PI * 2.3,
+          rotX: Math.PI * 2.0,
+          rotY: Math.PI * 3.0,
+          rotZ: Math.PI * 1.8,
           scale: 1.8,
-          twistX: 120,
-          twistZ: 320,
+          twistX: 60,
+          twistZ: 160,
           duration: 2.5,
           ease: "none",
           onUpdate: update3D,
         },
-        6.2,
+        5.0,
       );
 
-      // --- VIDEOAI1: Card compare leggermente prima della fine del bigText (t=8.2 → 12.2) ---
-      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.2);
+      // --- VIDEOAI1: Card compare leggermente prima della fine del bigText (t=7.0 → 11.0) ---
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.0);
       tl.fromTo(
         orbitProps,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        8.2
+        7.0
       );
-      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.6);
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 10.4);
 
-      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=9.0 → 13.0) ---
-      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.0);
+      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=7.8 → 11.8) ---
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.8);
       tl.fromTo(
         orbitProps2,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        9.0
+        7.8
       );
-      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.4);
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.2);
 
-      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=9.8 → 13.8) ---
-      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.8);
+      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=8.6 → 12.6) ---
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.6);
       tl.fromTo(
         orbitProps3,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        9.8
+        8.6
       );
-      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.2);
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.0);
 
-      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (8.2 → 13.8) ---
+      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (7.0 → 12.6) ---
       tl.to(
         modelProps,
         {
-          rotX: Math.PI * 3.0,
-          rotY: Math.PI * 5.5,
-          rotZ: Math.PI * 3.0,
-          twistX: 90,
-          twistZ: 240,
+          rotX: Math.PI * 2.3,
+          rotY: Math.PI * 4.2,
+          rotZ: Math.PI * 2.3,
+          twistX: 50,
+          twistZ: 130,
           scale: 2.0,
           duration: 5.6,
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        8.2
+        7.0
       );
 
-      // Buffer: le card finiscono a t=13.8; il modello continua a ruotare/deformarsi
-      // fino a t=17.0 (3.2 unità ≈ 2823px di scroll) così lo scrub ha tempo di completarsi
-      // prima che il wrapper termini e Stats appaia.
+      // Buffer finale: le card finiscono a t=12.6; il modello continua a ruotare.
       tl.to(
         modelProps,
         {
-          rotX: Math.PI * 4.5,
-          rotY: Math.PI * 7.5,
-          rotZ: Math.PI * 4.5,
-          twistX: 270,
-          twistZ: 420,
+          rotX: Math.PI * 3.5,
+          rotY: Math.PI * 5.8,
+          rotZ: Math.PI * 3.5,
+          twistX: 150,
+          twistZ: 200,
           duration: 2.0,
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        13.8,
+        12.6,
       );
 
       return () => {
