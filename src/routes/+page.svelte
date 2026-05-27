@@ -16,8 +16,24 @@
 
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
-    history.scrollRestoration = 'manual';
-    window.scrollTo(0, 0);
+    if ('scrollRestoration' in history) {
+      // Prefer manual so we can control programmatic scroll, but
+      // avoid forcing a scroll on back/forward navigation below.
+      history.scrollRestoration = 'manual';
+    }
+
+    // Only force scroll-to-top on a fresh navigation, not when the user
+    // returned via back/forward (which should preserve position).
+    try {
+      const navEntries = performance.getEntriesByType?.('navigation') || [];
+      const navType = navEntries[0]?.type;
+      if (navType !== 'back_forward') {
+        window.scrollTo(0, 0);
+      }
+    } catch (e) {
+      // If performance API is unavailable, don't force scroll to avoid
+      // breaking history restoration on some browsers.
+    }
   }
 
   let hasBeenClicked = $state(false);

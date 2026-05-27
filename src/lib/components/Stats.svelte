@@ -64,10 +64,11 @@
           trigger: sectionEl,
           start: "top top",
           end: "+=1000",
-          scrub: 2.8,
+          scrub: 1,
           pin: true,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
+          onLeave:     () => { model3dVisible = false; },
           onLeaveBack: () => { model3dVisible = false; },
         },
       });
@@ -83,13 +84,16 @@
         onUpdate: update3D,
       });
 
+      /** @type {gsap.core.Tween[]} */
+      const counterTweens = [];
+
       stats.forEach((stat, i) => {
         const el = counterEls[i];
         if (!el) return;
 
         const proxy = { val: 0 };
 
-        gsap.to(proxy, {
+        const tween = gsap.to(proxy, {
           val: stat.target,
           duration: stat.duration,
           ease: 'power1.out',
@@ -102,10 +106,12 @@
             if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
           },
         });
+        counterTweens.push(tween);
       });
 
       return () => {
         tl.kill();
+        counterTweens.forEach(t => t.kill());
       };
     });
 

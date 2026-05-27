@@ -131,7 +131,7 @@
           trigger: scrollWrapper,
           start: "top top",
           end: "+=3600",
-          scrub: 1.8,
+          scrub: 1,
         }
       });
 
