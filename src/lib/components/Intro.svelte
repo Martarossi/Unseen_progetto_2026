@@ -82,7 +82,7 @@
         textImage,
         {
           opacity: 0,
-          y: -80,
+          y: "-=80",
           filter: "blur(15px)",
           duration: 1.5,
           ease: "power2.inOut",
