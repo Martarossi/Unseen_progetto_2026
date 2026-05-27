@@ -29,7 +29,11 @@
   /** @typedef {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} OrbitProps */
 
   /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
-  /** @type {SceneProps & { onCardClick?: (rect: CardRect | null, videoSrc?: string) => void }} */
+  /** @type {SceneProps & {
+   *   onCardClick?: (rect: CardRect | null, videoSrc?: string, cardIndex?: number) => void,
+   *   expandCardIndex?: number,
+   *   onCardExpanded?: () => void
+   * }} */
   let {
     position = [0, 0, 0],
     scale = [1, 1, 1],
@@ -40,6 +44,8 @@
     orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     onCardClick = undefined,
+    expandCardIndex = -1,
+    onCardExpanded = undefined,
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
@@ -297,7 +303,9 @@
   videoSrc="/video_card/spacetime_slices.mov"
   cardTitle="SPACETIME SLICES"
   cardSubtitle="Scomposizione gesto sportivo in fotogrammi simultanei"
-  onCardClick={(rect) => onCardClick?.(rect, '/video_card/spacetime_slices.mov')}
+  isExpanding={expandCardIndex === 0}
+  onCardExpanded={expandCardIndex === 0 ? onCardExpanded : undefined}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/spacetime_slices.mov', 0)}
 />
 <VideoCard
   orbitProps={orbitProps2}
@@ -305,7 +313,9 @@
   videoSrc="/video_card/tracker.mov"
   cardTitle="TRACKER ATHLETES"
   cardSubtitle="Analisi istantanea dell'azione sportiva"
-  onCardClick={(rect) => onCardClick?.(rect, '/video_card/tracker.mov')}
+  isExpanding={expandCardIndex === 1}
+  onCardExpanded={expandCardIndex === 1 ? onCardExpanded : undefined}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/tracker.mov', 1)}
 />
 <VideoCard
   orbitProps={orbitProps3}
@@ -313,5 +323,7 @@
   videoSrc="/video_card/Bullet_time.mov"
   cardTitle="BULLET TIMING"
   cardSubtitle="Scansione orbitale di un istante sospeso"
-  onCardClick={(rect) => onCardClick?.(rect, '/video_card/Bullet_time.mov')}
+  isExpanding={expandCardIndex === 2}
+  onCardExpanded={expandCardIndex === 2 ? onCardExpanded : undefined}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/Bullet_time.mov', 2)}
 />

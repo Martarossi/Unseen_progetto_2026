@@ -17,11 +17,12 @@
 
   let hasBeenClicked = $state(false);
   let showCardOverlay = $state(false);
-  /** @type {{ x: number, y: number, width: number, height: number } | null} */
-  let clickRect = $state(null);
-  
+
   // Stato dinamico per passare il video corretto all'overlay separato
   let activeVideoSrc = $state("");
+
+  // Indice della card 3D in espansione (-1 = nessuna)
+  let expandCardIndex = $state(-1);
 
   // Stato del modello 3D condiviso tra Intro (lo anima via GSAP) e Modello3D (lo renderizza)
   /** @type {[number, number, number]} */
@@ -41,15 +42,34 @@
   let model3dVisible = $state(false);
 
   /**
-   * Gestisce il click sulle card tridimensionali salvando le coordinate dello schermo
-   * e la sorgente video passata dinamicamente dal componente interno della card.
    * @param {{ x: number, y: number, width: number, height: number } | null} rect
    * @param {string} videoSrc
+   * @param {number} cardIndex
    */
-  function handleCardClick(rect, videoSrc) {
-    clickRect = rect;
-    activeVideoSrc = videoSrc || "/video_card/spacetime_slices.mov"; // Fallback se vuoto
+  async function handleCardClick(rect, videoSrc = '', cardIndex = 0) {
+    // 1. Scroll per centrare la card
+    if (rect) {
+      const vh = window.innerHeight;
+      const screenDy = (rect.y + rect.height / 2) - vh / 2;
+      if (Math.abs(screenDy) > 80) {
+        window.scrollBy({ top: screenDy * 11, behavior: 'smooth' });
+        await new Promise(r => setTimeout(r, 460));
+      }
+    }
+    // Salva il video per l'overlay (aperto dopo l'espansione 3D)
+    activeVideoSrc = videoSrc || "/video_card/spacetime_slices.mov";
+    // 2. Avvia l'espansione della card 3D reale
+    expandCardIndex = cardIndex;
+  }
+
+  // Chiamato da VideoCard quando la card 3D ha raggiunto schermo pieno
+  function onCardExpanded() {
     showCardOverlay = true;
+  }
+
+  function closeOverlay() {
+    showCardOverlay = false;
+    expandCardIndex = -1;
   }
 
   onMount(() => {
@@ -90,14 +110,15 @@
   {orbitProps3}
   visible={model3dVisible}
   isClicked={hasBeenClicked}
-  onCardClick={(rect, videoSrc) => handleCardClick(rect, videoSrc)}
+  onCardClick={(rect, videoSrc, cardIndex) => handleCardClick(rect, videoSrc, cardIndex)}
+  {expandCardIndex}
+  {onCardExpanded}
 />
 
 {#if showCardOverlay}
   <CardDetailOverlay
-    closeOverlay={() => showCardOverlay = false}
+    {closeOverlay}
     videoSrc={activeVideoSrc}
-    {clickRect}
   />
 {/if}
 

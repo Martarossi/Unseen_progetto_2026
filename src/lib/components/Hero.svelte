@@ -417,7 +417,6 @@
   .text-piece {
     display: inline-block;
     opacity: 0;
-    will-change: opacity, filter, transform;
   }
 
   /* CONTENITORE RIVELAZIONE LOGO E SFONDO: Gestisce il canvas che mostra il logo interattivo mascherato radialmente dal mouse */
