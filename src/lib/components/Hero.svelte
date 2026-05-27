@@ -483,7 +483,7 @@
     font-size: 0.65rem;
     font-weight: 400;
     letter-spacing: 0.1em;
-    color: rgba(248, 248, 248, 0.92);
+    color: #4E7785;
     white-space: nowrap;
   }
 
