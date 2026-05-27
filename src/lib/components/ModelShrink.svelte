@@ -48,6 +48,7 @@
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
           onLeave:      () => { model3dVisible = false; },
+          onLeaveBack:  () => { model3dVisible = false; },
         },
       });
 
