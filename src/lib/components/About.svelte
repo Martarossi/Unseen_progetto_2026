@@ -279,7 +279,7 @@
         opacity: 0.6;
         text-transform: none;
     }
-
+    /* ── prova ── */
     /* ── Responsive ── */
     @media (max-width: 768px) {
         .content-columns {
