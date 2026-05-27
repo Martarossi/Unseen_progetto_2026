@@ -28,6 +28,7 @@
     closing = true;
     // Fase 1: contenuto sparisce + card-glass-bg torna (0.35s)
     // Fase 2: wrapper si dissolve (0.65s con 0.2s delay) → totale ~870ms
+    // commento
     await new Promise(r => setTimeout(r, 870));
     closeOverlay();
   }
