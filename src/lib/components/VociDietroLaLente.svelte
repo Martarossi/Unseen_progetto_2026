@@ -40,6 +40,7 @@
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
+        //prova commento
       };
 
       const tl = gsap.timeline({
