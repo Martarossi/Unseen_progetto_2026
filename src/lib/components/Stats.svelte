@@ -63,7 +63,7 @@
         scrollTrigger: {
           trigger: sectionEl,
           start: "top top",
-          end: "+=3000",
+          end: "+=1000",
           scrub: 2.8,
           pin: true,
           onEnter:     () => { model3dVisible = true; },
