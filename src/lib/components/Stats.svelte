@@ -168,6 +168,7 @@
       overflow: hidden;
     }
   }
+  /**/
 
   .stats-grid {
     display: grid;
