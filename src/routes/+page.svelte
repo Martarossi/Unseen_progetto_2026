@@ -6,6 +6,7 @@
   import Hero from "$lib/components/Hero.svelte";
   import Intro from "$lib/components/Intro.svelte";
   import Gallery from "$lib/components/Gallery.svelte";
+  import Footer from "$lib/components/Footer.svelte";
   import Stats from "$lib/components/Stats.svelte";
   import Citazione from "$lib/components/Citazione.svelte";
   import VociDietroLaLente from "$lib/components/VociDietroLaLente.svelte";
@@ -170,6 +171,8 @@
     />
 
     <Gallery />
+    <div class="footer-spacer"></div>
+    <Footer />
   {/if}
 </div>
 
@@ -208,5 +211,9 @@
 
   .page.clicked {
     background: transparent;
+  }
+
+  .footer-spacer {
+    height: 120px;
   }
 </style>
