@@ -90,14 +90,16 @@
         0,
       );
 
-      // Make the 3D model rise into view similarly to the text image
+      // Materializzazione: il modello nasce dal nulla al centro e ruota su se stesso
       tl.fromTo(
         modelProps,
-        { posY: -2 },
+        { posY: -0.5, scale: 0, rotY: 0 },
         {
-          posY: 1.5,
+          posY: 0.5,
+          scale: 1.5,
+          rotY: Math.PI * 2,
           duration: 1.5,
-          ease: "power2.out",
+          ease: "back.out(1.4)",
           onUpdate: update3D,
         },
         0,

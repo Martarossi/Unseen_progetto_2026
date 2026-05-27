@@ -42,6 +42,11 @@
 {@render children()}
 
 <style>
+	:global(body) {
+		margin: 0;
+		padding: 0;
+	}
+
 	.about-open-transition {
 		position: fixed;
 		top: 0;

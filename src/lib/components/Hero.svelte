@@ -324,6 +324,7 @@
   onmousemove={handleMouseMove}
   onclick={handleClick}
   role="presentation"
+  style="cursor: {showLogo && !isClicked ? 'pointer' : 'default'}"
 >
   <p class="description" bind:this={descriptionRef}>
     <span class="phrase">
@@ -340,14 +341,7 @@
     </span>
     <br />
     <span class="phrase">
-      {#each splitIntoLetters("fuori dall'") as char}
-        <span class="text-piece">{@html char}</span>
-      {/each}
-      <b>
-        {#each splitIntoLetters("inquadratura") as char}
-          <span class="text-piece">{@html char}</span>
-        {/each}
-      </b>
+      {#each splitIntoLetters("fuori dall'") as char}<span class="text-piece">{@html char}</span>{/each}<b>{#each splitIntoLetters("inquadratura") as char}<span class="text-piece">{@html char}</span>{/each}</b>
     </span>
   </p>
 
@@ -394,7 +388,6 @@
     text-align: center;
     background-color: transparent;
     overflow: hidden;
-    cursor: pointer;
   }
 
   .description {
