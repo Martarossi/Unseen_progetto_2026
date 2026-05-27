@@ -172,7 +172,7 @@
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 3vw;
+    gap: 8vw;
     align-items: start;
     width: 100%;
   }

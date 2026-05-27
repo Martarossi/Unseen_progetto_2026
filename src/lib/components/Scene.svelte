@@ -2,6 +2,7 @@
   import { T } from "@threlte/core";
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
+
   import { useRenderer } from "@threlte/core";
   import VideoCard from "./VideoCard.svelte";
 
@@ -48,7 +49,7 @@
     onCardExpanded = undefined,
   } = $props();
 
-  // CARICAMENTO MODELLO GLTF
+  // CARICAMENTO MODELLO GLTF: Carica il modello 3D in formato GLB con URL codificato per gestire gli spazi in sicurezza.
   const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb");
 
   // STATO PER LA TEXTURE FILTRATA PMREM
@@ -78,10 +79,39 @@
     }
   });
 
+  // STATO PER LA TEXTURE FILTRATA PMREM
+  let envMap = $state(null);
+
+  // GENERATORE PMREM:
+  // Converte la texture standard /SFONDO.png in una mappa di radianza mipmappata (PMREM).
+  // Questo consente a Three.js di sfocare fisicamente le riflessioni in base alla roughness dello shader!
+  $effect(() => {
+    if (renderer) {
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load('/SFONDO.png', (texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        
+        // Genera il target di rendering PMREM pre-filtrato
+        const pmremRT = pmremGenerator.fromEquirectangular(texture);
+        envMap = pmremRT.texture;
+
+        // Pulizia risorse per prevenire perdite di memoria
+        texture.dispose();
+        pmremGenerator.dispose();
+      });
+    }
+  });
+
+  // UNIFORMS PERSONALIZZATI: Definisce i parametri passati alla GPU per controllare la distorsione Twist X e Z e il bounding box
   const customUniforms = {
     twistXAngle: { value: (360 * Math.PI) / 180 },
     twistZAngle: { value: (200 * Math.PI) / 180 },
     bboxMin: { value: new THREE.Vector3(-1.5, -1.5, -1.5) },
+    bboxMax: { value: new THREE.Vector3(1.5, 1.5, 1.5) }
     bboxMax: { value: new THREE.Vector3(1.5, 1.5, 1.5) },
     uTime: { value: 0 },
     uScrollActivity: { value: 0 },
@@ -130,7 +160,45 @@
       uniform vec3 bboxMax;
     ` + shader.vertexShader;
 
-    // Applica la distorsione Twist geometrica sui vertici reali prima del rendering fisico
+    // Distorsione Twist X + Z sulle Normali in beginnormal_vertex
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <beginnormal_vertex>',
+      `
+      #include <beginnormal_vertex>
+      
+      // TWIST X
+      float factorX = (position.x - bboxMin.x) / (bboxMax.x - bboxMin.x);
+      factorX = clamp(factorX, 0.0, 1.0);
+      float angleX = twistXAngle * factorX;
+      
+      float cosX = cos(angleX);
+      float sinX = sin(angleX);
+      
+      vec3 twistedNormal = objectNormal;
+      twistedNormal.y = objectNormal.y * cosX - objectNormal.z * sinX;
+      twistedNormal.z = objectNormal.y * sinX + objectNormal.z * cosX;
+      
+      // TWIST Z (calcolato sulla coordinata Z ruotata per coerenza dell'ordine dei modificatori di Blender)
+      float twistedPosZ = position.y * sinX + position.z * cosX;
+      float factorZ = (twistedPosZ - bboxMin.z) / (bboxMax.z - bboxMin.z);
+      factorZ = clamp(factorZ, 0.0, 1.0);
+      float angleZ = twistZAngle * factorZ;
+      
+      float cosZ = cos(angleZ);
+      float sinZ = sin(angleZ);
+      
+      objectNormal.x = twistedNormal.x * cosZ - twistedNormal.y * sinZ;
+      objectNormal.y = twistedNormal.x * sinZ + twistedNormal.y * cosZ;
+      objectNormal.z = twistedNormal.z;
+      
+      // CALCOLO SFOCATURA FISICA (VETRO SATINATO DINAMICO SU ALCUNE ZONE CON LO SCROLL)
+      float spatialPattern = 0.5 + 0.5 * sin(position.x * 3.5 + position.y * 3.5);
+      float twistIntensity = clamp((abs(twistXAngle) + abs(twistZAngle)) / 30.0, 0.0, 1.0);
+      vRoughnessFactor = twistIntensity * spatialPattern * 0.95;
+      `
+    );
+
+    // Distorsione Twist X + Z sulle Posizioni in begin_vertex
     shader.vertexShader = shader.vertexShader.replace(
       '#include <begin_vertex>',
       `
@@ -206,6 +274,21 @@
   let sweepActive = false;
 
   // Aggiorna gli angoli del twist in base ai prop reattivi passati da GSAP
+      `
+    );
+
+    // Iniettiamo la variabile nel fragment shader per influenzare la rugosità fisica del materiale in tempo reale
+    shader.fragmentShader = `
+      varying float vRoughnessFactor;
+    ` + shader.fragmentShader;
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      'float roughnessFactor = roughness;',
+      'float roughnessFactor = roughness + vRoughnessFactor;'
+    );
+  };
+
+  // AGGIORNAMENTO REATTIVO UNIFORMS: Aggiorna i valori nella GPU quando cambiano gli angoli passati come prop, impostando un coefficiente bilanciato di distorsione
   $effect(() => {
     customUniforms.twistXAngle.value = (twistX * 2.8 * Math.PI) / 180;
     customUniforms.twistZAngle.value = (twistZ * 2.8 * Math.PI) / 180;
@@ -258,6 +341,7 @@
   });
 
   // Calcola il bounding box dinamico dell'oggetto GLTF per calcolare correttamente i fattori del Twist
+  // AGGIORNAMENTO BOUNDING BOX: Calcola dinamicamente le dimensioni del modello per scalare correttamente la deformazione Twist
   $effect(() => {
     if ($gltf && $gltf.scene) {
       const box = new THREE.Box3().setFromObject($gltf.scene);
@@ -285,10 +369,12 @@
   });
 </script>
 
+<!-- CONFIGURAZIONE DELLA CAMERA: Imposta la camera prospettica principale e vi associa una luce direzionale frontale -->
 <T.PerspectiveCamera makeDefault position={[0, 0, 10]}>
   <T.DirectionalLight position={[5, 10, 5]} intensity={3} />
 </T.PerspectiveCamera>
 
+<!-- SISTEMA DI ILLUMINAZIONE: Dispone le luci ambientali, direzionali e puntiformi necessarie per esaltare le trasparenze e le ombre del vetro -->
 <T.AmbientLight intensity={0.8} />
 <T.DirectionalLight position={[-5, -5, -5]} intensity={1.5} color="#b0c4de" />
 <T.PointLight position={[0, 0, 5]} intensity={2.0} distance={15} />
