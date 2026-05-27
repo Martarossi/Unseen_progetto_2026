@@ -28,7 +28,6 @@
     closing = true;
     // Fase 1: contenuto sparisce + card-glass-bg torna (0.35s)
     // Fase 2: wrapper si dissolve (0.65s con 0.2s delay) → totale ~870ms
-    // commento
     await new Promise(r => setTimeout(r, 870));
     closeOverlay();
   }
@@ -134,27 +133,25 @@
 </div>
 
 <style>
-  .overlay-wrapper {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 60px;
-    box-sizing: border-box;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+.overlay-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-    background: rgba(7, 14, 22, 0.82);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    opacity: 0;
-    transition: opacity 0.75s ease;
-  }
+  background: url('/SFONDO.png') center / cover no-repeat;
+  opacity: 0;
+  transition: opacity 0.75s ease;
+}
 
-  .overlay-wrapper.opening {
-    opacity: 1;
-  }
+.overlay-wrapper.opening {
+  opacity: 1;
+}
 
   /* Chiusura: specchio inverso dell'apertura */
   .overlay-wrapper.closing {
@@ -258,8 +255,10 @@
   }
 
   .card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 32px;
     color: #ffffff;
     box-sizing: border-box;
