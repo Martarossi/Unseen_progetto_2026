@@ -11,7 +11,9 @@
    *   videoSrc?: string,
    *   cardTitle?: string,
    *   cardSubtitle?: string,
-   *   onCardClick?: (rect: CardRect | null) => void
+   *   onCardClick?: (rect: CardRect | null) => void,
+   *   isExpanding?: boolean,
+   *   onCardExpanded?: () => void
    * }} */
   let {
     orbitProps = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 },
@@ -203,7 +205,7 @@
     if (!group || _expandStarted) return;
     _expandStarted = true;
 
-    const cam = camera.current;
+    const cam = /** @type {THREE.PerspectiveCamera} */ (camera.current);
     if (!cam) { onCardExpanded?.(); return; }
 
     // Calcola scala target: la card deve coprire l'intero viewport

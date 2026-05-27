@@ -289,6 +289,7 @@
   };
 
   // Funzione ultra-rapida per campionare punti in modo uniforme sulla superficie dei triangoli (Barycentric Sampling)
+  /** @param {THREE.BufferGeometry} geometry @param {number} count */
   function samplePointsFromGeometry(geometry, count) {
     const positionAttr = geometry.attributes.position;
     if (!positionAttr) return geometry;
@@ -370,6 +371,7 @@
 
   // ANIMAZIONE UNIFORMS: Loop continuo per uTime e interpolazione morbida dell'attività di scorrimento
   $effect(() => {
+    /** @type {number} */
     let rafId;
     const animate = () => {
       customUniforms.uTime.value += 0.015;
@@ -401,6 +403,7 @@
   // CONVERSIONE MESH -> POINTS PARTICELLE DENSE: Nasconde le mesh solide originali del modello e le sostituisce con un sistema ad alta densità.
   $effect(() => {
     if ($gltf && $gltf.scene) {
+      /** @type {THREE.Mesh[]} */
       const meshesToConvert = [];
       $gltf.scene.traverse((child) => {
         if (child instanceof THREE.Mesh && !child.userData.isParticleConverted) {
@@ -454,7 +457,7 @@
         points.rotation.copy(mesh.rotation);
         points.scale.copy(mesh.scale);
         
-        mesh.parent.add(points);
+        mesh.parent?.add(points);
       });
     }
   });
