@@ -1,6 +1,8 @@
 <footer class="footer">
+  <div class="footer-grain" aria-hidden="true"></div>
+
   <span class="footer-title">LE OLIMPIADI DEGLI INVISIBILI</span>
-  <span class="footer-copy">©</span>
+  <span class="footer-copy">&copy;</span>
   <img src="/logopolimi.png" alt="Politecnico di Milano 1863" class="footer-logo" />
 </footer>
 
@@ -13,10 +15,28 @@
     justify-content: space-between;
     padding: 22px 48px;
     box-sizing: border-box;
+    isolation: isolate;
 
-    backdrop-filter: blur(40px) brightness(1.05);
-    -webkit-backdrop-filter: blur(40px) brightness(1.05);
-    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(72px);
+    -webkit-backdrop-filter: blur(72px);
+    background: transparent;
+  }
+
+  .footer-grain {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: 0.22;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px 200px;
+  }
+
+  .footer > :not(.footer-grain) {
+    position: relative;
+    z-index: 1;
   }
 
   .footer-title {

@@ -214,6 +214,6 @@
   }
 
   .footer-spacer {
-    height: 120px;
+    height: 48px;
   }
 </style>
