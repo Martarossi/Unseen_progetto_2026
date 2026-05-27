@@ -16,6 +16,8 @@
 
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
+    history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
   }
 
   let hasBeenClicked = $state(false);
