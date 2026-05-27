@@ -120,23 +120,23 @@
             <div class="footer-names">
                 <div class="footer-person">
                     <a href="https://www.instagram.com/dylanmeendez/" target="_blank" rel="noopener noreferrer">DYLAN HERNANDEZ</a>
-                    <a href="tel:+393206165915" class="footer-phone">320 616 5915</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=dh.mendez33@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: dh.mendez33@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/denimarcolin/" target="_blank" rel="noopener noreferrer">DENISE MARCOLIN</a>
-                    <a href="tel:+393279544765" class="footer-phone">327 954 4765</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=deni.marcolin@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: deni.marcolin@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/richi_pizzi/" target="_blank" rel="noopener noreferrer">RICCARDO PIZZIGONI</a>
-                    <a href="tel:+393409784270" class="footer-phone">340 978 4270</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=richipizzi04@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: richipizzi04@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/martarossi_9/" target="_blank" rel="noopener noreferrer">MARTA ROSSI</a>
-                    <a href="tel:+393348937521" class="footer-phone">334 893 7521</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=marta2005rossi@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: marta2005rossi@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/___.dxvide._/" target="_blank" rel="noopener noreferrer">DAVIDE SACANNA</a>
-                    <a href="tel:+393512454661" class="footer-phone">351 245 4661</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=davidesacanna@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: davidesacanna@gmail.com</a>
                 </div>
             </div>
         </div>
