@@ -1,75 +1,53 @@
 <script>
     import { onMount, tick } from "svelte";
     import gsap from "gsap";
-    import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
     let { closeOverlay } = $props();
 
-    /** @type {HTMLElement|null} */
-    let wrapperRef = null;
-    /** @type {HTMLElement|null} */
-    let containerRef = null;
     /** @type {HTMLElement|null} */
     let leftColumn = null;
     /** @type {HTMLElement|null} */
     let rightColumn = null;
     let opening = $state(false);
 
+    const FOCUSED = { filter: "blur(0px)",  opacity: 1,    duration: 0.4, ease: "power2.out" };
+    const BLURRED = { filter: "blur(14px)", opacity: 0.35, duration: 0.4, ease: "power2.out" };
+
+    function onEnterLeft()  { gsap.to(leftColumn,  FOCUSED); }
+    function onLeaveLeft()  { gsap.to(leftColumn,  BLURRED); }
+    function onEnterRight() { gsap.to(rightColumn, FOCUSED); }
+    function onLeaveRight() { gsap.to(rightColumn, BLURRED); }
+
     onMount(async () => {
         await tick();
         opening = true;
-
-        gsap.registerPlugin(ScrollTrigger);
-
-        // Colonna di sinistra: parte nitida, diventa sfocata
-        gsap.fromTo(
-            leftColumn,
-            { filter: "blur(0px)", opacity: 1 },
-            {
-                filter: "blur(12px)",
-                opacity: 0.7,
-                scrollTrigger: {
-                    trigger: containerRef,
-                    scroller: wrapperRef,
-                    start: "top top",
-                    end: "bottom bottom",
-                    scrub: true,
-                },
-            },
-        );
-
-        // Colonna di destra: parte sfocata, diventa nitida
-        gsap.fromTo(
-            rightColumn,
-            { filter: "blur(12px)", opacity: 0.7 },
-            {
-                filter: "blur(0px)",
-                opacity: 1,
-                scrollTrigger: {
-                    trigger: containerRef,
-                    scroller: wrapperRef,
-                    start: "top top",
-                    end: "bottom bottom",
-                    scrub: true,
-                },
-            },
-        );
+        gsap.set(leftColumn,  { filter: "blur(14px)", opacity: 0.35 });
+        gsap.set(rightColumn, { filter: "blur(14px)", opacity: 0.35 });
     });
 </script>
 
-<div class="about-wrapper" class:opening={opening} bind:this={wrapperRef}>
-    <div class="about-container" bind:this={containerRef}>
+<div class="about-wrapper" class:opening>
+    <div class="about-container">
         <div class="sticky-content">
+
+            <!-- Top bar -->
             <div class="top-bar">
                 <button
                     class="close-btn"
                     onclick={closeOverlay}
-                    aria-label="Close">&times;</button
-                >
+                    aria-label="Close"
+                >&times;</button>
             </div>
 
+            <!-- Two-column text area -->
             <div class="content-columns">
-                <div class="col left-col" bind:this={leftColumn}>
+                <div
+                    class="col left-col"
+                    bind:this={leftColumn}
+                    role="region"
+                    onmouseenter={onEnterLeft}
+                    onmouseleave={onLeaveLeft}
+                >
                     <h2>CHI SIAMO?</h2>
                     <p>
                         Siamo cinque studenti del corso di Design della
@@ -88,7 +66,13 @@
                     </p>
                 </div>
 
-                <div class="col right-col" bind:this={rightColumn}>
+                <div
+                    class="col right-col"
+                    bind:this={rightColumn}
+                    role="region"
+                    onmouseenter={onEnterRight}
+                    onmouseleave={onLeaveRight}
+                >
                     <h2>COME NASCE UNSEEN?</h2>
                     <p>
                         Un-seen nasce per esplorare ciò che normalmente resta
@@ -109,6 +93,7 @@
                 </div>
             </div>
 
+            <!-- Full-width image -->
             <div class="huge-image-container">
                 <img
                     src="/about-us.png"
@@ -117,6 +102,7 @@
                 />
             </div>
 
+            <!-- Footer names — tutto dentro lo stesso div -->
             <div class="footer-names">
                 <div class="footer-person">
                     <a href="https://www.instagram.com/dylanmeendez/" target="_blank" rel="noopener noreferrer">DYLAN HERNANDEZ</a>
@@ -139,9 +125,11 @@
                     <a href="tel:+393512454661" class="footer-phone">351 245 4661</a>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
 
 <style>
     .about-wrapper {
@@ -184,6 +172,7 @@
         overflow: hidden;
     }
 
+    /* ── Top bar ── */
     .top-bar {
         display: flex;
         justify-content: flex-end;
@@ -197,7 +186,6 @@
         cursor: pointer;
         font-size: 50px;
         color: white;
-        text-decoration: none;
         line-height: 0.8;
         padding: 0;
         transition: opacity 0.2s;
@@ -207,6 +195,7 @@
         opacity: 0.7;
     }
 
+    /* ── Two columns ── */
     .content-columns {
         display: flex;
         justify-content: space-between;
@@ -214,7 +203,7 @@
         align-items: center;
         padding: 0 5%;
         gap: 8%;
-        margin-top: -20px; /* Slight adjustment to center visually */
+        margin-top: -20px;
     }
 
     .col {
@@ -239,13 +228,13 @@
         text-align: left;
     }
 
+    /* ── Image ── */
     .huge-image-container {
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 30px;
         width: 100%;
-        padding: 5 0%;
     }
 
     .huge-about-img {
@@ -254,6 +243,7 @@
         object-fit: contain;
     }
 
+    /* ── Footer names ── */
     .footer-names {
         font-family: 'Akira Expanded', 'Arial Black', sans-serif;
         display: flex;
@@ -262,7 +252,6 @@
         font-weight: 900;
         text-transform: uppercase;
         padding: 0 6% 0 4%;
-        /* padding: primo numero in alto, secondo destra, terzo basso, quarto sinistra */
         opacity: 0.9;
     }
 
@@ -291,19 +280,29 @@
         text-transform: none;
     }
 
+    /* ── Responsive ── */
     @media (max-width: 768px) {
         .content-columns {
             flex-direction: column;
             gap: 30px;
         }
+
         .col h2 {
             font-size: 20px;
         }
+
         .col p {
             font-size: 14px;
         }
+
         .huge-image-container {
             margin-bottom: 20px;
+        }
+
+        .footer-names {
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
         }
     }
 </style>
