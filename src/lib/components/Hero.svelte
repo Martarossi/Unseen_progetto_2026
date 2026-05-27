@@ -469,7 +469,7 @@
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
     font-size: 14px;
-    color: #F8F8F8;
+    color: #4E7785;
     z-index: 20;
     opacity: 0;
   }

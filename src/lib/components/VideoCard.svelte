@@ -31,7 +31,7 @@
   const ORBIT_RADIUS = 3.5;
   const CARD_W = 3.6;
   const CARD_H = 2.025; // 16:9
-  const CARD_DEPTH = 0.07;
+  const CARD_DEPTH = 0.03;
   const CORNER_R = 0.22; // raggio angoli fronte – non clampato dalla depth con ExtrudeGeometry
 
   // Forma arrotondata: angoli esatti anche sullo spessore

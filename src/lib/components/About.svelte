@@ -152,6 +152,7 @@
         height: 100vh;
         overflow-x: hidden;
         overflow-y: auto;
+        overscroll-behavior: contain;
         z-index: 9999;
         background: radial-gradient(
             circle at 50% 50%,
