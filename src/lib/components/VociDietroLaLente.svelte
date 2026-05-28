@@ -55,19 +55,20 @@
         },
       });
 
-      // Left blurs out as right clears — mirrored on scroll back
+      // Hold phase at start (position 0–1.5): left stays sharp and readable
+      // Then cross-fade: left blurs out, right clears in
       tl.to(pLeft, {
         opacity: 0.12,
         filter: "blur(14px)",
         duration: 2,
         ease: "power1.inOut",
-      }, 0);
+      }, 1.5);
 
       tl.to(pRight, {
         filter: "blur(0px)",
         duration: 2,
         ease: "power1.inOut",
-      }, 0);
+      }, 1.5);
 
       tl.fromTo(
         modelProps,
@@ -129,28 +130,28 @@
   }
 
   .voci-left {
-    width: 26%;
+    width: 30%;
     will-change: opacity, filter;
   }
 
   .voci-right {
-    width: 26%;
+    width: 30%;
     will-change: opacity, filter;
     filter: blur(12px);
   }
 
   .text-regular {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(14px, 1.05vw, 17px);
+    font-size: clamp(17px, 1.4vw, 22px);
     line-height: 1.6;
     color: #f8f8f8;
-    margin: 0 0 1.2rem;
+    margin: 0;
     font-weight: 400;
   }
 
   .text-bold {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(15px, 1.15vw, 18px);
+    font-size: clamp(19px, 1.6vw, 26px);
     font-weight: 700;
     line-height: 1.5;
     color: #f8f8f8;
@@ -159,7 +160,7 @@
 
   .voci-right p {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(14px, 1.05vw, 17px);
+    font-size: clamp(17px, 1.4vw, 22px);
     line-height: 1.6;
     color: #f8f8f8;
     margin: 0;
