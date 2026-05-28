@@ -23,11 +23,11 @@
     posX: 0,
     posY: 0,
     scale: 2.0,
-    rotX: Math.PI * 6.0,
-    rotY: Math.PI * 9.5,
-    rotZ: Math.PI * 6.0,
-    twistX: 400,
-    twistZ: 560,
+    rotX: Math.PI * 6.5,
+    rotY: Math.PI * 10.5,
+    rotZ: Math.PI * 6.5,
+    twistX: 250,
+    twistZ: 320,
   };
 
   onMount(() => {
@@ -40,15 +40,14 @@
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
-        //prova commento
       };
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top top",
-          end: "+=2000",
-          scrub: 1,
+          start: "top bottom",
+          end: "+=3000",
+          scrub: 3,
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
           onLeave:      () => { model3dVisible = false; },
@@ -70,20 +69,19 @@
         ease: "power1.inOut",
       }, 0);
 
-      // Model deforms while staying centred
       tl.fromTo(
         modelProps,
         {
           posX: 0, posY: 0, scale: 2.0,
-          rotX: Math.PI * 6.0, rotY: Math.PI * 9.5, rotZ: Math.PI * 6.0,
-          twistX: 400, twistZ: 560,
+          rotX: Math.PI * 6.5, rotY: Math.PI * 10.5, rotZ: Math.PI * 6.5,
+          twistX: 250, twistZ: 320,
         },
         {
-          rotX: Math.PI * 7.5,
-          rotY: Math.PI * 12.0,
-          rotZ: Math.PI * 7.5,
-          twistX: 270,
-          twistZ: 420,
+          rotX: Math.PI * 9.0,
+          rotY: Math.PI * 14.5,
+          rotZ: Math.PI * 9.0,
+          twistX: 480,
+          twistZ: 620,
           duration: 4,
           ease: "power1.inOut",
           onUpdate: update3D,
@@ -113,7 +111,7 @@
 
 <style>
   .voci-scroll-wrapper {
-    height: 2000px;
+    height: 3000px;
     position: relative;
   }
 

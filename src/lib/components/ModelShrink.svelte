@@ -19,11 +19,11 @@
     posX: 0,
     posY: 0,
     scale: 2.0,
-    rotX: Math.PI * 6.0,
-    rotY: Math.PI * 9.5,
-    rotZ: Math.PI * 6.0,
-    twistX: 400,
-    twistZ: 560,
+    rotX: Math.PI * 9.0,
+    rotY: Math.PI * 14.5,
+    rotZ: Math.PI * 9.0,
+    twistX: 480,
+    twistZ: 620,
   };
 
   onMount(() => {
@@ -42,8 +42,8 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=1000",
-          scrub: 1,
+          end: "+=2000",
+          scrub: 2,
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
           onLeave:      () => { model3dVisible = false; },
@@ -55,13 +55,13 @@
         modelProps,
         {
           posX: 0, posY: 0, scale: 2.0,
-          rotX: Math.PI * 6.0, rotY: Math.PI * 9.5, rotZ: Math.PI * 6.0,
-          twistX: 400, twistZ: 560,
+          rotX: Math.PI * 9.0, rotY: Math.PI * 14.5, rotZ: Math.PI * 9.0,
+          twistX: 480, twistZ: 620,
         },
         {
           posX: 0, posY: 0, scale: 0,
-          rotX: Math.PI * 7.0, rotY: Math.PI * 12.0, rotZ: Math.PI * 6.0,
-          twistX: 540, twistZ: 720,
+          rotX: Math.PI * 7.0, rotY: Math.PI * 11.5, rotZ: Math.PI * 6.8,
+          twistX: 240, twistZ: 300,
           duration: 4.0,
           ease: "power2.in",
           onUpdate: update3D,
@@ -82,7 +82,7 @@
   .model-shrink-wrapper {
     /* height = animation distance + 100vh ensures Gallery enters viewport
        exactly when scroll reaches end of animation (model fully gone) */
-    height: calc(1000px + 100vh);
+    height: calc(2000px + 100vh);
     position: relative;
   }
 </style>

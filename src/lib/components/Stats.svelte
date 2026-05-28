@@ -34,6 +34,8 @@
   ];
 
   /** @type {HTMLElement|null} */
+  let scrollWrapper = null;
+  /** @type {HTMLElement|null} */
   let sectionEl = null;
 
   /** @type {(HTMLElement|null)[]} */
@@ -43,8 +45,25 @@
     rotX: Math.PI * 4.5,
     rotY: Math.PI * 7.5,
     rotZ: Math.PI * 4.5,
-    twistX: 270,
-    twistZ: 420,
+    twistX: 160,
+    twistZ: 220,
+  };
+
+  const circleState = {
+    rotX: Math.PI * 5.0,
+    rotY: Math.PI * 8.0,
+    rotZ: Math.PI * 5.0,
+    twistX: 60,
+    twistZ: 60,
+  };
+
+  // Stato finale di Stats: il modello inizia a risvegliarsi mentre la sezione sale
+  const wakeState = {
+    rotX: Math.PI * 6.5,
+    rotY: Math.PI * 10.5,
+    rotZ: Math.PI * 6.5,
+    twistX: 250,
+    twistZ: 320,
   };
 
   onMount(() => {
@@ -59,27 +78,46 @@
         currentTwistZ = modelProps.twistZ;
       };
 
+      // Trigger sul wrapper (2000px): sticky CSS, niente pin GSAP.
+      // Fase 1 (0–500px):   modello → cerchio
+      // Fase 2 (500–1250px): pausa statica (contatori in lettura)
+      // Fase 3 (1250–2000px): modello si risveglia mentre la sezione sale
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionEl,
+          trigger: scrollWrapper,
           start: "top top",
-          end: "+=1000",
-          scrub: 1,
-          pin: true,
+          end: "+=2000",
+          scrub: 2,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
           onLeaveBack: () => { model3dVisible = false; },
         },
       });
 
+      // Fase 1: si sistema a cerchio
       tl.to(modelProps, {
-        rotX: Math.PI * 6.0,
-        rotY: Math.PI * 9.5,
-        rotZ: Math.PI * 6.0,
-        twistX: 400,
-        twistZ: 560,
-        duration: 4.0,
-        ease: "none",
+        rotX: circleState.rotX,
+        rotY: circleState.rotY,
+        rotZ: circleState.rotZ,
+        twistX: circleState.twistX,
+        twistZ: circleState.twistZ,
+        duration: 1.0,
+        ease: "power2.out",
+        onUpdate: update3D,
+      });
+
+      // Fase 2: pausa statica — l'utente legge i contatori
+      tl.to({}, { duration: 1.5 });
+
+      // Fase 3: il modello si risveglia mentre la sezione inizia a salire
+      tl.to(modelProps, {
+        rotX: wakeState.rotX,
+        rotY: wakeState.rotY,
+        rotZ: wakeState.rotZ,
+        twistX: wakeState.twistX,
+        twistZ: wakeState.twistZ,
+        duration: 1.5,
+        ease: "power1.inOut",
         onUpdate: update3D,
       });
 
@@ -97,7 +135,7 @@
           duration: stat.duration,
           ease: 'power1.out',
           scrollTrigger: {
-            trigger: sectionEl,
+            trigger: scrollWrapper,
             start: 'top top',
             toggleActions: 'play none none reset',
           },
@@ -139,6 +177,7 @@
   });
 </script>
 
+<div class="stats-scroll-wrapper" bind:this={scrollWrapper}>
 <section bind:this={sectionEl} class="stats-section">
   <div class="stats-grid">
     {#each stats as stat, i}
@@ -152,8 +191,13 @@
   </div>
   <p class="stats-label">ANALISI AUTOMATIZZATA CONTENUTI · OLYMPIC BROADCASTING</p>
 </section>
+</div>
 
 <style>
+  .stats-scroll-wrapper {
+    position: relative;
+  }
+
   .stats-section {
     position: relative;
     width: 100%;
@@ -167,7 +211,13 @@
   }
 
   @media (min-width: 800px) {
+    .stats-scroll-wrapper {
+      height: 2000px;
+    }
+
     .stats-section {
+      position: sticky;
+      top: 0;
       height: 100vh;
       min-height: unset;
       overflow: hidden;
