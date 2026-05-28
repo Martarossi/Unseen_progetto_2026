@@ -28,6 +28,16 @@
   let lastMoveTime = Date.now();
   let isIdle = true;
 
+  /** @type {gsap.core.Tween | null} */
+  let scrollPromptPulse = null;
+
+  $effect(() => {
+    if (scrollY > 0 && scrollPromptPulse) {
+      scrollPromptPulse.kill();
+      scrollPromptPulse = null;
+    }
+  });
+
   function initCanvas() {
     if (!canvasRef) return;
     const canvas = /** @type {HTMLCanvasElement} */ (canvasRef);
@@ -261,7 +271,7 @@
       },
     );
 
-    // Fa comparire "scroll down to explore" con 2 secondi di ritardo aggiuntivi
+    // Fa comparire "scroll down to explore" con 2 secondi di ritardo aggiuntivi, poi avvia il pulse
     gsap.fromTo(
       ".scroll-prompt",
       { opacity: 0, y: 20 },
@@ -270,7 +280,16 @@
         y: 0,
         duration: 1,
         ease: "power3.out",
-        delay: 2.5,
+        delay: 1.2,
+        onComplete: () => {
+          scrollPromptPulse = gsap.to(".scroll-prompt", {
+            opacity: 0.2,
+            duration: 0.7,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+        },
       },
     );
   }

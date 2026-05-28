@@ -68,7 +68,6 @@
           pin: true,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
-          onLeave:     () => { model3dVisible = false; },
           onLeaveBack: () => { model3dVisible = false; },
         },
       });
@@ -163,7 +162,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 12vh 6vw 8vh;
+    padding: 4vh 6vw 8vh;
     box-sizing: border-box;
   }
 

@@ -47,7 +47,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=4000",
+          end: "+=2000",
           scrub: 1,
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
@@ -113,7 +113,7 @@
 
 <style>
   .voci-scroll-wrapper {
-    height: 4000px;
+    height: 2000px;
     position: relative;
   }
 

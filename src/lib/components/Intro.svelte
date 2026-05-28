@@ -69,7 +69,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=15000",
+          end: "+=14000",
           scrub: 1,
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
@@ -379,7 +379,7 @@
           rotZ: Math.PI * 3.5,
           twistX: 150,
           twistZ: 200,
-          duration: 2.0,
+          duration: 1.0,
           ease: "power1.inOut",
           onUpdate: update3D,
         },
@@ -439,7 +439,7 @@
 
 <style>
   .intro-scroll-wrapper {
-    height: 15000px;
+    height: 14000px;
     position: relative;
   }
 

@@ -19,11 +19,11 @@
     posX: 0,
     posY: 0,
     scale: 2.0,
-    rotX: Math.PI * 3.0,
-    rotY: Math.PI * 5.5,
-    rotZ: Math.PI * 3.0,
-    twistX: 90,
-    twistZ: 240,
+    rotX: Math.PI * 6.0,
+    rotY: Math.PI * 9.5,
+    rotZ: Math.PI * 6.0,
+    twistX: 400,
+    twistZ: 560,
   };
 
   onMount(() => {
@@ -42,7 +42,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=2000",
+          end: "+=1000",
           scrub: 1,
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
@@ -51,7 +51,6 @@
         },
       });
 
-      // Parte centrato a scala piena, ruota lentamente e si rimpicciolisce fino a sparire
       tl.fromTo(
         modelProps,
         {
@@ -77,20 +76,13 @@
   });
 </script>
 
-<div class="model-shrink-wrapper" bind:this={scrollWrapper}>
-  <div class="model-shrink-sticky"></div>
-</div>
+<div class="model-shrink-wrapper" bind:this={scrollWrapper}></div>
 
 <style>
   .model-shrink-wrapper {
-    height: 2000px;
+    /* height = animation distance + 100vh ensures Gallery enters viewport
+       exactly when scroll reaches end of animation (model fully gone) */
+    height: calc(1000px + 100vh);
     position: relative;
-  }
-
-  .model-shrink-sticky {
-    width: 100vw;
-    height: 100vh;
-    position: sticky;
-    top: 0;
   }
 </style>
