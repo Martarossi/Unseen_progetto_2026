@@ -40,6 +40,7 @@
     rotation = [0, 0, 0],
     twistX = 360,
     twistZ = 200,
+    visible = false,
     orbitProps  = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps2 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps3 = /** @type {OrbitProps} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
@@ -365,23 +366,24 @@
   }
 
   $effect(() => {
+    if (!visible) return;
     customUniforms.twistXAngle.value = (twistX * 2.8 * Math.PI) / 180;
     customUniforms.twistZAngle.value = (twistZ * 2.8 * Math.PI) / 180;
   });
 
-  // ANIMAZIONE UNIFORMS: Loop continuo per uTime e interpolazione morbida dell'attività di scorrimento
+  // ANIMAZIONE UNIFORMS: Loop continuo per uTime e interpolazione morbida dell'attività di scorrimento.
+  // Si avvia solo quando il modello è visibile per non stressare la GPU inutilmente.
   $effect(() => {
+    if (!visible) return;
     /** @type {number} */
     let rafId;
     const animate = () => {
       customUniforms.uTime.value += 0.015;
 
-      // Misura quanto è attiva la deformazione rispetto ai valori di default (360 e 200)
       const activityX = Math.abs(twistX - 360) / 360.0;
       const activityZ = Math.abs(twistZ - 200) / 200.0;
       const targetActivity = Math.max(activityX, activityZ);
 
-      // Interpolazione fluida della turbolenza (effetto lerp ridotto a 0.035 per una decelerazione estremamente morbida!)
       customUniforms.uScrollActivity.value += (targetActivity - customUniforms.uScrollActivity.value) * 0.035;
 
       rafId = requestAnimationFrame(animate);

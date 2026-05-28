@@ -46,11 +46,12 @@
 <div class="model3d-layer" class:visible>
   {#if isClicked}
     <Canvas
+      autoRender={visible}
       createRenderer={(canvas) => new THREE.WebGLRenderer({
         canvas,
         alpha: true,
         antialias: true,
-        powerPreference: "high-performance",
+        powerPreference: "default",
       })}
     >
       <Scene
@@ -59,6 +60,7 @@
         {rotation}
         {twistX}
         {twistZ}
+        {visible}
         {orbitProps}
         {orbitProps2}
         {orbitProps3}

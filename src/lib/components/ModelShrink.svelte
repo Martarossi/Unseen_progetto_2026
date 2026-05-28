@@ -59,7 +59,7 @@
           twistX: 480, twistZ: 620,
         },
         {
-          posX: 0, posY: 0, scale: 0,
+          posX: 0, posY: 0, scale: 0.01,
           rotX: Math.PI * 7.0, rotY: Math.PI * 11.5, rotZ: Math.PI * 6.8,
           twistX: 240, twistZ: 300,
           duration: 4.0,
