@@ -78,7 +78,13 @@
     let idleTargetX = canvas.width / 2;
     let idleTargetY = canvas.height / 2;
 
+    const TRAIL_DURATION = 1000; // ms prima che la scia svanisca completamente
+    /** @type {{x: number, y: number, time: number}[]} */
+    let cursorHistory = [];
+
     function loop() {
+      const now = performance.now();
+
       if (!imgLoaded || !bgLoaded) {
         animationFrame = requestAnimationFrame(loop);
         return;
@@ -111,29 +117,36 @@
         currentY += (mouseY - currentY) * 0.1;
       }
 
-      // Fade mask
-      maskCtx.globalCompositeOperation = "destination-out";
-      maskCtx.fillStyle = "rgba(0,0,0,0.03)"; // Adjust for tail length
-      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-      maskCtx.globalCompositeOperation = "source-over";
-
-      // Draw reveal spot
+      // Campiona ogni frame per una scia continua e fluida
       if (showLogo) {
-        const gradient = maskCtx.createRadialGradient(
-          currentX,
-          currentY,
-          0,
-          currentX,
-          currentY,
-          revealRadius,
-        );
-        gradient.addColorStop(0, "rgba(255,255,255,1)");
-        gradient.addColorStop(1, "rgba(255,255,255,0)");
+        cursorHistory.push({ x: currentX, y: currentY, time: now });
+        // Rimuovi i punti più vecchi di TRAIL_DURATION
+        const cutoff = now - TRAIL_DURATION;
+        cursorHistory = cursorHistory.filter(p => p.time > cutoff);
+      }
 
-        maskCtx.fillStyle = gradient;
-        maskCtx.beginPath();
-        maskCtx.arc(currentX, currentY, revealRadius, 0, Math.PI * 2);
-        maskCtx.fill();
+      // Cancella completamente la mask e ridisegna solo la cronologia con fade basato sull'età
+      maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+
+      if (showLogo) {
+        for (const point of cursorHistory) {
+          const age = now - point.time;
+          // Fade lineare: alpha 1 → 0 in TRAIL_DURATION ms, con ease-out
+          const alpha = Math.pow(Math.max(0, 1 - age / TRAIL_DURATION), 1.5);
+          if (alpha < 0.01) continue;
+
+          const gradient = maskCtx.createRadialGradient(
+            point.x, point.y, 0,
+            point.x, point.y, revealRadius,
+          );
+          gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+          gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+          maskCtx.fillStyle = gradient;
+          maskCtx.beginPath();
+          maskCtx.arc(point.x, point.y, revealRadius, 0, Math.PI * 2);
+          maskCtx.fill();
+        }
       }
 
       // Clear main canvas
