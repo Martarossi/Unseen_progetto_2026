@@ -59,11 +59,11 @@
 
   // Stato finale di Stats: il modello inizia a risvegliarsi mentre la sezione sale
   const wakeState = {
-    rotX: Math.PI * 6.5,
-    rotY: Math.PI * 10.5,
-    rotZ: Math.PI * 6.5,
-    twistX: 250,
-    twistZ: 320,
+    rotX: Math.PI * 5.5,
+    rotY: Math.PI * 9.0,
+    rotZ: Math.PI * 5.5,
+    twistX: 155,
+    twistZ: 175,
   };
 
   onMount(() => {

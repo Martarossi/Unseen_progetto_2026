@@ -23,11 +23,11 @@
     posX: 0,
     posY: 0,
     scale: 2.0,
-    rotX: Math.PI * 6.5,
-    rotY: Math.PI * 10.5,
-    rotZ: Math.PI * 6.5,
-    twistX: 250,
-    twistZ: 320,
+    rotX: Math.PI * 5.5,
+    rotY: Math.PI * 9.0,
+    rotZ: Math.PI * 5.5,
+    twistX: 155,
+    twistZ: 175,
   };
 
   onMount(() => {
@@ -50,8 +50,6 @@
           scrub: 3,
           onEnter:      () => { model3dVisible = true; },
           onEnterBack:  () => { model3dVisible = true; },
-          onLeave:      () => { model3dVisible = false; },
-          onLeaveBack:  () => { model3dVisible = false; },
         },
       });
 
@@ -74,15 +72,15 @@
         modelProps,
         {
           posX: 0, posY: 0, scale: 2.0,
-          rotX: Math.PI * 6.5, rotY: Math.PI * 10.5, rotZ: Math.PI * 6.5,
-          twistX: 250, twistZ: 320,
+          rotX: Math.PI * 5.5, rotY: Math.PI * 9.0, rotZ: Math.PI * 5.5,
+          twistX: 155, twistZ: 175,
         },
         {
-          rotX: Math.PI * 9.0,
-          rotY: Math.PI * 14.5,
-          rotZ: Math.PI * 9.0,
-          twistX: 480,
-          twistZ: 620,
+          rotX: Math.PI * 7.0,
+          rotY: Math.PI * 11.5,
+          rotZ: Math.PI * 7.0,
+          twistX: 195,
+          twistZ: 210,
           duration: 4,
           ease: "power1.inOut",
           onUpdate: update3D,
