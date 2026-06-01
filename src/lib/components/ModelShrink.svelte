@@ -41,13 +41,13 @@
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top top",
+          start: "top bottom",
           end: "+=2000",
-          scrub: 2,
-          onEnter:      () => { model3dVisible = true; },
-          onEnterBack:  () => { model3dVisible = true; },
-          onLeave:      () => { model3dVisible = false; },
-          onLeaveBack:  () => { model3dVisible = true; },
+          scrub: true,
+          onEnter:     () => { model3dVisible = true; },
+          onEnterBack: () => { model3dVisible = true; },
+          onLeave:     () => { model3dVisible = false; },
+          onLeaveBack: () => { model3dVisible = true; },
         },
       });
 
@@ -80,9 +80,10 @@
 
 <style>
   .model-shrink-wrapper {
-    /* height = animation distance + 100vh ensures Gallery enters viewport
-       exactly when scroll reaches end of animation (model fully gone) */
-    height: calc(2000px + 100vh);
+    /* start="top bottom": trigger begins when this element's top hits viewport bottom,
+       which is exactly when VociDietroLaLente's trigger ends (no gap).
+       height=2000px: Gallery enters viewport precisely when shrink completes. */
+    height: 2000px;
     position: relative;
   }
 </style>
