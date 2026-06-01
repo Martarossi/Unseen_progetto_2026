@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   /** @type {{ closeOverlay: () => void, videoSrc?: string }} */
   let { closeOverlay, videoSrc = '' } = $props();
@@ -19,10 +19,10 @@
   /** @type {Record<string, Array<{label: string, text: string}>>} */
   const allSlides = {
     spacetime: [
-      { label: 'Segmentazione', text: "L'IA identifica e ritaglia la sagoma dell'atleta in diverse fasi del salto." },
+      { label: 'Isolamento', text: "Un algoritmo di IA mappa l'ambiente e separa l'atleta dallo sfondo complesso e ultra-riflettente della neve o del ghiaccio." },
       { label: 'Scomposizione', text: "L'AI divide l'azione in \"fette temporali\" significative (ad esempio, ogni mezzo secondo di volo)." },
-      { label: 'Fusione', text: "L'IA sovrappone queste fette su un unico sfondo 3D fluido, creando un'immagine dove passato e presente convivono." },
-      { label: 'Performance', text: "Lo Spacetime Slices è stato utilizzato per discipline come salto con gli sci, snowboard e pattinaggio perché presentano movimenti ad alta dinamicità in cui l'occhio umano fatica a percepire i dettagli tecnici." }
+      { label: 'Fusione', text: "Successivamente, l'AI unisce le diverse fasi del movimento sequenziale all'interno di un'unica immagine composita e fluida, in un ambiente 3D." },
+      { label: 'Performance', text: "Lo Spacetime Slices è stato utilizzato per discipline come salto con gli sci e snowboard, dove l'occhio umano fatica a percepire i dettagli tecnici di movimenti così dinamici." }
     ],
     tracker: [
       { label: 'Identità in Movimento', text: "Grazie alla Computer Vision, il sistema riconosce e segue ogni singolo atleta senza bisogno di sensori fisici." },
@@ -40,12 +40,34 @@
 
   const currentSlides = $derived(allSlides[cardType] ?? allSlides['spacetime']);
 
+  /** @type {ReturnType<typeof setInterval>|null} */
+  let autoTimer = null;
+
+  function startTimer() {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(() => {
+      activeSlide = (activeSlide + 1) % currentSlides.length;
+    }, 2000);
+  }
+
   function prevSlide() {
     activeSlide = (activeSlide - 1 + currentSlides.length) % currentSlides.length;
+    startTimer();
   }
 
   function nextSlide() {
     activeSlide = (activeSlide + 1) % currentSlides.length;
+    startTimer();
+  }
+
+  /** @param {MouseEvent} e */
+  function handleNavClick(e) {
+    const rect = /** @type {HTMLElement} */ (e.currentTarget).getBoundingClientRect();
+    if (e.clientX - rect.left < rect.width / 2) {
+      prevSlide();
+    } else {
+      nextSlide();
+    }
   }
 
   onMount(async () => {
@@ -54,9 +76,15 @@
     setTimeout(() => {
       if (videoEl) videoEl.play().catch(() => {});
     }, 300);
+    startTimer();
+  });
+
+  onDestroy(() => {
+    if (autoTimer) clearInterval(autoTimer);
   });
 
   async function handleClose() {
+    if (autoTimer) clearInterval(autoTimer);
     closing = true;
     await new Promise(r => setTimeout(r, 870));
     closeOverlay();
@@ -98,20 +126,18 @@
         </div>
 
         {#if cardType === 'spacetime'}
-          <div class="card info-card">
-            <h3 class="label">L'Esercito di Lenti</h3>
-            <p>Oltre 60 telecamere 4K sincronizzate al millisecondo catturano l'azione da ogni angolazione possibile.</p>
-          </div>
-          <div class="card info-card">
-            <h3 class="label">Velocità Record</h3>
-            <p>In soli 15-20 secondi, il sistema crea una ricostruzione 3D dell'azione, rendendo il replay disponibile quasi in tempo reale per il commento tecnico in diretta e per la diretta TV.</p>
+          <div class="card info-card info-card-double">
+            <h3 class="label">Fotogrammi</h3>
+            <p>In soli 15-20 secondi, il sistema crea una ricostruzione 3D dell'azione che "moltiplica" l'atleta sullo schermo: lo spettatore può così osservare stacco, rotazione e atterraggio contemporaneamente nello stesso fotogramma.</p>
+            <div class="info-sep"></div>
+            <h3 class="label">Esercito di Lenti</h3>
+            <p>Oltre 60 telecamere senza operatore e sincronizzate al millisecondo catturano l'azione da ogni angolazione possibile.</p>
           </div>
         {:else if cardType === 'tracker'}
-          <div class="card info-card">
+          <div class="card info-card info-card-double">
             <h3 class="label">X-Ray delle Performance</h3>
             <p>Velocità di punta, altezza dei salti, accelerazione e traiettorie vengono proiettate direttamente sullo schermo mentre l'azione si compie.</p>
-          </div>
-          <div class="card info-card">
+            <div class="info-sep"></div>
             <h3 class="label">Big Data</h3>
             <p>L'AI elabora oltre 30 data-point al secondo per ogni atleta, trasformando la fatica in grafiche interattive istantanee.</p>
           </div>
@@ -134,13 +160,17 @@
             class="video-el"
           ></video>
         </div>
-        <div class="card nav-card">
-          <button class="nav-arrow" onclick={prevSlide} aria-label="Precedente">&#8249;</button>
+        <div class="card nav-card" onclick={handleNavClick} role="button" tabindex="0"
+          onkeydown={(e) => { if (e.key === 'ArrowLeft') prevSlide(); if (e.key === 'ArrowRight') nextSlide(); }}>
+          <div class="nav-progress">
+            {#each currentSlides as _, i}
+              <div class="progress-line" class:active={i === activeSlide}></div>
+            {/each}
+          </div>
           <div class="nav-content">
             <h3 class="label">{currentSlides[activeSlide].label}</h3>
             <p>{currentSlides[activeSlide].text}</p>
           </div>
-          <button class="nav-arrow" onclick={nextSlide} aria-label="Successivo">&#8250;</button>
         </div>
       </div>
 
@@ -293,33 +323,36 @@
 .nav-card {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   height: 182px;
   overflow: hidden;
-}
-
-.nav-arrow {
-  flex: 0 0 auto;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 36px;
-  line-height: 1;
   cursor: pointer;
-  padding: 0 22px;
-  transition: color 0.2s;
+  user-select: none;
 }
 
-.nav-arrow:hover {
-  color: rgba(255, 255, 255, 0.95);
+.nav-progress {
+  display: flex;
+  gap: 8px;
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+  margin-bottom: 6px;
+}
+
+.progress-line {
+  flex: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 1px;
+  transition: background 0.3s ease;
+}
+
+.progress-line.active {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .nav-content {
   flex: 1;
-  padding: 24px 0;
+  padding: 14px 24px 20px;
   overflow: hidden;
 }
 
@@ -334,7 +367,7 @@
 /* Titolo senza riquadro */
 .main-card {
   flex: 1;
-  padding: 30px;
+  padding: 0 30px 30px 8px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -343,16 +376,15 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-radius: 0;
-  padding-left: 8px;
 }
 
 .main-card h2 {
   font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-  font-size: clamp(28px, 3vw, 44px);
+  font-size: clamp(40px, 5vw, 72px);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  line-height: 1.1;
+  line-height: 1.05;
   margin: 0 0 20px 0;
   color: #ffffff;
 }
@@ -365,7 +397,7 @@
 }
 
 .subtitle {
-  font-size: 17px;
+  font-size: clamp(18px, 2vw, 28px);
   line-height: 1.45;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
@@ -395,7 +427,7 @@
 
 .label {
   font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -409,5 +441,18 @@
   color: rgba(255, 255, 255, 0.75);
   margin: 0;
   font-weight: 400;
+}
+
+.info-card-double {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.info-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 20px 0;
 }
 </style>

@@ -34,7 +34,10 @@
     const mm = gsap.matchMedia();
 
     mm.add("(min-width: 800px)", () => {
+      let triggerDone = false;
+
       const update3D = () => {
+        if (triggerDone) return;
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
@@ -46,8 +49,9 @@
           start: "top bottom",
           end: "+=3000",
           scrub: 3,
-          onEnter:      () => { model3dVisible = true; },
-          onEnterBack:  () => { model3dVisible = true; },
+          onEnter:      () => { triggerDone = false; model3dVisible = true; },
+          onEnterBack:  () => { triggerDone = false; model3dVisible = true; },
+          onLeave:      () => { triggerDone = true; },
         },
       });
 
