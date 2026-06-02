@@ -68,6 +68,7 @@
    * @param {number} cardIndex
    */
   async function handleCardClick(rect, videoSrc = '', cardIndex = 0) {
+    if (showCardOverlay) return;
     // 1. Scroll per centrare la card
     if (rect) {
       const vh = window.innerHeight;
