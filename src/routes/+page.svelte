@@ -49,7 +49,7 @@
   /** @type {[number, number, number]} */
   let modelPosition = $state([0, 0, 0]);
   /** @type {[number, number, number]} */
-  let modelScale = $state([1.5, 1.5, 1.5]);
+  let modelScale = $state([0, 0, 0]);
   /** @type {[number, number, number]} */
   let modelRotation = $state([0, 0, 0]);
   let currentTwistX = $state(360);

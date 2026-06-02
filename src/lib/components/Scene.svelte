@@ -480,7 +480,7 @@
 />
 
 {#if $gltf}
-  <T is={$gltf.scene} {position} {scale} {rotation} />
+  <T is={$gltf.scene} {position} {scale} {rotation} visible={visible} />
 {/if}
 
 <VideoCard

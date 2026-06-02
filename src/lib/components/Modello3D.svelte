@@ -46,7 +46,7 @@
 <div class="model3d-layer" class:visible>
   {#if isClicked}
     <Canvas
-      autoRender={visible}
+      autoRender={true}
       createRenderer={(canvas) => new THREE.WebGLRenderer({
         canvas,
         alpha: true,
