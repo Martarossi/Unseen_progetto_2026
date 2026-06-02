@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import BulletCard3D from './BulletCard3D.svelte';
 
   /** @type {{ closeOverlay: () => void, videoSrc?: string }} */
   let { closeOverlay, videoSrc = '' } = $props();
@@ -142,8 +143,8 @@
             <p>L'AI elabora oltre 30 data-point al secondo per ogni atleta, trasformando la fatica in grafiche interattive istantanee.</p>
           </div>
         {:else if cardType === 'bullet'}
-          <div class="card figure-card">
-            <img src="/bullet_timing_figure.png" alt="3D athlete figure" class="figure-img" />
+          <div class="card info-card info-card-double info-card-3d">
+            <BulletCard3D />
           </div>
         {/if}
       </div>
@@ -409,21 +410,6 @@
   padding: 22px 28px;
 }
 
-.figure-card {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 0 0;
-}
-
-.figure-img {
-  max-height: 100%;
-  max-width: 85%;
-  object-fit: contain;
-  display: block;
-}
 
 .label {
   font-family: 'Akira Expanded', 'Arial Black', sans-serif;
@@ -454,5 +440,10 @@
   height: 1px;
   background: rgba(255, 255, 255, 0.15);
   margin: 20px 0;
+}
+
+.info-card-3d {
+  padding: 0;
+  overflow: hidden;
 }
 </style>
