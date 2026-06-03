@@ -111,10 +111,10 @@
 </script>
 
 <svelte:head>
-  <title>Web Design Lab - Politecnico di Milano</title>
+  <title>Unseen - WD 2026</title>
   <meta
     name="description"
-    content="Archive of the best outcomes from the Web Design Laboratory in Communication Design at Politecnico di Milano"
+    content="Milano-Cortina 2026 Progetto Politecnico di Milano: Un-seen nasce per esplorare ciò che normalmente resta fuori dall’inquadratura. Non l’atleta al centro della scena, ma tutto ciò che rende possibile quella scena."
   />
 </svelte:head>
 

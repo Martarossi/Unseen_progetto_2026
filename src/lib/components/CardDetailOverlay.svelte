@@ -167,7 +167,7 @@
             <p>L'AI elabora oltre 30 data-point al secondo per ogni atleta, trasformando la fatica in grafiche interattive istantanee.</p>
           </div>
         {:else if cardType === 'bullet'}
-          <div class="card info-card info-card-double info-card-3d">
+          <div class="bullet-scene-wrap">
             <BulletCard3D />
           </div>
         {/if}
@@ -272,7 +272,7 @@
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.85);
-  font-size: 64px;
+  font-size: 50px;
   font-family: Arial, sans-serif;
   font-weight: 300;
   line-height: 0.7;
@@ -476,8 +476,9 @@
   margin: 20px 0;
 }
 
-.info-card-3d {
-  padding: 0;
-  overflow: hidden;
+.bullet-scene-wrap {
+  flex: 8;
+  height: 500px;
+  min-height: 0;
 }
 </style>

@@ -1,91 +1,99 @@
 <script>
-  import { T } from "@threlte/core";
+  import { T, useTask, useThrelte } from "@threlte/core";
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
-  import { useTask } from "@threlte/core";
 
-  const gltf = useGltf("/CARD%20FINALE%20X%20SITO%20(1).glb");
+  /** @type {{ externalRotY?: number, isDragging?: boolean }} */
+  let { externalRotY = 0, isDragging = false } = $props();
+
+  const gltf = useGltf("/modello_bullettime.glb");
+  const { renderer } = useThrelte();
 
   /** @type {THREE.Group|undefined} */
   let sceneRef = $state(undefined);
+  /** @type {THREE.PerspectiveCamera|undefined} */
+  let cameraRef = $state(undefined);
 
-  const particleMaterial = new THREE.PointsMaterial({
-    color: 0xC9D7DC,
-    size: 0.06,
-    sizeAttenuation: true,
-    transparent: true,
-    opacity: 0.88,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-  });
+  let centered = false;
+  let offsetX = $state(0);
+  let offsetY = $state(0);
+  let offsetZ = $state(0);
+  let cameraZ = $state(12);
 
-  particleMaterial.onBeforeCompile = (shader) => {
-    shader.fragmentShader = shader.fragmentShader.replace(
-      '#include <color_fragment>',
-      `#include <color_fragment>
-      vec2 center = gl_PointCoord - vec2(0.5);
-      float dist = length(center);
-      if (dist > 0.5) discard;
-      float intensity = smoothstep(0.5, 0.0, dist);
-      diffuseColor.a *= intensity;`
-    );
-  };
-
-  /** @param {THREE.BufferGeometry} geometry @param {number} count */
-  function samplePoints(geometry, count) {
-    const posAttr = geometry.attributes.position;
-    const idxAttr = geometry.index;
-    const arr = new Float32Array(count * 3);
-    const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3(), p = new THREE.Vector3();
-
-    for (let i = 0; i < count; i++) {
-      if (idxAttr) {
-        const tri = Math.floor(Math.random() * (idxAttr.count / 3)) * 3;
-        vA.fromBufferAttribute(posAttr, idxAttr.getX(tri));
-        vB.fromBufferAttribute(posAttr, idxAttr.getY(tri));
-        vC.fromBufferAttribute(posAttr, idxAttr.getZ(tri));
-      } else {
-        const tri = Math.floor(Math.random() * (posAttr.count / 3)) * 3;
-        vA.fromBufferAttribute(posAttr, tri);
-        vB.fromBufferAttribute(posAttr, tri + 1);
-        vC.fromBufferAttribute(posAttr, tri + 2);
-      }
-      const r1 = Math.sqrt(Math.random()), r2 = Math.random();
-      p.set(0,0,0).addScaledVector(vA, 1-r1).addScaledVector(vB, r1*(1-r2)).addScaledVector(vC, r1*r2);
-      arr[i*3] = p.x; arr[i*3+1] = p.y; arr[i*3+2] = p.z;
-    }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(arr, 3));
-    return geom;
-  }
-
-  let converted = false;
-  let rotY = 0;
+  let autoRotY = 0;
 
   useTask((dt) => {
-    rotY += dt * 0.4;
-    if (sceneRef) sceneRef.rotation.y = rotY;
+    // Centramento e calcolo distanza camera (una sola volta, dopo che sceneRef è pronto)
+    if (!centered && sceneRef) {
+      centered = true;
 
-    if ($gltf && $gltf.scene && !converted) {
-      converted = true;
-      $gltf.scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.visible = false;
-          const points = new THREE.Points(samplePoints(child.geometry, 12000), particleMaterial);
-          points.position.copy(child.position);
-          points.rotation.copy(child.rotation);
-          points.scale.copy(child.scale);
-          child.parent?.add(points);
-        }
+      // Centro geometrico dell'intera scena (XZ)
+      const sceneBox0 = new THREE.Box3().setFromObject(sceneRef);
+      const sceneCenter0 = sceneBox0.getCenter(new THREE.Vector3());
+
+      const humanKeywords = ['human', 'person', 'figure', 'body', 'atleta', 'uomo', 'corpo', 'character'];
+      let humanMesh = /** @type {THREE.Mesh|null} */ (null);
+      let bestScore = -Infinity;
+
+      sceneRef.traverse((child) => {
+        if (!(child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh)) return;
+
+        // Priorità per nome
+        const name = child.name.toLowerCase();
+        if (humanKeywords.some(k => name.includes(k))) { humanMesh = /** @type {THREE.Mesh} */ (child); bestScore = Infinity; return; }
+        if (bestScore === Infinity) return;
+
+        const box = new THREE.Box3().setFromObject(child);
+        const meshCenter = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        // La figura umana è vicina al centro XZ del rig E ha forma verticale
+        const distXZ = Math.sqrt((meshCenter.x - sceneCenter0.x) ** 2 + (meshCenter.z - sceneCenter0.z) ** 2);
+        const centrality = 1 / (distXZ + 0.01);
+        const tallness = size.y / Math.max(size.x, size.z, 0.001);
+        const score = centrality * tallness;
+
+        if (score > bestScore) { bestScore = score; humanMesh = /** @type {THREE.Mesh} */ (child); }
       });
+
+      const humanTarget = humanMesh ?? sceneRef;
+      const humanBox = new THREE.Box3().setFromObject(humanTarget);
+      const center = humanBox.getCenter(new THREE.Vector3());
+      offsetX = -center.x;
+      offsetY = -center.y;
+      offsetZ = -center.z;
+
+      // Distanza camera basata sull'intero modello
+      const fullBox = new THREE.Box3().setFromObject(sceneRef);
+      const fullSize = fullBox.getSize(new THREE.Vector3());
+      const fovRad = 60 * (Math.PI / 180);
+      const canvas = renderer.domElement;
+      const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
+      const fovH = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
+      const distV = (fullSize.y / 2) / Math.tan(fovRad / 2);
+      const distH = (fullSize.x / 2) / Math.tan(fovH / 2);
+      cameraZ = Math.max(distV, distH) * 0.75 + fullSize.z / 2;
+
+      if (cameraRef) cameraRef.position.set(0, 0, cameraZ);
     }
+
+    // Rotazione: auto-rotate quando non si trascina
+    if (!isDragging) autoRotY += dt * 0.5;
+    if (sceneRef) sceneRef.rotation.y = autoRotY + externalRotY;
   });
 </script>
 
-<T.PerspectiveCamera makeDefault position={[0, 0, 6]} />
-<T.AmbientLight intensity={0.9} />
-<T.DirectionalLight position={[3, 5, 3]} intensity={2} />
+<T.PerspectiveCamera makeDefault fov={60} position={[0, 0, 9]} bind:ref={cameraRef} />
+
+<T.AmbientLight intensity={1.2} />
+<T.DirectionalLight position={[5, 8, 5]} intensity={2.5} />
+<T.DirectionalLight position={[-4, -2, -3]} intensity={0.6} color="#60aacc" />
 
 {#if $gltf}
-  <T is={$gltf.scene} bind:ref={sceneRef} scale={[1.8, 1.8, 1.8]} position={[0, 0, 0]} />
+  <T
+    is={$gltf.scene}
+    bind:ref={sceneRef}
+    scale={[8.0, 8.0, 8.0]}
+    position={[offsetX, offsetY, offsetZ]}
+  />
 {/if}
