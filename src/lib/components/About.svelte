@@ -141,11 +141,10 @@
         overflow-x: hidden;
         overflow-y: auto;
         z-index: 9999;
-        background: radial-gradient(
-            circle at 50% 50%,
-            #4a565e 0%,
-            #293035 100%
-        );
+        background-image: url('/sfondo-About.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         clip-path: circle(0% at calc(100% - 130px) 50px);
         transition: clip-path 0.6s ease-out;
     }
