@@ -14,22 +14,25 @@
 
   const stats = [
     {
-      title: "TEMPO GENERAZIONE\nREPLAY 3D",
-      desc: "Precisione temporale inferiore a 0,1 secondi per elaborazioni grafiche simultanee, generate in pochissimi millisecondi per replay fluidi.",
-      target: 15,
-      duration: 7.0,
-    },
-    {
-      title: "SESSIONI DI GARA\nANALIZZATE",
-      desc: "12 sistemi stroboscopici, 17 replay 360°, sensori, computer vision con funzioni Replay 360°, ricostruzione 3D e frame-freeze.",
-      target: 391,
+      title: "COPERTURA IMMERSIVA\nDEI CONTENUTI",
+      desc: "Un ecosistema visivo diffuso tra tutti i cluster olimpici. Dalle ottiche ultra-long-range per lo sci alpino ai sistemi micro-camera per bob e curling, viene garantita la copertura totale di ogni momento di gara.",
+      target: 800,
       duration: 4.5,
+      label: "TELECAMERE ATTIVE SUI CAMPI DI GARA" // <-- Nuova riga di testo
     },
     {
-      title: "TELECAMERE PER\nSINGOLO EVENTO",
-      desc: "Tutte le telecamere sono di alta qualità, con risoluzione a 8K per riprese perfette di ogni singolo dettaglio, garantendo una fedeltà senza precedenti.",
-      target: 14,
+      title: "FLUSSO DI PRODUZIONE\nE DISTRIBUZIONE GLOBALE",
+      desc: "Il racconto continuo delle Olimpiadi. Grazie alla trasmissione multi-piattaforma in Ultra HD e HDR gestita da OBS, ogni sessione competitiva viene prodotta in tempo reale per i broadcaster di tutto il mondo.",
+      target: 900,
+      duration: 4.5,
+      label: "ORE DI DIRETTA STREAMING" // <-- Nuova riga di testo
+    },
+    {
+      title: "CENTRI DI COMANDO\n TECNOLOGICO",
+      desc: "Infrastrutture ad alta tecnologia suddivise tra regie mobili nei siti di gara e regie virtualizzate presso l'IBC. Una capillarità necessaria per coordinare simultaneamente eventi live paralleli.",
+      target: 23,
       duration: 5.5,
+      label: "REGIE INTERNESSE IN RETE" // <-- Nuova riga di testo
     },
   ];
 
@@ -57,7 +60,6 @@
     twistZ: 60,
   };
 
-  // Stato finale di Stats: il modello inizia a risvegliarsi mentre la sezione sale
   const wakeState = {
     rotX: Math.PI * 5.5,
     rotY: Math.PI * 9.0,
@@ -78,10 +80,6 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      // Trigger sul wrapper (2000px): sticky CSS, niente pin GSAP.
-      // Fase 1 (0–500px):   modello → cerchio
-      // Fase 2 (500–1250px): pausa statica (contatori in lettura)
-      // Fase 3 (1250–2000px): modello si risveglia mentre la sezione sale
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
@@ -94,7 +92,6 @@
         },
       });
 
-      // Fase 1: si sistema a cerchio
       tl.to(modelProps, {
         rotX: circleState.rotX,
         rotY: circleState.rotY,
@@ -106,10 +103,8 @@
         onUpdate: update3D,
       });
 
-      // Fase 2: pausa statica — l'utente legge i contatori
       tl.to({}, { duration: 1.5 });
 
-      // Fase 3: il modello si risveglia mentre la sezione inizia a salire
       tl.to(modelProps, {
         rotX: wakeState.rotX,
         rotY: wakeState.rotY,
@@ -186,6 +181,7 @@
         <p class="stat-desc">{stat.desc}</p>
         <div class="stat-divider"></div>
         <div class="stat-counter" bind:this={counterEls[i]}>000</div>
+        <span class="stat-label-under">{stat.label}</span> 
       </div>
     {/each}
   </div>
@@ -223,7 +219,6 @@
       overflow: hidden;
     }
   }
-  /**/
 
   .stats-grid {
     display: grid;
@@ -255,8 +250,8 @@
     font-size: clamp(12px, 1vw, 16px);
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.62);
-    text-align: left;        /* Allineamento a sinistra (bandiera a sinistra) */
-    max-width: 45ch;         /* Misura ottimale per bloccare il testo su 3 righe su desktop */
+    text-align: left;
+    max-width: 45ch;
     margin: 0 0 1.6rem;
   }
 
@@ -275,6 +270,17 @@
     line-height: 0.88;
     letter-spacing: 0.04em;
     will-change: contents;
+  }
+
+  /* Stile personalizzabile per la nuova riga di testo */
+  .stat-label-under {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: clamp(10px, 0.8vw, 13px);
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.8rem; /* Distanza dal numero */
+    line-height: 1.4;
   }
 
   .stats-label {
@@ -297,7 +303,7 @@
     }
 
     .stat-desc {
-      max-width: 42ch;       /* Mantiene la proporzione di 3/4 righe anche su mobile */
+      max-width: 42ch;
     }
 
     .stat-counter {
@@ -310,6 +316,11 @@
 
     .stat-desc {
       font-size: 13px;
+    }
+
+    .stat-label-under {
+      font-size: 11px;
+      margin-top: 0.5rem;
     }
   }
 </style>
