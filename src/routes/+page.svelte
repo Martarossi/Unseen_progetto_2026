@@ -13,6 +13,9 @@
   import Modello3D from "$lib/components/Modello3D.svelte";
   import ModelShrink from "$lib/components/ModelShrink.svelte";
   import CardDetailOverlay from "$lib/components/CardDetailOverlay.svelte";
+  import DatiTecnici from "$lib/components/DatiTecnici.svelte";
+  import DatiTecniciDots from "$lib/components/DatiTecniciDots.svelte";
+  import DatiTecniciOverlay from "$lib/components/DatiTecniciOverlay.svelte";
 
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
@@ -38,6 +41,13 @@
 
   let hasBeenClicked = $state(false);
   let showCardOverlay = $state(false);
+
+  // DatiTecnici state
+  let datiDotsVisible = $state(false);
+  let showDatiOverlay = $state(false);
+  let activeDatiType = $state('guide');
+  /** @type {{x: number, y: number}[]} */
+  let dotsPositions = $state([{ x: 30, y: 40 }, { x: 65, y: 35 }, { x: 60, y: 65 }]);
 
   // Stato dinamico per passare il video corretto all'overlay separato
   let activeVideoSrc = $state("");
@@ -135,7 +145,22 @@
   onCardClick={(rect, videoSrc, cardIndex) => handleCardClick(rect, videoSrc, cardIndex)}
   {expandCardIndex}
   {onCardExpanded}
+  dotsVisible={datiDotsVisible}
+  onPositionsUpdate={(pos) => { dotsPositions = pos; }}
 />
+
+<DatiTecniciDots
+  visible={datiDotsVisible}
+  positions={dotsPositions}
+  onParticleClick={(id) => { activeDatiType = id; showDatiOverlay = true; }}
+/>
+
+{#if showDatiOverlay}
+  <DatiTecniciOverlay
+    type={activeDatiType}
+    closeOverlay={() => showDatiOverlay = false}
+  />
+{/if}
 
 {#if showCardOverlay}
   <CardDetailOverlay
@@ -168,6 +193,16 @@
       bind:currentTwistX
       bind:currentTwistZ
       bind:model3dVisible
+    />
+
+    <DatiTecnici
+      bind:modelPosition
+      bind:modelScale
+      bind:modelRotation
+      bind:currentTwistX
+      bind:currentTwistZ
+      bind:model3dVisible
+      bind:dotsVisible={datiDotsVisible}
     />
 
     <Citazione />

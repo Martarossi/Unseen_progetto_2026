@@ -23,7 +23,9 @@
    *   isClicked?: boolean,
    *   onCardClick?: (rect: { x: number, y: number, width: number, height: number } | null, videoSrc?: string, cardIndex?: number) => void,
    *   expandCardIndex?: number,
-   *   onCardExpanded?: () => void
+   *   onCardExpanded?: () => void,
+   *   dotsVisible?: boolean,
+   *   onPositionsUpdate?: (positions: {x: number, y: number}[]) => void
    * }} */
   let {
     position = [0, 0, 0],
@@ -40,6 +42,8 @@
     onCardClick = undefined,
     expandCardIndex = -1,
     onCardExpanded = undefined,
+    dotsVisible = false,
+    onPositionsUpdate = undefined,
   } = $props();
 </script>
 
@@ -67,6 +71,8 @@
         {onCardClick}
         {expandCardIndex}
         {onCardExpanded}
+        {dotsVisible}
+        {onPositionsUpdate}
       />
     </Canvas>
   {/if}
