@@ -10,6 +10,7 @@
   /** @type {HTMLVideoElement|null} */
   let videoEl = $state(null);
   let activeSlide = $state(0);
+  let barProgress = $state(0); // 0 → 1, riempimento barra corrente
 
   const cardType = $derived(
     videoSrc.includes('tracker') ? 'tracker' :
@@ -41,24 +42,47 @@
 
   const currentSlides = $derived(allSlides[cardType] ?? allSlides['spacetime']);
 
-  /** @type {ReturnType<typeof setInterval>|null} */
-  let autoTimer = null;
+  const SLIDE_DURATION_MS = 10000;
 
-  function startTimer() {
-    if (autoTimer) clearInterval(autoTimer);
-    autoTimer = setInterval(() => {
-      activeSlide = (activeSlide + 1) % currentSlides.length;
-    }, 2000);
+  /** @type {number|null} */
+  let rafId = null;
+  let lastTimestamp = 0;
+
+  function startRAF() {
+    if (rafId !== null) cancelAnimationFrame(rafId);
+    lastTimestamp = performance.now();
+
+    /** @param {number} now */
+    function tick(now) {
+      const delta = now - lastTimestamp;
+      lastTimestamp = now;
+      barProgress = barProgress + delta / SLIDE_DURATION_MS;
+      if (barProgress >= 1) {
+        barProgress = 0;
+        activeSlide = (activeSlide + 1) % currentSlides.length;
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stopRAF() {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
   }
 
   function prevSlide() {
+    barProgress = 0;
     activeSlide = (activeSlide - 1 + currentSlides.length) % currentSlides.length;
-    startTimer();
+    startRAF();
   }
 
   function nextSlide() {
+    barProgress = 0;
     activeSlide = (activeSlide + 1) % currentSlides.length;
-    startTimer();
+    startRAF();
   }
 
   /** @param {MouseEvent} e */
@@ -77,15 +101,15 @@
     setTimeout(() => {
       if (videoEl) videoEl.play().catch(() => {});
     }, 300);
-    startTimer();
+    startRAF();
   });
 
   onDestroy(() => {
-    if (autoTimer) clearInterval(autoTimer);
+    stopRAF();
   });
 
   async function handleClose() {
-    if (autoTimer) clearInterval(autoTimer);
+    stopRAF();
     closing = true;
     await new Promise(r => setTimeout(r, 870));
     closeOverlay();
@@ -165,7 +189,12 @@
           onkeydown={(e) => { if (e.key === 'ArrowLeft') prevSlide(); if (e.key === 'ArrowRight') nextSlide(); }}>
           <div class="nav-progress">
             {#each currentSlides as _, i}
-              <div class="progress-line" class:active={i === activeSlide}></div>
+              <div class="progress-line">
+                <div
+                  class="progress-fill"
+                  style="width: {i < activeSlide ? 100 : i === activeSlide ? barProgress * 100 : 0}%"
+                ></div>
+              </div>
             {/each}
           </div>
           <div class="nav-content">
@@ -344,11 +373,16 @@
   height: 2px;
   background: rgba(255, 255, 255, 0.25);
   border-radius: 1px;
-  transition: background 0.3s ease;
+  overflow: hidden;
+  position: relative;
 }
 
-.progress-line.active {
+.progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
   background: rgba(255, 255, 255, 0.9);
+  border-radius: 1px;
 }
 
 .nav-content {

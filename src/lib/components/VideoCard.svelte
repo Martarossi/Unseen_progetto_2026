@@ -358,24 +358,20 @@
       if (ctx) {
         ctx.clearRect(0, 0, 640, 360);
 
-        // Clip a rounded rect — stesso ratio del CORNER_RADIUS della geometria (~6%)
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(0, 0, 640, 360, [39]);
         ctx.clip();
 
-        // Video
         ctx.drawImage(videoEl, 0, 0, 640, 360);
 
-        // Tinta brand leggera su tutto il video (non altera la saturazione del gradiente)
         ctx.fillStyle = 'rgba(78, 119, 133, 0.12)';
         ctx.fillRect(0, 0, 640, 360);
 
-        // Overlay gradiente #4E7785: 100% dal basso fino al 28%, poi fade a trasparente
         const grad = ctx.createLinearGradient(0, 360, 0, 0);
-        grad.addColorStop(0,    '#070F11');               // 100% in basso
-        grad.addColorStop(0.20, '#0F2124');               // ancora 100% al 28%
-        grad.addColorStop(1,    'rgba(78, 119, 133, 0)'); // trasparente in cima
+        grad.addColorStop(0,    '#070F11');
+        grad.addColorStop(0.20, '#0F2124');
+        grad.addColorStop(1,    'rgba(78, 119, 133, 0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 640, 360);
 
