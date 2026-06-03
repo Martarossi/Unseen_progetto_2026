@@ -387,8 +387,11 @@
 
 .nav-content {
   flex: 1;
-  padding: 14px 24px 20px;
+  padding: 0 24px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .nav-content p {
