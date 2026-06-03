@@ -252,7 +252,7 @@
 
   .stat-desc {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(10px, 0.82vw, 14px);
+    font-size: clamp(12px, 1vw, 16px);
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.62);
     text-align: left;        /* Allineamento a sinistra (bandiera a sinistra) */

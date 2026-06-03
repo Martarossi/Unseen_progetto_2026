@@ -99,12 +99,12 @@
   <div class="voci-sticky">
 
     <div class="voci-left" bind:this={pLeft}>
-      <p class="text-regular">L'AI analizza, stabilizza,<br>calcola e ricostruisce.</p>
-      <p class="text-bold">Ma dietro ogni immagine<br>continua a esserci<br>esperienza, sensibilità<br>e presenza umana.</p>
+      <p class="text-regular">L’AI, però, funge solo da tecnologia <br>che analizza, stabilizza,<br>calcola e ricostruisce.</p>
+      <p class="text-bold">Ma dietro ogni immagine<br>rimangono l’esperienza,<br>esperienza, sensibilità<br>la presenza e la sensibilità umana.</p>
     </div>
 
     <div class="voci-right" bind:this={pRight}>
-      <p>Una raccolta di voci di chi <strong>vive l'evento da dietro la lente</strong>: professionisti che lavorano in condizioni estreme, in equilibrio costante tra tecnica ed emozione.</p>
+      <p>Una raccolta di voci di chi <br><strong>vive l'evento da dietro la lente</strong>: professionisti che lavorano <br>in condizioni estreme, in equilibrio costante tra tecnica ed emozione.</p>
     </div>
 
   </div>
