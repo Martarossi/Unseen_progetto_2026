@@ -1,5 +1,5 @@
 <script>
-  import { T, useTask, useThrelte } from "@threlte/core";
+  import { T } from "@threlte/core";
   import { useGltf, Environment } from "@threlte/extras";
   import * as THREE from "three";
   import { useRenderer } from "@threlte/core";
@@ -50,7 +50,6 @@
     expandCardIndex = -1,
     onCardExpanded = undefined,
     dotsVisible = false,
-    onPositionsUpdate = undefined,
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
@@ -65,188 +64,6 @@
     uScrollActivity: { value: 0 }
   };
 
-  // ── HOTSPOT CLUSTERS (emerge from model center, orbit around it) ───────────────
-  const { camera, size } = useThrelte();
-
-  // Same orbital speed, phases exactly 120° apart (equidistant in XZ forever).
-  // Heights are spread across ±0.8 so they stay vertically separated on screen
-  // even when the model rotates edge-on toward the camera.
-  const ORBIT_PARAMS = [
-    { radius: 1.3, height:  0.8, speed: 0.22, phase: 0.0                },  // GUIDE    — top
-    { radius: 1.1, height:  0.0, speed: 0.22, phase: (Math.PI * 2) / 3  },  // ENHANCING — middle
-    { radius: 1.2, height: -0.8, speed: 0.22, phase: (Math.PI * 4) / 3  },  // HIGHLIGHT — bottom
-  ];
-
-  function buildWhiteGeometry() {
-    const count = 55;
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = Math.cbrt(Math.random()) * 0.13;
-      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i*3+2] = r * Math.cos(phi);
-    }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    return geom;
-  }
-
-  function buildBrandGeometry() {
-    const count = 20;
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = Math.cbrt(Math.random()) * 0.10;
-      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i*3+2] = r * Math.cos(phi);
-    }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    return geom;
-  }
-
-  /** @param {THREE.PointsMaterial} mat */
-  function addTwistWaveShader(mat) {
-    mat.onBeforeCompile = (shader) => {
-      shader.uniforms.twistXAngle     = customUniforms.twistXAngle;
-      shader.uniforms.twistZAngle     = customUniforms.twistZAngle;
-      shader.uniforms.bboxMin         = customUniforms.bboxMin;
-      shader.uniforms.bboxMax         = customUniforms.bboxMax;
-      shader.uniforms.uTime           = customUniforms.uTime;
-      shader.uniforms.uScrollActivity = customUniforms.uScrollActivity;
-      shader.vertexShader = `
-        uniform float twistXAngle; uniform float twistZAngle;
-        uniform vec3  bboxMin;     uniform vec3  bboxMax;
-        uniform float uTime;       uniform float uScrollActivity;
-      ` + shader.vertexShader;
-      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `
-        #include <begin_vertex>
-        float factorX_h=clamp((position.x-bboxMin.x)/(bboxMax.x-bboxMin.x),0.0,1.0);
-        float aX_h=twistXAngle*factorX_h;
-        float cX_h=cos(aX_h),sX_h=sin(aX_h);
-        vec3 tp_h=transformed;
-        tp_h.y=transformed.y*cX_h-transformed.z*sX_h;
-        tp_h.z=transformed.y*sX_h+transformed.z*cX_h;
-        float factorZ_h=clamp((tp_h.z-bboxMin.z)/(bboxMax.z-bboxMin.z),0.0,1.0);
-        float aZ_h=twistZAngle*factorZ_h;
-        float cZ_h=cos(aZ_h),sZ_h=sin(aZ_h);
-        transformed.x=tp_h.x*cZ_h-tp_h.y*sZ_h;
-        transformed.y=tp_h.x*sZ_h+tp_h.y*cZ_h;
-        transformed.z=tp_h.z;
-        vec3 wv_h;
-        wv_h.x=sin(transformed.y*3.5+uTime*2.2)*cos(transformed.z*3.0+uTime*1.7);
-        wv_h.y=cos(transformed.x*3.0+uTime*2.0)*sin(transformed.z*3.5+uTime*2.2);
-        wv_h.z=sin(transformed.x*3.5+uTime*1.7)*cos(transformed.y*3.0+uTime*2.5);
-        float ns_h=(0.045+uScrollActivity*0.34)*0.55;
-        transformed+=wv_h*ns_h;
-      `);
-      shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', `
-        #include <color_fragment>
-        vec2 c_h=gl_PointCoord-vec2(0.5); float d_h=length(c_h);
-        if(d_h>0.5) discard;
-        diffuseColor.a*=smoothstep(0.5,0.0,d_h);
-      `);
-    };
-  }
-
-  function buildWhiteMaterial() {
-    const mat = new THREE.PointsMaterial({
-      color: 0xffffff, size: 0.16, sizeAttenuation: true,
-      transparent: true, opacity: 0.0,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-    });
-    addTwistWaveShader(mat);
-    return mat;
-  }
-
-  function buildBrandMaterial() {
-    const mat = new THREE.PointsMaterial({
-      color: 0x273b42, size: 0.60, sizeAttenuation: true,
-      transparent: true, opacity: 0.0,
-      blending: THREE.NormalBlending, depthWrite: false,
-    });
-    addTwistWaveShader(mat);
-    return mat;
-  }
-
-  const clusterWhiteMaterials = ORBIT_PARAMS.map(() => buildWhiteMaterial());
-  const clusterBrandMaterials = ORBIT_PARAMS.map(() => buildBrandMaterial());
-  const clusterWhitePoints = ORBIT_PARAMS.map((_, i) => {
-    const p = new THREE.Points(buildWhiteGeometry(), clusterWhiteMaterials[i]);
-    p.renderOrder = 1;
-    return p;
-  });
-  const clusterBrandPoints = ORBIT_PARAMS.map((_, i) => {
-    const p = new THREE.Points(buildBrandGeometry(), clusterBrandMaterials[i]);
-    p.renderOrder = 0;
-    return p;
-  });
-  let clustersAdded = false;
-  let orbitTime = 0;
-  // per-cluster emergence: 0 = at model center (invisible), 1 = at full orbital radius
-  const clusterEmergence = [0, 0, 0];
-
-  // Pre-allocated objects — avoid per-frame heap allocation in the hot path
-  const _projEuler  = new THREE.Euler();
-  const _projQuat   = new THREE.Quaternion();
-  const _projPosV   = new THREE.Vector3();
-  const _projScaleV = new THREE.Vector3();
-  const _projMatrix = new THREE.Matrix4();
-  const _worldPos   = new THREE.Vector3();
-
-  useTask((delta) => {
-    orbitTime += delta;
-
-    // drive emergence toward target
-    const targetEmergence = (dotsVisible && visible) ? 1.0 : 0.0;
-    ORBIT_PARAMS.forEach((params, i) => {
-      clusterEmergence[i] += (targetEmergence - clusterEmergence[i]) * 0.03;
-      const e = clusterEmergence[i];
-      const angle = orbitTime * params.speed + params.phase;
-      const x = Math.cos(angle) * params.radius * e;
-      const y = params.height * e;
-      const z = Math.sin(angle) * params.radius * e;
-      clusterWhitePoints[i].position.set(x, y, z);
-      clusterBrandPoints[i].position.set(x, y, z);
-    });
-
-    // fade cluster opacity
-    const targetOpacity = (dotsVisible && visible) ? 0.92 : 0.0;
-    [...clusterWhiteMaterials, ...clusterBrandMaterials].forEach(mat => {
-      if (Math.abs(mat.opacity - targetOpacity) > 0.001) {
-        mat.opacity += (targetOpacity - mat.opacity) * 0.04;
-        mat.needsUpdate = true;
-      }
-    });
-
-    if (!onPositionsUpdate) return;
-    const cam = camera.current;
-    if (!cam) return;
-
-    // Build the model's exact world matrix from the current prop values every frame.
-    // Using Matrix4.compose (quaternion-based) instead of manual scale/applyEuler to
-    // avoid accumulated floating-point error at large Euler angles (model uses PI*9+).
-    _projEuler.set(rotation[0], rotation[1], rotation[2], 'XYZ');
-    _projQuat.setFromEuler(_projEuler);
-    _projPosV.set(position[0], position[1], position[2]);
-    _projScaleV.set(scale[0], scale[1], scale[2]);
-    _projMatrix.compose(_projPosV, _projQuat, _projScaleV);
-
-    const positions2D = ORBIT_PARAMS.map((_, i) => {
-      // Transform cluster local position into world space, then project to NDC
-      _worldPos.copy(clusterWhitePoints[i].position).applyMatrix4(_projMatrix);
-      const ndc = _worldPos.project(cam);
-      return {
-        x: ( ndc.x * 0.5 + 0.5) * 100,
-        y: (-ndc.y * 0.5 + 0.5) * 100,
-      };
-    });
-    onPositionsUpdate(positions2D);
-  });
 
   // MATERIALE PARTICELLARE "VISION" GLOWING: Crea un materiale particellare ad alte prestazioni con blending additivo per un effetto olografico neon.
   const particleMaterial = new THREE.PointsMaterial({
@@ -633,12 +450,6 @@
         const ambientPoints = new THREE.Points(ambientGeometry, ambientMaterial);
         $gltf.scene.add(ambientPoints);
 
-        // Aggiungi i cluster hotspot (GUIDE / ENHANCING / HIGHLIGHT) come figli della scena
-        if (!clustersAdded) {
-          clusterWhitePoints.forEach(cp => $gltf.scene.add(cp));
-          clusterBrandPoints.forEach(cp => $gltf.scene.add(cp));
-          clustersAdded = true;
-        }
       }
 
       meshesToConvert.forEach((mesh) => {
