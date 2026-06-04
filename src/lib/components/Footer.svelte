@@ -13,12 +13,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 80px 48px 22px;
+    padding: 40px 48px 40px;
     box-sizing: border-box;
     isolation: isolate;
 
-    backdrop-filter: blur(72px);
-    -webkit-backdrop-filter: blur(72px);
     background: transparent;
   }
 
@@ -29,9 +27,6 @@
     pointer-events: none;
     mix-blend-mode: overlay;
     opacity: 0.22;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 200px 200px;
   }
 
   .footer > :not(.footer-grain) {
