@@ -1,16 +1,17 @@
 <script>
   import { onMount } from 'svelte';
   import gsap from 'gsap';
-  import ScrollTrigger from 'gsap/dist/ScrollTrigger';
 
   let {
-    modelPosition = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
-    modelScale    = $bindable(/** @type {[number, number, number]} */ ([2.0, 2.0, 2.0])),
-    modelRotation = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
-    currentTwistX = $bindable(80),
-    currentTwistZ = $bindable(80),
-    model3dVisible = $bindable(false),
-    dotsVisible    = $bindable(false),
+    modelPosition  = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    modelScale     = $bindable(/** @type {[number, number, number]} */ ([2.0, 2.0, 2.0])),
+    modelRotation  = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
+    currentTwistX  = $bindable(80),
+    currentTwistZ  = $bindable(80),
+    model3dVisible  = $bindable(false),
+    dotsVisible     = $bindable(false),
+    dotsRingVisible = $bindable(false),
+    dotsRingAngle   = $bindable(0),
   } = $props();
 
   /** @type {HTMLElement | null} */
@@ -18,7 +19,6 @@
   /** @type {HTMLElement | null} */
   let sectionEl = null;
 
-  // Starting from Stats' wakeState values
   const modelProps = {
     rotX: Math.PI * 5.5,
     rotY: Math.PI * 9.0,
@@ -47,52 +47,72 @@
         currentTwistZ = modelProps.twistZ;
       };
 
+      const ringProps = { angle: 0 };
+      const updateRing = () => { dotsRingAngle = ringProps.angle; };
+
+      // Cerchio appare prima che la sezione si pinni
+      const earlyRingTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: 'top 85%',
+          end: 'top top',
+          onEnter:     () => { dotsRingVisible = true; },
+          onLeaveBack: () => { dotsRingVisible = false; dotsRingAngle = 0; },
+        }
+      });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
           start: 'top top',
-          end: '+=3000',
+          end: '+=4500',
           scrub: 2,
-          onEnter:     () => { model3dVisible = true;  dotsVisible = true;  },
-          onLeave:     () => {                          dotsVisible = false; },
-          onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  },
-          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; },
+          onEnter:     () => { model3dVisible = true;  dotsVisible = true;                       },
+          onLeave:     () => {                          dotsVisible = false; dotsRingVisible = false; },
+          onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  dotsRingVisible = true;  },
+          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; dotsRingVisible = false; ringProps.angle = 0; dotsRingAngle = 0; },
         },
       });
 
-      // Phase 1 (~1000px): model calms down into display state
-      tl.to(modelProps, {
-        ...displayState,
-        duration: 1.0,
-        ease: 'power2.out',
-        onUpdate: update3D,
-      });
+      // Phase 1 (~750px): model calms into display state
+      tl.to(modelProps, { ...displayState, duration: 1.0, ease: 'power2.out', onUpdate: update3D });
 
-      // Phase 2 (~1500px): hold — user explores particles
-      tl.to({}, { duration: 1.5 });
+      // Phase 2 (~750px): GUIDE active — hold
+      tl.to({}, { duration: 1.0 });
 
-      // Phase 3 (~500px): subtle slow rotation continues
+      // Phase 3 (~750px): ring rotates to ENHANCING
+      tl.to(ringProps, { angle: 120, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing });
+
+      // Phase 4 (~750px): ENHANCING active — hold
+      tl.to({}, { duration: 1.0 });
+
+      // Phase 5 (~750px): ring rotates to HIGHLIGHT
+      tl.to(ringProps, { angle: 240, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing });
+
+      // Phase 6 (~750px): HIGHLIGHT active + subtle model drift
       tl.to(modelProps, {
         rotY: displayState.rotY + Math.PI * 0.4,
-        duration: 1.5,
+        duration: 1.0,
         ease: 'sine.inOut',
         onUpdate: update3D,
       });
 
-      return () => { tl.kill(); };
+      return () => { tl.kill(); earlyRingTl.kill(); };
     });
 
     mm.add('(max-width: 799px)', () => {
-      const trigger = ScrollTrigger.create({
-        trigger: sectionEl,
-        start: 'top 75%',
-        end: 'bottom 25%',
-        onEnter:     () => { dotsVisible = true;  },
-        onLeave:     () => { dotsVisible = false; },
-        onEnterBack: () => { dotsVisible = true;  },
-        onLeaveBack: () => { dotsVisible = false; },
+      const mobileTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionEl,
+          start: 'top 75%',
+          end: 'bottom 25%',
+          onEnter:     () => { dotsVisible = true;  },
+          onLeave:     () => { dotsVisible = false; },
+          onEnterBack: () => { dotsVisible = true;  },
+          onLeaveBack: () => { dotsVisible = false; },
+        }
       });
-      return () => { trigger.kill(); };
+      return () => { mobileTl.kill(); };
     });
   });
 </script>
@@ -108,7 +128,7 @@
 
   @media (min-width: 800px) {
     .dt-scroll-wrapper {
-      height: 3000px;
+      height: 5250px;
     }
 
     .dt-section {

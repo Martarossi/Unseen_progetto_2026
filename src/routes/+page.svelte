@@ -46,8 +46,7 @@
   let datiDotsVisible = $state(false);
   let showDatiOverlay = $state(false);
   let activeDatiType = $state('guide');
-  /** @type {{x: number, y: number}[]} */
-  let dotsPositions = $state([{ x: 30, y: 40 }, { x: 65, y: 35 }, { x: 60, y: 65 }]);
+  let datiRingAngle = $state(0);
 
   // Stato dinamico per passare il video corretto all'overlay separato
   let activeVideoSrc = $state("");
@@ -146,12 +145,11 @@
   {expandCardIndex}
   {onCardExpanded}
   dotsVisible={datiDotsVisible}
-  onPositionsUpdate={(pos) => { dotsPositions = pos; }}
 />
 
 <DatiTecniciDots
   visible={datiDotsVisible}
-  positions={dotsPositions}
+  ringAngle={datiRingAngle}
   onParticleClick={(id) => { activeDatiType = id; showDatiOverlay = true; }}
 />
 
@@ -203,6 +201,7 @@
       bind:currentTwistZ
       bind:model3dVisible
       bind:dotsVisible={datiDotsVisible}
+      bind:dotsRingAngle={datiRingAngle}
     />
 
     <Citazione />
