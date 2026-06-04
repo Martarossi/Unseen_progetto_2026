@@ -28,7 +28,7 @@
     // Only force scroll-to-top on a fresh navigation, not when the user
     // returned via back/forward (which should preserve position).
     try {
-      const navEntries = performance.getEntriesByType?.('navigation') || [];
+      const navEntries = /** @type {PerformanceNavigationTiming[]} */ (performance.getEntriesByType?.('navigation') || []);
       const navType = navEntries[0]?.type;
       if (navType !== 'back_forward') {
         window.scrollTo(0, 0);
