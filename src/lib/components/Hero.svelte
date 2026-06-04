@@ -384,7 +384,7 @@
   {#if isClicked}
     <div class="scroll-fade-container" style="opacity: {scrollOpacity};">
       <div class="subtitle reveal-item">
-        La prima <i>Intelligent Olympics</i> della storia
+        La prima <i>Intelligent Olympic</i> della storia
       </div>
 
       <div class="scroll-prompt reveal-item">scroll down to explore</div>

@@ -10,7 +10,7 @@
 <style>
   .citazione-wrapper {
     height: calc(100vh + 250px);
-    margin-top: 38vh;
+    margin-top: 60vh;
   }
 
   .citazione-sticky {

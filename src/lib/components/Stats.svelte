@@ -15,14 +15,14 @@
   const stats = [
     {
       title: "COPERTURA IMMERSIVA\nDEI CONTENUTI",
-      desc: "Un ecosistema visivo diffuso tra tutti i cluster olimpici. Dalle ottiche ultra-long-range per lo sci alpino ai sistemi micro-camera per bob e curling, viene garantita la copertura totale di ogni momento di gara.",
+      desc: "Un ecosistema visivo diffuso tra tutti i cluster olimpici. Dalle ottiche ultra-long-range per lo sci alpino ai sistemi micro-camera per bob e curling, è garantita la copertura totale di ogni momento di gara.",
       target: 800,
       duration: 4.5,
       label: "TELECAMERE ATTIVE SUI CAMPI DI GARA" // <-- Nuova riga di testo
     },
     {
       title: "FLUSSO DI PRODUZIONE\nE DISTRIBUZIONE GLOBALE",
-      desc: "Il racconto continuo delle Olimpiadi. Grazie alla trasmissione multi-piattaforma in Ultra HD e HDR gestita da OBS, ogni sessione competitiva viene prodotta in tempo reale per i broadcaster di tutto il mondo.",
+      desc: "Il racconto continuo delle Olimpiadi. Grazie alla trasmissione multi-piattaforma in Ultra HD gestita da OBS, ogni sessione competitiva viene prodotta in tempo reale per i broadcaster di tutto il mondo.",
       target: 900,
       duration: 4.5,
       label: "ORE DI DIRETTA STREAMING" // <-- Nuova riga di testo

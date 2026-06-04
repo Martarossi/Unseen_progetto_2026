@@ -28,7 +28,7 @@
     // Only force scroll-to-top on a fresh navigation, not when the user
     // returned via back/forward (which should preserve position).
     try {
-      const navEntries = performance.getEntriesByType?.('navigation') || [];
+      const navEntries = /** @type {PerformanceNavigationTiming[]} */ (performance.getEntriesByType?.('navigation') || []);
       const navType = navEntries[0]?.type;
       if (navType !== 'back_forward') {
         window.scrollTo(0, 0);
@@ -46,8 +46,7 @@
   let datiDotsVisible = $state(false);
   let showDatiOverlay = $state(false);
   let activeDatiType = $state('guide');
-  /** @type {{x: number, y: number}[]} */
-  let dotsPositions = $state([{ x: 30, y: 40 }, { x: 65, y: 35 }, { x: 60, y: 65 }]);
+  let datiRingAngle = $state(0);
 
   // Stato dinamico per passare il video corretto all'overlay separato
   let activeVideoSrc = $state("");
@@ -146,12 +145,11 @@
   {expandCardIndex}
   {onCardExpanded}
   dotsVisible={datiDotsVisible}
-  onPositionsUpdate={(pos) => { dotsPositions = pos; }}
 />
 
 <DatiTecniciDots
   visible={datiDotsVisible}
-  positions={dotsPositions}
+  ringAngle={datiRingAngle}
   onParticleClick={(id) => { activeDatiType = id; showDatiOverlay = true; }}
 />
 
@@ -203,6 +201,7 @@
       bind:currentTwistZ
       bind:model3dVisible
       bind:dotsVisible={datiDotsVisible}
+      bind:dotsRingAngle={datiRingAngle}
     />
 
     <Citazione />

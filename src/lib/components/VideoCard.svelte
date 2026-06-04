@@ -29,8 +29,8 @@
   const { camera } = useThrelte();
 
   const ORBIT_RADIUS = 3.5;
-  const CARD_W = 3.6;
-  const CARD_H = 2.025; // 16:9
+  const CARD_W = 4.1;
+  const CARD_H = 2.306; // 16:9
   const CARD_DEPTH = 0.03;
   const CORNER_R = 0.22; // raggio angoli fronte – non clampato dalla depth con ExtrudeGeometry
 
@@ -236,6 +236,39 @@
   let hoverProgress = 0;
   let clickPulse = 0;
 
+  // ── Floating label: piano trasparente che flotta sotto/davanti alla card ──
+  const labelCvs = document.createElement('canvas');
+  labelCvs.width = 640;
+  labelCvs.height = 100;
+  const labelTexture = new THREE.CanvasTexture(labelCvs);
+  const LABEL_H = CARD_W * (100 / 640);
+  const labelMat = new THREE.MeshBasicMaterial({
+    map: labelTexture,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const labelPlaneGeom = new THREE.PlaneGeometry(CARD_W, LABEL_H);
+  let labelGroup = $state(/** @type {THREE.Group | undefined} */ (undefined));
+  let labelPosX = 0, labelPosY = 0, labelPosZ = 0, labelRotY = 0;
+
+  $effect(() => {
+    const ctx = labelCvs.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, 640, 100);
+    if (cardTitle) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 32px "Akira Expanded", Arial, sans-serif';
+      ctx.fillText(cardTitle, 52, 44);
+    }
+    if (cardSubtitle) {
+      ctx.fillStyle = 'rgba(255,255,255,0.82)';
+      ctx.font = '15px Arial, Helvetica, sans-serif';
+      ctx.fillText(cardSubtitle, 52, 70);
+    }
+    labelTexture.needsUpdate = true;
+  });
+
   $effect(() => {
     /** @param {MouseEvent} e */
     function onMouseMove(e) {
@@ -302,7 +335,10 @@
   useTask((delta) => {
     if (!cardGroup) return;
     // GSAP gestisce position/rotation/scale durante l'espansione — non sovrascrivere
-    if (isExpanding) return;
+    if (isExpanding) {
+      if (labelGroup) labelGroup.visible = false;
+      return;
+    }
 
     const { angle, y, opacity, centerX, centerY } = orbitProps;
 
@@ -331,9 +367,6 @@
     cardGroup.rotation.y = selfRot;
 
     const clamped = Math.max(0, Math.min(1, opacity));
-    cardMatFront.opacity = clamped;
-    cardMatBack.opacity = clamped;
-    cardGlassMat.opacity = clamped;
     cardGroup.visible = clamped > 0.01;
 
     let hovered = false;
@@ -347,10 +380,34 @@
 
     const hoverTarget = hovered ? 1 : 0;
     hoverProgress += (hoverTarget - hoverProgress) * Math.min(1, delta * 8);
+
+    const finalOpacity = clamped * (0.5 + 0.5 * hoverProgress);
+    cardMatFront.opacity = finalOpacity;
+    cardMatBack.opacity = finalOpacity;
+    cardGlassMat.opacity = finalOpacity;
     clickPulse *= Math.max(0, 1 - delta * 14);
 
-    cardGroup.scale.setScalar(1 + hoverProgress * 0.12 + clickPulse * 0.07);
+    cardGroup.scale.setScalar(1 + hoverProgress * 0.16 + clickPulse * 0.07);
     cardGroup.position.z = baseZ + hoverProgress * 0.5;
+
+    // ── Floating label parallax: lerpa leggermente più lentamente della card ──
+    if (labelGroup && (cardTitle || cardSubtitle)) {
+      const LAG = Math.min(1, delta * 15);
+      labelPosX += (cardGroup.position.x - labelPosX) * LAG;
+      labelPosY += (cardGroup.position.y - labelPosY) * LAG;
+      labelPosZ += (cardGroup.position.z - labelPosZ) * LAG;
+      labelRotY += (selfRot - labelRotY) * LAG;
+      labelGroup.visible = clamped > 0.01;
+      labelGroup.position.set(
+        labelPosX,
+        labelPosY - (CARD_H / 2 - 0.4),
+        labelPosZ + 0.50,
+      );
+      labelGroup.rotation.y = labelRotY;
+      labelGroup.scale.setScalar(cardGroup.scale.x);
+      labelMat.opacity = finalOpacity;
+      labelGroup.renderOrder = cardGroup.renderOrder;
+    }
 
     // Disegno del frame video sulla texture Three.js
     if (videoEl && videoEl.readyState >= 2) {
@@ -375,18 +432,6 @@
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 640, 360);
 
-        if (cardTitle) {
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 40px "Akira Expanded", Arial, sans-serif';
-          ctx.fillText(cardTitle, 28, 302);
-        }
-
-        if (cardSubtitle) {
-          ctx.fillStyle = 'rgba(255,255,255,0.82)';
-          ctx.font = '15px Arial, Helvetica, sans-serif';
-          ctx.fillText(cardSubtitle, 28, 328);
-        }
-
         ctx.restore();
         cardTexture.needsUpdate = true;
       }
@@ -409,5 +454,13 @@
   <T.Mesh bind:ref={cardMesh}>
     <T is={cardGeom} />
     <T is={cardMatFront} />
+  </T.Mesh>
+</T.Group>
+
+<!-- Label floating: posizione in world space aggiornata via lerp nel useTask -->
+<T.Group bind:ref={labelGroup}>
+  <T.Mesh>
+    <T is={labelPlaneGeom} />
+    <T is={labelMat} />
   </T.Mesh>
 </T.Group>

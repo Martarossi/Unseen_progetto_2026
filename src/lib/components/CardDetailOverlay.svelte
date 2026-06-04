@@ -241,9 +241,8 @@
 }
 
 .overlay-wrapper.closing .overlay-inner {
-  opacity: 0 !important;
   transform: scale(0.97) !important;
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .overlay-wrapper.closing .card-glass-bg {
@@ -302,13 +301,11 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  opacity: 0;
-  transform: scale(0.97);
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: scale(0.96);
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .overlay-wrapper.opening .overlay-inner {
-  opacity: 1;
   transform: scale(1);
 }
 
@@ -483,5 +480,51 @@
   flex: 8;
   height: 500px;
   min-height: 0;
+}
+
+/* ── Keyframes per entry scaglionata ── */
+@keyframes ov-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ov-slide-up-sm {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ov-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes ov-divider-in {
+  from { opacity: 0; transform: scaleX(0); }
+  to   { opacity: 1; transform: scaleX(1); }
+}
+@keyframes ov-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Gerarchia temporale: titolo → divider+subtitle → video → info → nav ── */
+.overlay-wrapper.opening .main-card h2 {
+  animation: ov-slide-up 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+.overlay-wrapper.opening .main-card .divider {
+  animation: ov-divider-in 0.8s ease-out 0.56s both;
+  transform-origin: left center;
+}
+.overlay-wrapper.opening .subtitle {
+  animation: ov-slide-up-sm 0.9s ease-out 0.72s both;
+}
+.overlay-wrapper.opening .video-card {
+  animation: ov-scale-in 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both;
+}
+.overlay-wrapper.opening .info-card-double {
+  animation: ov-fade-up 0.9s ease-out 0.88s both;
+}
+.overlay-wrapper.opening .bullet-scene-wrap {
+  animation: ov-fade-up 0.9s ease-out 0.88s both;
+}
+.overlay-wrapper.opening .nav-card {
+  animation: ov-fade-up 0.9s ease-out 1.08s both;
 }
 </style>
