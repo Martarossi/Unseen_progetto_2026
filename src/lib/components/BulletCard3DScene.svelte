@@ -22,12 +22,147 @@
 
   let autoRotY = 0;
 
+  // Materiale particellare identico a Scene.svelte
+  const uTime = { value: 0 };
+
+  const particleMaterial = new THREE.PointsMaterial({
+    color: 0xC9D7DC,
+    size: 0.14,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  particleMaterial.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = uTime;
+
+    shader.vertexShader = `uniform float uTime;\n` + shader.vertexShader;
+
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `
+      #include <begin_vertex>
+
+      vec3 wave;
+      wave.x = sin(transformed.y * 3.5 + uTime * 2.2) * cos(transformed.z * 3.0 + uTime * 1.7);
+      wave.y = cos(transformed.x * 3.0 + uTime * 2.0) * sin(transformed.z * 3.5 + uTime * 2.2);
+      wave.z = sin(transformed.x * 3.5 + uTime * 1.7) * cos(transformed.y * 3.0 + uTime * 2.5);
+
+      transformed += wave * 0.045;
+      `
+    );
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <color_fragment>',
+      `
+      #include <color_fragment>
+      vec2 center = gl_PointCoord - vec2(0.5);
+      float dist = length(center);
+      if (dist > 0.5) discard;
+      float intensity = smoothstep(0.5, 0.0, dist);
+      diffuseColor.a *= intensity;
+      `
+    );
+  };
+
+  // Campionamento uniforme sulla superficie dei triangoli (identico a Scene.svelte)
+  /** @param {THREE.BufferGeometry} geometry @param {number} count */
+  function samplePointsFromGeometry(geometry, count) {
+    const positionAttr = geometry.attributes.position;
+    if (!positionAttr) return geometry;
+
+    const indexAttr = geometry.index;
+    const vertexCount = positionAttr.count;
+    const sampledPositions = new Float32Array(count * 3);
+
+    const vA = new THREE.Vector3();
+    const vB = new THREE.Vector3();
+    const vC = new THREE.Vector3();
+    const point = new THREE.Vector3();
+
+    if (indexAttr) {
+      const triangleCount = indexAttr.count / 3;
+      for (let i = 0; i < count; i++) {
+        const triIndex = Math.floor(Math.random() * triangleCount) * 3;
+        vA.fromBufferAttribute(positionAttr, indexAttr.getX(triIndex));
+        vB.fromBufferAttribute(positionAttr, indexAttr.getY(triIndex));
+        vC.fromBufferAttribute(positionAttr, indexAttr.getZ(triIndex));
+
+        const sqrtR1 = Math.sqrt(Math.random());
+        const r2 = Math.random();
+        const u = 1 - sqrtR1;
+        const v = r2 * sqrtR1;
+
+        point.set(0, 0, 0).addScaledVector(vA, u).addScaledVector(vB, v).addScaledVector(vC, 1 - u - v);
+        sampledPositions[i * 3]     = point.x;
+        sampledPositions[i * 3 + 1] = point.y;
+        sampledPositions[i * 3 + 2] = point.z;
+      }
+    } else {
+      const triangleCount = vertexCount / 3;
+      for (let i = 0; i < count; i++) {
+        const triIndex = Math.floor(Math.random() * triangleCount) * 3;
+        vA.fromBufferAttribute(positionAttr, triIndex);
+        vB.fromBufferAttribute(positionAttr, triIndex + 1);
+        vC.fromBufferAttribute(positionAttr, triIndex + 2);
+
+        const sqrtR1 = Math.sqrt(Math.random());
+        const r2 = Math.random();
+        const u = 1 - sqrtR1;
+        const v = r2 * sqrtR1;
+
+        point.set(0, 0, 0).addScaledVector(vA, u).addScaledVector(vB, v).addScaledVector(vC, 1 - u - v);
+        sampledPositions[i * 3]     = point.x;
+        sampledPositions[i * 3 + 1] = point.y;
+        sampledPositions[i * 3 + 2] = point.z;
+      }
+    }
+
+    const sampledGeom = new THREE.BufferGeometry();
+    sampledGeom.setAttribute('position', new THREE.BufferAttribute(sampledPositions, 3));
+    return sampledGeom;
+  }
+
+  // Conversione mesh → particelle (identica a Scene.svelte)
+  $effect(() => {
+    if (!$gltf?.scene) return;
+
+    /** @type {THREE.Mesh[]} */
+    const meshesToConvert = [];
+    $gltf.scene.traverse((child) => {
+      if (child instanceof THREE.Mesh && !child.userData.isParticleConverted) {
+        meshesToConvert.push(child);
+      }
+    });
+
+    meshesToConvert.forEach((mesh) => {
+      mesh.visible = false;
+      mesh.userData.isParticleConverted = true;
+
+      const denseGeometry = samplePointsFromGeometry(mesh.geometry, 35000);
+      const points = new THREE.Points(denseGeometry, particleMaterial);
+      points.position.copy(mesh.position);
+      points.rotation.copy(mesh.rotation);
+      points.scale.copy(mesh.scale);
+      mesh.parent?.add(points);
+    });
+  });
+
+  // Animazione uTime
+  $effect(() => {
+    let rafId = requestAnimationFrame(function loop() {
+      uTime.value += 0.015;
+      rafId = requestAnimationFrame(loop);
+    });
+    return () => cancelAnimationFrame(rafId);
+  });
+
   useTask((dt) => {
-    // Centramento e calcolo distanza camera (una sola volta, dopo che sceneRef è pronto)
     if (!centered && sceneRef) {
       centered = true;
 
-      // Centro geometrico dell'intera scena (XZ)
       const sceneBox0 = new THREE.Box3().setFromObject(sceneRef);
       const sceneCenter0 = sceneBox0.getCenter(new THREE.Vector3());
 
@@ -38,7 +173,6 @@
       sceneRef.traverse((child) => {
         if (!(child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh)) return;
 
-        // Priorità per nome
         const name = child.name.toLowerCase();
         if (humanKeywords.some(k => name.includes(k))) { humanMesh = /** @type {THREE.Mesh} */ (child); bestScore = Infinity; return; }
         if (bestScore === Infinity) return;
@@ -47,7 +181,6 @@
         const meshCenter = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
-        // La figura umana è vicina al centro XZ del rig E ha forma verticale
         const distXZ = Math.sqrt((meshCenter.x - sceneCenter0.x) ** 2 + (meshCenter.z - sceneCenter0.z) ** 2);
         const centrality = 1 / (distXZ + 0.01);
         const tallness = size.y / Math.max(size.x, size.z, 0.001);
@@ -63,7 +196,6 @@
       offsetY = -center.y;
       offsetZ = -center.z;
 
-      // Distanza camera basata sull'intero modello
       const fullBox = new THREE.Box3().setFromObject(sceneRef);
       const fullSize = fullBox.getSize(new THREE.Vector3());
       const fovRad = 60 * (Math.PI / 180);
@@ -77,7 +209,6 @@
       if (cameraRef) cameraRef.position.set(0, 0, cameraZ);
     }
 
-    // Rotazione: auto-rotate quando non si trascina
     if (!isDragging) autoRotY += dt * 0.5;
     if (sceneRef) sceneRef.rotation.y = autoRotY + externalRotY;
   });
@@ -85,15 +216,14 @@
 
 <T.PerspectiveCamera makeDefault fov={60} position={[0, 0, 9]} bind:ref={cameraRef} />
 
-<T.AmbientLight intensity={1.2} />
-<T.DirectionalLight position={[5, 8, 5]} intensity={2.5} />
-<T.DirectionalLight position={[-4, -2, -3]} intensity={0.6} color="#60aacc" />
+<T.AmbientLight intensity={0.4} />
+<T.PointLight position={[0, 0, 5]} intensity={1.0} distance={20} />
 
 {#if $gltf}
   <T
     is={$gltf.scene}
     bind:ref={sceneRef}
-    scale={[8.0, 8.0, 8.0]}
+    scale={[2.0, 2.0, 2.0]}
     position={[offsetX, offsetY, offsetZ]}
   />
 {/if}
