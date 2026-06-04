@@ -303,6 +303,7 @@
   box-sizing: border-box;
   transform: scale(0.96);
   transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: visible;
 }
 
 .overlay-wrapper.opening .overlay-inner {
@@ -315,6 +316,7 @@
   gap: 24px;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
 .col {
@@ -322,6 +324,7 @@
   flex-direction: column;
   gap: 24px;
   height: 100%;
+  overflow: visible;
 }
 
 .card {
@@ -480,6 +483,8 @@
   flex: 8;
   height: 500px;
   min-height: 0;
+  overflow: visible;
+  position: relative;
 }
 
 /* ── Keyframes per entry scaglionata ── */
