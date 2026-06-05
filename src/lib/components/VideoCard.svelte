@@ -317,6 +317,7 @@
       if (!cardMesh || !camera.current) return;
       const clamped = Math.max(0, Math.min(1, orbitProps.opacity));
       if (clamped <= 0.01) return;
+      if (ORBIT_RADIUS * Math.sin(orbitProps.angle) <= 0.5) return;
 
       clickNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
       clickNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
