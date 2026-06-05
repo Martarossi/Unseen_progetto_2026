@@ -61,7 +61,7 @@
     } else if (_wasEverVisible) {
       reenter = false;
       exiting = true;
-      const t = setTimeout(() => { exiting = false; }, 750);
+      const t = setTimeout(() => { exiting = false; }, 1100);
       return () => clearTimeout(t);
     }
   });
@@ -180,24 +180,35 @@
     opacity: 1;
     transition: none;
     pointer-events: none;
+    animation: dt-overlay-rise 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
-  .dt-overlay.exiting .dt-card:nth-child(1) { animation: dt-card-exit 0.5s ease 0s    forwards; }
-  .dt-overlay.exiting .dt-card:nth-child(2) { animation: dt-card-exit 0.5s ease 0.08s forwards; }
-  .dt-overlay.exiting .dt-card:nth-child(3) { animation: dt-card-exit 0.5s ease 0.16s forwards; }
-
-  @keyframes dt-card-exit {
-    from { opacity: 1; transform: scale(1)    translateY(0);   }
-    to   { opacity: 0; transform: scale(0.93) translateY(22px); }
+  @keyframes dt-overlay-rise {
+    0%   { transform: translateY(0);    opacity: 1; }
+    88%  { transform: translateY(-36px); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
   }
 
+  /* Ring esce prima */
   .dt-overlay.exiting .dt-orbit-ring {
-    animation: dt-ring-exit 0.6s ease 0.12s forwards;
+    animation: dt-ring-exit 0.4s ease 0s forwards;
   }
 
   @keyframes dt-ring-exit {
     from { opacity: 1; scale: 1;    }
     to   { opacity: 0; scale: 1.07; }
+  }
+
+  /* Le 3 card escono insieme, dopo il ring */
+  .dt-overlay.exiting .dt-card:nth-child(1),
+  .dt-overlay.exiting .dt-card:nth-child(2),
+  .dt-overlay.exiting .dt-card:nth-child(3) {
+    animation: dt-card-exit 0.5s ease 0.35s forwards;
+  }
+
+  @keyframes dt-card-exit {
+    from { opacity: 1; transform: scale(1)    translateY(0);   }
+    to   { opacity: 0; transform: scale(0.96) translateY(-18px); }
   }
 
   /* ── RING ─────────────────────────────────────── */

@@ -226,7 +226,7 @@
   <T
     is={$gltf.scene}
     bind:ref={sceneRef}
-    scale={[10.0, 10.0, 10.0]}
+    scale={[8.5, 8.5, 8.5]}
     position={[offsetX - 50.0, offsetY, offsetZ]}
   />
 {/if}
