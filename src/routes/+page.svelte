@@ -10,8 +10,9 @@
   import Stats from "$lib/components/Stats.svelte";
   import Citazione from "$lib/components/Citazione.svelte";
   import VociDietroLaLente from "$lib/components/VociDietroLaLente.svelte";
+  import CitazioniBlurrate from "$lib/components/CitazioniBlurrate.svelte";
   import Modello3D from "$lib/components/Modello3D.svelte";
-  import ModelShrink from "$lib/components/ModelShrink.svelte";
+
   import CardDetailOverlay from "$lib/components/CardDetailOverlay.svelte";
   import DatiTecnici from "$lib/components/DatiTecnici.svelte";
   import DatiTecniciDots from "$lib/components/DatiTecniciDots.svelte";
@@ -218,14 +219,7 @@
       bind:model3dVisible
     />
 
-    <ModelShrink
-      bind:modelPosition
-      bind:modelScale
-      bind:modelRotation
-      bind:currentTwistX
-      bind:currentTwistZ
-      bind:model3dVisible
-    />
+    <CitazioniBlurrate />
 
     <Gallery />
     <div class="footer-spacer"></div>

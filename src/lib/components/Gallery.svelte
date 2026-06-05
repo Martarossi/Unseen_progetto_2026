@@ -69,26 +69,25 @@
   function updateGallery(index) {
     if (!cardElements || !titleElements) return;
 
-    const CARD_H = 380; // must match CSS height of .gallery-card
+    const CARD_W = 580; // must match CSS width of .gallery-card
     const FOLD_ANGLE = 65; // degrees per step
 
-    // 1. Cards: book-spine fold animation
+    // 1. Cards: horizontal book-spine fold animation
     cardElements.forEach((card, i) => {
       const diff = i - index;
       const absDiff = Math.abs(diff);
 
-      // Vertical offset stacks cards edge-to-edge before rotation
-      const yOffset = diff * CARD_H;
-      // Rotation: positive diff folds downward, negative folds upward
-      const rotX = diff * FOLD_ANGLE;
+      // Horizontal offset stacks cards edge-to-edge before rotation
+      const xOffset = diff * CARD_W;
+      // Rotation around Y axis: past cards fold left, upcoming fold right
+      const rotY = diff * FOLD_ANGLE;
 
       const opacityVal = Math.max(0.06, 1 - absDiff * 0.5);
       const zIndexVal = Math.round(100 - absDiff * 10);
 
-      // Above/active: pivot at bottom edge so card folds up from the spine
-      // Below: pivot at top edge so card folds down from the spine
-      card.style.transformOrigin = diff <= 0 ? '50% 100%' : '50% 0%';
-      card.style.transform = `translate(-50%, calc(-50% + ${yOffset}px)) rotateX(${rotX}deg)`;
+      // Past/active: pivot at right edge; upcoming: pivot at left edge
+      card.style.transformOrigin = diff <= 0 ? '100% 50%' : '0% 50%';
+      card.style.transform = `translate(calc(-50% + ${xOffset}px), -50%) rotateY(${rotY}deg)`;
       card.style.opacity = String(opacityVal);
       card.style.zIndex = String(zIndexVal);
       card.style.pointerEvents = absDiff < 0.45 ? 'auto' : 'none';
@@ -307,7 +306,7 @@
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
-    perspective: 700px;
+    perspective: 900px;
     will-change: transform;
   }
 
