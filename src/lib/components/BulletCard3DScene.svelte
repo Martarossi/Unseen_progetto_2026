@@ -15,6 +15,7 @@
   let cameraRef = $state(undefined);
 
   let centered = false;
+  let readyFrames = 0;
   let offsetX = $state(0);
   let offsetY = $state(0);
   let offsetZ = $state(0);
@@ -27,8 +28,8 @@
 
   const particleMaterial = new THREE.PointsMaterial({
     color: 0xC9D7DC,
-    size: 0.14,
-    sizeAttenuation: true,
+    size: 2.0,
+    sizeAttenuation: false,
     transparent: true,
     opacity: 0.85,
     blending: THREE.AdditiveBlending,
@@ -50,7 +51,7 @@
       wave.y = cos(transformed.x * 3.0 + uTime * 2.0) * sin(transformed.z * 3.5 + uTime * 2.2);
       wave.z = sin(transformed.x * 3.5 + uTime * 1.7) * cos(transformed.y * 3.0 + uTime * 2.5);
 
-      transformed += wave * 0.045;
+      transformed += wave * 0.008;
       `
     );
 
@@ -161,6 +162,9 @@
 
   useTask((dt) => {
     if (!centered && sceneRef) {
+      const canvas = renderer.domElement;
+      if (canvas.clientWidth === 0 || canvas.clientHeight === 0) { readyFrames = 0; return; }
+      if (++readyFrames < 5) return;
       centered = true;
 
       const sceneBox0 = new THREE.Box3().setFromObject(sceneRef);
@@ -199,12 +203,11 @@
       const fullBox = new THREE.Box3().setFromObject(sceneRef);
       const fullSize = fullBox.getSize(new THREE.Vector3());
       const fovRad = 60 * (Math.PI / 180);
-      const canvas = renderer.domElement;
       const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
       const fovH = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
       const distV = (fullSize.y / 2) / Math.tan(fovRad / 2);
       const distH = (fullSize.x / 2) / Math.tan(fovH / 2);
-      cameraZ = Math.max(distV, distH) * 0.75 + fullSize.z / 2;
+      cameraZ = Math.max(distV, distH) * 1.0 + fullSize.z / 2;
 
       if (cameraRef) cameraRef.position.set(0, 0, cameraZ);
     }
@@ -214,7 +217,7 @@
   });
 </script>
 
-<T.PerspectiveCamera makeDefault fov={60} position={[0, 0, 9]} bind:ref={cameraRef} />
+<T.PerspectiveCamera makeDefault fov={70} position={[0, 0, 9]} bind:ref={cameraRef} />
 
 <T.AmbientLight intensity={0.4} />
 <T.PointLight position={[0, 0, 5]} intensity={1.0} distance={20} />
@@ -223,7 +226,7 @@
   <T
     is={$gltf.scene}
     bind:ref={sceneRef}
-    scale={[2.0, 2.0, 2.0]}
-    position={[offsetX, offsetY, offsetZ]}
+    scale={[10.0, 10.0, 10.0]}
+    position={[offsetX - 50.0, offsetY, offsetZ]}
   />
 {/if}
