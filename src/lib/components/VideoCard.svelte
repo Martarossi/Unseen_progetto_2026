@@ -218,15 +218,15 @@
     const targetScale = Math.max(scaleH, scaleW) * 1.08;
 
     // GSAP anima la card 3D reale: posizione → centro, rotazione → frontale, scala → schermo pieno
-    const t1 = gsap.to(group.position, { x: 0, y: 0, duration: 0.9, ease: 'power3.inOut' });
-    const t2 = gsap.to(group.rotation, { y: 0, duration: 0.9, ease: 'power3.inOut' });
+    const t1 = gsap.to(group.position, { x: 0, y: 0, duration: 0.65, ease: 'power3.inOut' });
+    const t2 = gsap.to(group.rotation, { y: 0, duration: 0.65, ease: 'power3.inOut' });
     const t3 = gsap.to(group.scale, {
       x: targetScale, y: targetScale, z: targetScale,
-      duration: 0.9,
+      duration: 0.65,
       ease: 'power3.inOut',
     });
     // Avvia il dissolve overlay al 60% dell'animazione: la dissolvenza si sovrappone alla fine dell'espansione
-    const expandTimer = gsap.delayedCall(0.42, () => onCardExpanded?.());
+    const expandTimer = gsap.delayedCall(0.36, () => onCardExpanded?.());
 
     return () => { t1.kill(); t2.kill(); t3.kill(); expandTimer.kill(); };
   });

@@ -18,6 +18,7 @@
     orbitProps2 = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     orbitProps3 = /** @type {{ angle: number, y: number, opacity: number, centerX: number, centerY: number }} */ ({ angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 }),
     model3dVisible = $bindable(false),
+    scrollToCard = $bindable(/** @type {((cardIndex: number) => void) | undefined} */ (undefined)),
   } = $props();
 
   /** @type {HTMLElement|null} */
@@ -386,8 +387,22 @@
         12.6,
       );
 
+      // Tempi nella timeline in cui ogni card è esattamente "frontale" (angle = 5π/2, sin=1)
+      // Ogni orbita parte a angle=π e va a 4π in 4s linear → metà orbita = +2s
+      const cardFrontTimes = [7.0 + 2.0, 7.8 + 2.0, 8.6 + 2.0]; // [9.0, 9.8, 10.6]
+
+      scrollToCard = (cardIndex) => {
+        const st = tl.scrollTrigger;
+        if (!st) return;
+        const t = cardFrontTimes[cardIndex] ?? cardFrontTimes[0];
+        const progress = t / tl.totalDuration();
+        const targetScroll = st.start + progress * (st.end - st.start);
+        window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      };
+
       return () => {
         tl.kill();
+        scrollToCard = undefined;
       };
     });
 

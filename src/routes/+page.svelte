@@ -72,35 +72,36 @@
   let model3dVisible = $state(false);
 
   /**
-   * @param {{ x: number, y: number, width: number, height: number } | null} rect
+   * @param {{ x: number, y: number, width: number, height: number } | null} _rect
    * @param {string} videoSrc
    * @param {number} cardIndex
    */
-  async function handleCardClick(rect, videoSrc = '', cardIndex = 0) {
+  async function handleCardClick(_rect, videoSrc = '', cardIndex = 0) {
     if (showCardOverlay) return;
-    // 1. Scroll per centrare la card
-    if (rect) {
-      const vh = window.innerHeight;
-      const screenDy = (rect.y + rect.height / 2) - vh / 2;
-      if (Math.abs(screenDy) > 80) {
-        window.scrollBy({ top: screenDy * 11, behavior: 'smooth' });
-        await new Promise(r => setTimeout(r, 460));
-      }
-    }
-    // Salva il video per l'overlay (aperto dopo l'espansione 3D)
+    activeCardIndex = cardIndex;
     activeVideoSrc = videoSrc || "/video_card/spacetime_slices.mov";
-    // 2. Avvia l'espansione della card 3D reale
+    // Porta istantaneamente lo scroll alla posizione frontale della card,
+    // poi aspetta che GSAP (scrub: 1) raggiunga quella posizione
+    scrollToCard?.(cardIndex);
+    await new Promise(r => setTimeout(r, 750));
     expandCardIndex = cardIndex;
   }
+
+  let activeCardIndex = $state(0);
+  /** @type {((cardIndex: number) => void) | undefined} */
+  let scrollToCard = $state(undefined);
 
   // Chiamato da VideoCard quando la card 3D ha raggiunto schermo pieno
   function onCardExpanded() {
     showCardOverlay = true;
   }
 
+  function resetExpandedCard() {
+    expandCardIndex = -1;
+  }
+
   function closeOverlay() {
     showCardOverlay = false;
-    expandCardIndex = -1;
   }
 
   onMount(() => {
@@ -164,6 +165,8 @@
   <CardDetailOverlay
     {closeOverlay}
     videoSrc={activeVideoSrc}
+    resetCard={resetExpandedCard}
+    scrollToFrontCard={() => scrollToCard?.(activeCardIndex)}
   />
 {/if}
 
@@ -176,6 +179,7 @@
     bind:modelRotation
     bind:currentTwistX
     bind:currentTwistZ
+    bind:scrollToCard
     {cardProps}
     {orbitProps}
     {orbitProps2}

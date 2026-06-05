@@ -2,8 +2,8 @@
   import { onMount, onDestroy } from 'svelte';
   import BulletCard3D from './BulletCard3D.svelte';
 
-  /** @type {{ closeOverlay: () => void, videoSrc?: string }} */
-  let { closeOverlay, videoSrc = '' } = $props();
+  /** @type {{ closeOverlay: () => void, videoSrc?: string, resetCard?: () => void, scrollToFrontCard?: () => void }} */
+  let { closeOverlay, videoSrc = '', resetCard = undefined, scrollToFrontCard = undefined } = $props();
 
   let opening = $state(false);
   let closing = $state(false);
@@ -110,8 +110,10 @@
 
   async function handleClose() {
     stopRAF();
+    resetCard?.();
+    scrollToFrontCard?.();
     closing = true;
-    await new Promise(r => setTimeout(r, 870));
+    await new Promise(r => setTimeout(r, 800));
     closeOverlay();
   }
 </script>
@@ -232,22 +234,12 @@
 .overlay-wrapper.closing {
   pointer-events: none;
   opacity: 0 !important;
-  transition: opacity 0.65s ease 0.2s !important;
-}
-
-.overlay-wrapper.closing .close-btn {
-  opacity: 0 !important;
-  transition: opacity 0.2s ease !important;
+  transition: opacity 0.75s ease !important;
 }
 
 .overlay-wrapper.closing .overlay-inner {
   transform: scale(0.97) !important;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
-}
-
-.overlay-wrapper.closing .card-glass-bg {
-  opacity: 1 !important;
-  transition: opacity 0.35s ease !important;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 .card-glass-bg {
