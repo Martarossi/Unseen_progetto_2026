@@ -17,13 +17,16 @@
   /** @type {HTMLElement|null} */
   let introTextRef = null;
   /** @type {HTMLElement|null} */
-  let pLeft = null;
+  let headingRef = null;
+  /** @type {HTMLElement|null} */
+  let columnsRef = null;
+  /** @type {HTMLElement|null} */
+  let colLeftRef = null;
+  /** @type {HTMLElement|null} */
+  let colRightRef = null;
   /** @type {HTMLElement|null} */
   let whiteOverlay = null;
-  /** @type {HTMLElement|null} */
-  let pRight = null;
 
-  // Starting state matching DatiTecnici display state
   const modelProps = {
     scale: 2.2,
     rotX: Math.PI * 6.0,
@@ -53,7 +56,11 @@
 
       const letters = introTextRef?.querySelectorAll(".voci-letter") ?? [];
 
-      // Hero-style letter animation (time-based, triggered at end of shrink phase)
+      // Colonne inizialmente sfocate (il container resta opacity 0 finché letterTl non lo porta a 1)
+      gsap.set([colLeftRef, colRightRef], { filter: "blur(16px)" });
+
+      // Time-based: lettere in → out → heading + container colonne compaiono
+      // Le colonne restano sfocate: letterTl anima solo opacity/y del container, non il blur dei figli
       const letterTl = gsap.timeline({ paused: true })
         .fromTo(
           letters,
@@ -66,13 +73,18 @@
           "+=1.5"
         )
         .fromTo(
-          [pLeft, pRight],
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 1.0, stagger: 0.25, ease: "power2.out" }
+          headingRef,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" }
+        )
+        .fromTo(
+          columnsRef,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
+          "-=0.5"
         );
 
-      // Scrub timeline: model shrinks + background lightens
-      // Background is restored automatically when scrub reverses
+      // Scrub: modello si rimpicciolisce + sfondo si schiarisce
       const shrinkTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
@@ -95,15 +107,19 @@
             modelPosition  = [0, 0, 0];
             letterStarted  = false;
             letterTl.pause(0);
-            gsap.set(letters,        { opacity: 0, filter: "blur(10px)", y: 20 });
-            gsap.set([pLeft, pRight], { opacity: 0, y: 24 });
+            gsap.set(letters,    { opacity: 0, filter: "blur(10px)", y: 20 });
+            gsap.set(headingRef, { opacity: 0, y: 20 });
+            gsap.set(columnsRef, { opacity: 0, y: 20 });
+            gsap.set([colLeftRef, colRightRef], { filter: "blur(16px)" });
           },
           onLeaveBack: () => {
             model3dVisible = false;
             letterStarted  = false;
             letterTl.pause(0);
-            gsap.set(letters,        { opacity: 0 });
-            gsap.set([pLeft, pRight], { opacity: 0 });
+            gsap.set(letters,    { opacity: 0 });
+            gsap.set(headingRef, { opacity: 0 });
+            gsap.set(columnsRef, { opacity: 0 });
+            gsap.set([colLeftRef, colRightRef], { filter: "blur(16px)" });
           },
         },
       });
@@ -115,19 +131,16 @@
         0
       );
 
-      // Lighten background by boosting brightness of the same parallax image (scrub reverses)
       shrinkTl.fromTo(".parallax-bg",
         { filter: "brightness(1)" },
         { filter: "brightness(1.5)", duration: 3.5, ease: "power1.inOut" },
         0.5);
 
-      // Thin white wash over the background
       shrinkTl.fromTo(whiteOverlay,
         { opacity: 0 },
-        { opacity: 0.28, duration: 3.5, ease: "power1.inOut" },
+        { opacity: 0.4, duration: 3.5, ease: "power1.inOut" },
         0.5);
 
-      // Navbar text and logo switch to dark on light background
       shrinkTl.fromTo(".navbar__link",
         { color: "#ffffff" },
         { color: "#1a2a35", duration: 3.5, ease: "power1.inOut" }, 0.5);
@@ -135,7 +148,6 @@
         { filter: "invert(0)" },
         { filter: "invert(1)", duration: 3.5, ease: "power1.inOut" }, 0.5);
 
-      // Footer text and logo switch to dark on light background
       shrinkTl.fromTo(".footer-title, .footer-copy",
         { color: "#f8f8f8" },
         { color: "#1a2a35", duration: 3.5, ease: "power1.inOut" }, 0.5);
@@ -143,9 +155,36 @@
         { filter: "brightness(0) invert(1)" },
         { filter: "brightness(0) invert(0)", duration: 3.5, ease: "power1.inOut" }, 0.5);
 
+      // Scrub: colonna sinistra nitida → sinistra sfocata + destra nitida
+      const blurTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: "top+=2800 top",
+          end: "top+=4400 top",
+          scrub: 1.5,
+        }
+      });
+
+      blurTl
+        // Fase 1: sinistra diventa nitida
+        .fromTo(colLeftRef,
+          { filter: "blur(16px)" },
+          { filter: "blur(0px)", duration: 0.4, ease: "power1.inOut" }
+        )
+        // Fase 2: sinistra torna sfocata + destra diventa nitida (in parallelo)
+        .to(colLeftRef,
+          { filter: "blur(16px)", duration: 0.4, ease: "power1.inOut" }
+        )
+        .fromTo(colRightRef,
+          { filter: "blur(16px)" },
+          { filter: "blur(0px)", duration: 0.4, ease: "power1.inOut" },
+          "<"
+        );
+
       return () => {
         shrinkTl.kill();
         letterTl.kill();
+        blurTl.kill();
       };
     });
   });
@@ -156,24 +195,29 @@
 <div class="voci-scroll-wrapper" bind:this={scrollWrapper}>
   <div class="voci-sticky">
 
-    <!-- "Scopri le voci di chi sta dietro l’inquadratura" — hero-style letter animation -->
+    <!-- Animazione lettere -->
     <div class="voci-intro-text" bind:this={introTextRef}>
       <p class="voci-intro-phrase">
         <b>{#each splitIntoLetters("Scopri") as char}<span class="voci-letter">{char}</span>{/each}</b>{#each splitIntoLetters(" le voci di chi") as char}<span class="voci-letter">{char}</span>{/each}
       </p>
       <p class="voci-intro-phrase">
-        {#each splitIntoLetters("sta dietro l’") as char}<span class="voci-letter">{char}</span>{/each}<b>{#each splitIntoLetters("inquadratura") as char}<span class="voci-letter">{char}</span>{/each}</b>
+        {#each splitIntoLetters("sta dietro l'") as char}<span class="voci-letter">{char}</span>{/each}<b>{#each splitIntoLetters("inquadratura") as char}<span class="voci-letter">{char}</span>{/each}</b>
       </p>
     </div>
 
-    <!-- Paragraphs that reappear on the light background -->
-    <div class="voci-left" bind:this={pLeft}>
-      <p class="text-regular">L'AI, però, funge solo da tecnologia <br>che analizza, stabilizza,<br>calcola e ricostruisce.</p>
-      <p class="text-bold">Ma dietro ogni immagine<br>rimangono l'esperienza,<br>la sensibilità<br>e la presenza umana.</p>
+    <!-- Titolo sempre nitido -->
+    <div class="voci-heading" bind:this={headingRef}>
+      <p class="heading-text">Dietro ad ogni immagine<br>rimangono l'esperienza,<br>la presenza e la<br>sensibilità umana.</p>
     </div>
 
-    <div class="voci-right" bind:this={pRight}>
-      <p>Una raccolta di voci di chi <br><strong>vive l'evento da dietro la lente</strong>: professionisti che lavorano <br>in condizioni estreme, in equilibrio costante tra tecnica ed emozione.</p>
+    <!-- Due colonne: inizialmente sfocate, si nitidiscono una alla volta con lo scroll -->
+    <div class="voci-columns" bind:this={columnsRef}>
+      <div class="col-text" bind:this={colLeftRef}>
+        <p>L'AI funge solo da tecnologia che analizza, stabilizza, calcola e ricostruisce.</p>
+      </div>
+      <div class="col-text" bind:this={colRightRef}>
+        <p>Una raccolta di voci di chi <strong>vive l'evento da dietro la lente</strong>: professionisti che lavorano in condizioni estreme, in equilibrio costante tra tecnica ed emozione.</p>
+      </div>
     </div>
 
   </div>
@@ -190,7 +234,7 @@
   }
 
   .voci-scroll-wrapper {
-    height: 4500px;
+    height: 5600px;
     position: relative;
   }
 
@@ -201,13 +245,12 @@
     top: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 10%;
+    justify-content: center;
     box-sizing: border-box;
     pointer-events: none;
   }
 
-  /* ── Intro text (hero-style) ── */
+  /* ── Animazione lettere ── */
   .voci-intro-text {
     position: absolute;
     top: 50%;
@@ -232,47 +275,59 @@
     opacity: 0;
   }
 
-  /* ── Paragraphs (on light background) ── */
-  .voci-left {
-    width: 30%;
+  /* ── Titolo centrato (sempre nitido) ── */
+  .voci-heading {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 72%;
     opacity: 0;
-    will-change: opacity, transform;
+    will-change: opacity;
+    pointer-events: none;
   }
 
-  .voci-right {
-    width: 30%;
-    opacity: 0;
-    will-change: opacity, transform;
-  }
-
-  .text-regular {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(17px, 1.4vw, 22px);
-    line-height: 1.6;
+  .heading-text {
+    font-family: 'Akira Expanded', 'Impact', 'Arial Black', sans-serif;
+    font-size: clamp(16px, 2.2vw, 36px);
+    font-weight: 900;
+    line-height: 1.25;
     color: #1a2a35;
-    margin: 0 0 1.2rem;
-    font-weight: 400;
-  }
-
-  .text-bold {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(19px, 1.6vw, 26px);
-    font-weight: 700;
-    line-height: 1.5;
-    color: #1a2a35;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     margin: 0;
   }
 
-  .voci-right p {
+  /* ── Due colonne in basso ── */
+  .voci-columns {
+    position: absolute;
+    bottom: 10vh;
+    left: 10vw;
+    right: 10vw;
+    display: flex;
+    justify-content: space-between;
+    gap: 6vw;
+    opacity: 0;
+    will-change: opacity;
+    pointer-events: none;
+  }
+
+  .col-text {
+    flex: 1;
+    will-change: filter;
+  }
+
+  .col-text p {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(17px, 1.4vw, 22px);
-    line-height: 1.6;
+    font-size: clamp(14px, 1.2vw, 18px);
+    line-height: 1.65;
     color: #1a2a35;
     margin: 0;
     font-weight: 400;
   }
 
-  .voci-right strong {
+  .col-text strong {
     font-weight: 700;
   }
 </style>
