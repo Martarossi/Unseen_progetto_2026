@@ -26,6 +26,8 @@
   let colRightRef = null;
   /** @type {HTMLElement|null} */
   let whiteOverlay = null;
+  /** @type {HTMLElement|null} */
+  let vociBackground = null;
 
   const modelProps = {
     scale: 2.2,
@@ -56,8 +58,9 @@
 
       const letters = introTextRef?.querySelectorAll(".voci-letter") ?? [];
 
-      // Colonne inizialmente sfocate (il container resta opacity 0 finché letterTl non lo porta a 1)
-      gsap.set([colLeftRef, colRightRef], { filter: "blur(16px)" });
+      // Sinistra nitida, destra sfocata; lo scroll inverterà i ruoli
+      gsap.set(colLeftRef,  { filter: "blur(0px)" });
+      gsap.set(colRightRef, { filter: "blur(16px)" });
 
       // Time-based: lettere in → out → heading + container colonne compaiono
       // Le colonne restano sfocate: letterTl anima solo opacity/y del container, non il blur dei figli
@@ -107,19 +110,23 @@
             modelPosition  = [0, 0, 0];
             letterStarted  = false;
             letterTl.pause(0);
-            gsap.set(letters,    { opacity: 0, filter: "blur(10px)", y: 20 });
-            gsap.set(headingRef, { opacity: 0, y: 20 });
-            gsap.set(columnsRef, { opacity: 0, y: 20 });
-            gsap.set([colLeftRef, colRightRef], { filter: "blur(16px)" });
+            gsap.set(letters,       { opacity: 0, filter: "blur(10px)", y: 20 });
+            gsap.set(headingRef,    { opacity: 0, y: 20 });
+            gsap.set(columnsRef,    { opacity: 0, y: 20 });
+            gsap.set(colLeftRef,  { filter: "blur(0px)" });
+            gsap.set(colRightRef, { filter: "blur(16px)" });
+            gsap.set(vociBackground, { opacity: 0 });
           },
           onLeaveBack: () => {
             model3dVisible = false;
             letterStarted  = false;
             letterTl.pause(0);
-            gsap.set(letters,    { opacity: 0 });
-            gsap.set(headingRef, { opacity: 0 });
-            gsap.set(columnsRef, { opacity: 0 });
-            gsap.set([colLeftRef, colRightRef], { filter: "blur(16px)" });
+            gsap.set(letters,       { opacity: 0 });
+            gsap.set(headingRef,    { opacity: 0 });
+            gsap.set(columnsRef,    { opacity: 0 });
+            gsap.set(colLeftRef,  { filter: "blur(0px)" });
+            gsap.set(colRightRef, { filter: "blur(16px)" });
+            gsap.set(vociBackground, { opacity: 0 });
           },
         },
       });
@@ -134,6 +141,11 @@
       shrinkTl.fromTo(".parallax-bg",
         { filter: "brightness(1)" },
         { filter: "brightness(1.5)", duration: 3.5, ease: "power1.inOut" },
+        0.5);
+
+      shrinkTl.fromTo(vociBackground,
+        { opacity: 0 },
+        { opacity: 1, duration: 3.5, ease: "power1.inOut" },
         0.5);
 
       shrinkTl.fromTo(whiteOverlay,
@@ -156,23 +168,20 @@
         { filter: "brightness(0) invert(0)", duration: 3.5, ease: "power1.inOut" }, 0.5);
 
       // Scrub: colonna sinistra nitida → sinistra sfocata + destra nitida
+      // Inizia a 5000 così le colonne sono visibili; finisce a 7000 che è dentro lo sticky range
       const blurTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top+=2800 top",
-          end: "top+=4400 top",
+          start: "top+=5000 top",
+          end: "top+=7000 top",
           scrub: 1.5,
         }
       });
 
       blurTl
-        // Fase 1: sinistra diventa nitida
+        // Sinistra sfoca, destra si nitidisce — in parallelo
         .fromTo(colLeftRef,
-          { filter: "blur(16px)" },
-          { filter: "blur(0px)", duration: 0.4, ease: "power1.inOut" }
-        )
-        // Fase 2: sinistra torna sfocata + destra diventa nitida (in parallelo)
-        .to(colLeftRef,
+          { filter: "blur(0px)" },
           { filter: "blur(16px)", duration: 0.4, ease: "power1.inOut" }
         )
         .fromTo(colRightRef,
@@ -190,6 +199,7 @@
   });
 </script>
 
+<div class="voci-bg" bind:this={vociBackground}></div>
 <div class="voci-white-overlay" bind:this={whiteOverlay}></div>
 
 <div class="voci-scroll-wrapper" bind:this={scrollWrapper}>
@@ -207,16 +217,16 @@
 
     <!-- Titolo sempre nitido -->
     <div class="voci-heading" bind:this={headingRef}>
-      <p class="heading-text">Dietro ad ogni immagine<br>rimangono l'esperienza,<br>la presenza e la<br>sensibilità umana.</p>
+      <img src="/titolo-sez-cameraman.png" alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana." class="heading-img" />
     </div>
 
     <!-- Due colonne: inizialmente sfocate, si nitidiscono una alla volta con lo scroll -->
     <div class="voci-columns" bind:this={columnsRef}>
       <div class="col-text" bind:this={colLeftRef}>
-        <p>L'AI funge solo da tecnologia che analizza, stabilizza, calcola e ricostruisce.</p>
+        <p>L'AI funge solo da tecnologia <br>che analizza, stabilizza, calcola <br>e ricostruisce.</p>
       </div>
       <div class="col-text" bind:this={colRightRef}>
-        <p>Una raccolta di voci di chi <strong>vive l'evento da dietro la lente</strong>: professionisti che lavorano in condizioni estreme, in equilibrio costante tra tecnica ed emozione.</p>
+        <p>Una raccolta di voci di chi <strong>vive l'evento<br> da dietro la lente</strong>: professionisti <br>che lavorano in condizioni estreme,<br> in equilibrio costante tra tecnica ed emozione.</p>
       </div>
     </div>
 
@@ -224,6 +234,18 @@
 </div>
 
 <style>
+  .voci-bg {
+    position: fixed;
+    inset: 0;
+    background-image: url('/sfondo-sez-cameraman.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .voci-white-overlay {
     position: fixed;
     inset: 0;
@@ -234,7 +256,7 @@
   }
 
   .voci-scroll-wrapper {
-    height: 5600px;
+    height: 9000px;
     position: relative;
   }
 
@@ -275,39 +297,34 @@
     opacity: 0;
   }
 
-  /* ── Titolo centrato (sempre nitido) ── */
+  /* ── Titolo allineato a sinistra ── */
   .voci-heading {
     position: absolute;
-    top: 42%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    width: 72%;
+    top: 38%;
+    left: 8vw;
+    transform: translateY(-50%);
+    text-align: left;
+    width: 78%;
     opacity: 0;
     will-change: opacity;
     pointer-events: none;
   }
 
-  .heading-text {
-    font-family: 'Akira Expanded', 'Impact', 'Arial Black', sans-serif;
-    font-size: clamp(16px, 2.2vw, 36px);
-    font-weight: 900;
-    line-height: 1.25;
-    color: #1a2a35;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin: 0;
+  .heading-img {
+    display: block;
+    width: 90%;
+    height: auto;
   }
 
   /* ── Due colonne in basso ── */
   .voci-columns {
     position: absolute;
-    bottom: 10vh;
-    left: 10vw;
-    right: 10vw;
+    bottom: 20vh;
+    left: 8vw;
+    right: 8vw;
     display: flex;
     justify-content: space-between;
-    gap: 6vw;
+    gap: 8vw;
     opacity: 0;
     will-change: opacity;
     pointer-events: none;
@@ -320,7 +337,7 @@
 
   .col-text p {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(14px, 1.2vw, 18px);
+    font-size: clamp(18px, 1.8vw, 24px);
     line-height: 1.65;
     color: #1a2a35;
     margin: 0;
