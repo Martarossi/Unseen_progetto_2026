@@ -1,18 +1,16 @@
 <script>
-  import { T, useTask, useThrelte } from "@threlte/core";
+  import { T, useTask } from "@threlte/core";
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
 
   /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number }} */
   let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
 
-  const PARTICLE_COUNT = 3000;
+  const PARTICLE_COUNT = 5000;
   const MORPH_DURATION = 1.8;
 
   const gltf0 = useGltf("/modello_bullettime.glb");
   const gltf1 = useGltf("/modello_3d_sciatore.glb");
-
-  const { invalidate } = useThrelte();
 
   const currentPos = new Float32Array(PARTICLE_COUNT * 3);
   const morphGeo   = new THREE.BufferGeometry();
@@ -31,7 +29,6 @@
 
   let autoRotY = 0;
   const uTime  = { value: 0 };
-  let frameN   = 0;
 
   /** @type {THREE.Group|undefined} */
   let groupRef = $state(undefined);
@@ -39,7 +36,7 @@
   // ── Particle material ─────────────────────────────────────────────────────
   const particleMaterial = new THREE.PointsMaterial({
     color: 0xC9D7DC,
-    size: 2.0,
+    size: 3.0,
     sizeAttenuation: false,
     transparent: true,
     opacity: 0.85,
@@ -165,7 +162,6 @@
       posA = sampleScene(scene);
       currentPos.set(posA);
       posAttr.needsUpdate = true;
-      invalidate();
     }, 50);
     return () => clearTimeout(id);
   });
@@ -215,13 +211,8 @@
       }
       posAttr.needsUpdate = true;
       if (rawT >= 1) isMorphing = false;
-      invalidate(); // Render ad ogni frame durante il morph
       return;
     }
-
-    // Fuori dal morph: render a ~30fps per alleggerire Safari
-    frameN++;
-    if (frameN % 2 === 0) invalidate();
   });
 </script>
 

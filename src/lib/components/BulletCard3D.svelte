@@ -65,7 +65,6 @@
 
 <div class="canvas-container">
   <Canvas
-    autoRender={false}
     createRenderer={(canvas) => {
       const renderer = new THREE.WebGLRenderer({
         canvas,
