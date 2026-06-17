@@ -1,200 +1,146 @@
 <script>
-  import { onMount } from "svelte";
-  import gsap from "gsap";
-  import ScrollTrigger from "gsap/dist/ScrollTrigger";
+  import { onMount } from 'svelte';
+  import gsap from 'gsap';
+  import ScrollTrigger from 'gsap/dist/ScrollTrigger';
 
   /** @type {HTMLElement|null} */
   let scrollWrapper = null;
   /** @type {HTMLElement|null} */
-  let galleryContainer = null;
-  /** @type {HTMLElement|null} */
-  let titlesContainer = null;
-  /** @type {NodeListOf<HTMLElement>|null} */
-  let cardElements = null;
-  /** @type {NodeListOf<HTMLElement>|null} */
-  let titleElements = null;
+  let cardsContainer = null;
 
-  let currentIndex = $state(0);
-  let activeIndexRounded = $derived(Math.min(4, Math.max(0, Math.round(currentIndex))));
-
-  const projects = [
+  const interviews = [
     {
       id: 1,
-      title: "MILANO 2026",
-      subtitle: "THE DIGITAL SOUL",
-      image: "/gallery_milanocortina.png",
-      desc: "An innovative digital ecosystem for the Winter Olympic Games, turning performance data into fluid glass aesthetics.",
-      year: "2026"
+      firstName: 'LUCIO',
+      lastName: 'PIAZZINI',
+      role: 'Videomaker\nPilota di droni',
+      image: '/gallery_milanocortina.png',
+      thumb: '/gallery_helvetica.png',
     },
     {
       id: 2,
-      title: "HELVETICA",
-      subtitle: "SWISS INTERFACE",
-      image: "/gallery_helvetica.png",
-      desc: "Reimagining the legendary typeface for high-tech digital layouts, incorporating vector grids and interactive typography.",
-      year: "2025"
+      firstName: 'SARA',
+      lastName: 'MARTINI',
+      role: 'Camerawoman\nSport estremi',
+      image: '/gallery_helvetica.png',
+      thumb: '/gallery_neural.png',
     },
     {
       id: 3,
-      title: "NEURAL LAB",
-      subtitle: "GENERATIVE CORE",
-      image: "/gallery_neural.png",
-      desc: "A sandbox for GPU-accelerated fluid branding, showcasing organic glass materials and morphing metallic cores.",
-      year: "2026"
+      firstName: 'MARCO',
+      lastName: 'FERRI',
+      role: 'Direttore\ndella fotografia',
+      image: '/gallery_neural.png',
+      thumb: '/gallery_unseen.png',
     },
     {
       id: 4,
-      title: "UNSEEN",
-      subtitle: "HOLOGRAPHIC ROOM",
-      image: "/gallery_unseen.png",
-      desc: "Physical and digital archive exhibition at Politecnico di Milano, combining holographic projections and minimal spatial UI.",
-      year: "2025"
+      firstName: 'ANNA',
+      lastName: 'ROSSI',
+      role: 'Operatrice\nsteadicam',
+      image: '/gallery_unseen.png',
+      thumb: '/gallery_alpine.png',
     },
     {
       id: 5,
-      title: "ALPINE TECH",
-      subtitle: "VECTOR TOPOGRAPHY",
-      image: "/gallery_alpine.png",
-      desc: "Interactive mountain peak rendering with topographical vector curves, simulating alpine lighting systems in real-time.",
-      year: "2026"
-    }
+      firstName: 'LUCA',
+      lastName: 'BIANCHI',
+      role: 'Videomaker aereo\nDrone FPV',
+      image: '/gallery_alpine.png',
+      thumb: '/gallery_milanocortina.png',
+    },
   ];
 
-  /**
-   * Updates coordinates and 3D transforms for all elements based on scroll index (float).
-   * Effect: cards fold like book pages — above cards hinge from their bottom edge,
-   * below cards hinge from their top edge, creating the "spine" fold shown in screenshots.
-   * @param {number} index
-   */
-  function updateGallery(index) {
-    if (!cardElements || !titleElements) return;
+  // Card ha larghezza 60vw; il passo tra una card e la prossima è 66vw (card + gap)
+  // La card attiva ha il bordo sinistro a 8vw
+  const STEP_VW   = 66;
+  const ORIGIN_VW = 8;
 
-    const CARD_W = 580; // must match CSS width of .gallery-card
-    const FOLD_ANGLE = 65; // degrees per step
+  /** @param {number} index */
+  function updateCards(index) {
+    if (!cardsContainer) return;
+    const cards = /** @type {NodeListOf<HTMLElement>} */ (
+      cardsContainer.querySelectorAll('.interview-card')
+    );
 
-    // 1. Cards: horizontal book-spine fold animation
-    cardElements.forEach((card, i) => {
-      const diff = i - index;
-      const absDiff = Math.abs(diff);
+    cards.forEach((card, i) => {
+      const diff  = i - index;
+      const x     = ORIGIN_VW + diff * STEP_VW;
+      const blur  = Math.abs(diff) < 0.05 ? 0 : Math.min(18, Math.abs(diff) * 14);
+      const scale = Math.max(0.88, 1 - Math.abs(diff) * 0.06);
 
-      // Horizontal offset stacks cards edge-to-edge before rotation
-      const xOffset = diff * CARD_W;
-      // Rotation around Y axis: past cards fold left, upcoming fold right
-      const rotY = diff * FOLD_ANGLE;
+      // Carte passate (diff < -0.7): nascoste
+      // Carte future > 2: nascoste
+      const opacity =
+        diff < -0.7  ? 0 :
+        diff >  2.2  ? 0 :
+        1 - Math.max(0, diff - 0.7) * 0.35;
 
-      const opacityVal = Math.max(0.06, 1 - absDiff * 0.5);
-      const zIndexVal = Math.round(100 - absDiff * 10);
-
-      // Past/active: pivot at right edge; upcoming: pivot at left edge
-      card.style.transformOrigin = diff <= 0 ? '100% 50%' : '0% 50%';
-      card.style.transform = `translate(calc(-50% + ${xOffset}px), -50%) rotateY(${rotY}deg)`;
-      card.style.opacity = String(opacityVal);
-      card.style.zIndex = String(zIndexVal);
-      card.style.pointerEvents = absDiff < 0.45 ? 'auto' : 'none';
-
-      const playOverlay = /** @type {HTMLElement | null} */ (card.querySelector('.play-overlay'));
-      if (playOverlay) {
-        playOverlay.style.opacity = String(Math.max(0, 1 - absDiff * 2.5));
-      }
+      card.style.transform = `translateX(${x}vw) translateY(-50%) scale(${scale})`;
+      card.style.filter    = blur > 0 ? `blur(${blur}px)` : 'none';
+      card.style.opacity   = String(Math.max(0, opacity));
+      card.style.zIndex    = String(Math.max(1, 50 - Math.abs(Math.round(diff * 10))));
     });
-
-    // 2. Sliding vertical project titles on the left
-    titleElements.forEach((title, i) => {
-      const diff = i - index;
-      const absDiff = Math.abs(diff);
-      title.style.opacity = String(Math.max(0.15, 1 - absDiff * 0.85));
-      title.style.transform = `scale(${Math.max(0.85, 1 - absDiff * 0.15)})`;
-      title.classList.toggle('active', absDiff < 0.5);
-    });
-
-    // 3. Scroll the titles strip to keep active title centered
-    if (titlesContainer) {
-      titlesContainer.style.transform = `translateY(${-index * 90}px)`;
-    }
   }
 
   onMount(() => {
-    // Query DOM nodes
-    cardElements = galleryContainer?.querySelectorAll(".gallery-card") ?? null;
-    titleElements = galleryContainer?.querySelectorAll(".project-title-item") ?? null;
-    
-    // Initial draw
-    updateGallery(0);
+    updateCards(0);
 
     const mm = gsap.matchMedia();
-    mm.add("(min-width: 800px)", () => {
-      const stateObj = { index: 0 };
+    mm.add('(min-width: 800px)', () => {
+      const state = { index: 0 };
 
-      const galleryTl = gsap.timeline({
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top top",
-          end: "+=3600",
+          start: 'top top',
+          end: '+=3600',
           scrub: 1,
-        }
+        },
       });
 
-      galleryTl.to(stateObj, {
-        index: projects.length - 1,
-        ease: "none",
-        onUpdate: () => {
-          currentIndex = stateObj.index;
-          updateGallery(stateObj.index);
-        }
+      tl.to(state, {
+        index: interviews.length - 1,
+        ease: 'none',
+        onUpdate: () => updateCards(state.index),
       });
 
-      return () => {
-        galleryTl.kill();
-      };
+      return () => tl.kill();
     });
   });
 </script>
 
 <div class="gallery-scroll-wrapper" bind:this={scrollWrapper}>
-<div class="gallery-container" bind:this={galleryContainer}>
-  <div class="gallery-wrapper">
-    <!-- LEFT PANEL: Sliding titles vertical deck -->
-    <div class="titles-column">
-      <div class="titles-mask">
-        <div class="titles-inner" bind:this={titlesContainer}>
-          {#each projects as project, i}
-            <div class="project-title-item" class:active={activeIndexRounded === i}>
-              {project.title}
+  <div class="gallery-sticky">
+    <div class="cards-container" bind:this={cardsContainer}>
+      {#each interviews as iv}
+        <div class="interview-card">
+
+          <div class="card-media">
+            <img src={iv.image} alt="{iv.firstName} {iv.lastName}" />
+          </div>
+
+          <div class="card-info">
+            <div class="card-header">
+              <p class="name-line">{iv.firstName}</p>
+              <p class="name-line">{iv.lastName}</p>
+              <div class="name-divider"></div>
+              <p class="card-role">
+                {#each iv.role.split('\n') as line, j}
+                  {line}{#if j < iv.role.split('\n').length - 1}<br />{/if}
+                {/each}
+              </p>
             </div>
-          {/each}
-        </div>
-      </div>
-    </div>
 
-    <!-- CENTER PANEL: 3D perspective scrolling cylinder -->
-    <div class="cards-stack-container">
-      <div class="cards-stack">
-        {#each projects as project, i}
-          <div class="gallery-card">
-            <img src={project.image} alt={project.title} loading="lazy" />
-            <div class="card-glass-reflection"></div>
-            <!-- Transparent outline PLAY text exactly centered inside the active card -->
-            <div class="play-overlay">PLAY</div>
+            <div class="card-thumb">
+              <img src={iv.thumb} alt="" />
+            </div>
           </div>
-        {/each}
-      </div>
-    </div>
 
-    <!-- BOTTOM PANEL: Dynamic project details -->
-    <div class="project-details">
-      {#each projects as project, i}
-        <div class="details-item" class:visible={activeIndexRounded === i}>
-          <div class="meta-row">
-            <span class="project-num">0{project.id}</span>
-            <span class="project-year">// {project.year}</span>
-          </div>
-          <h4 class="project-subtitle">{project.subtitle}</h4>
-          <p class="project-desc">{project.desc}</p>
         </div>
       {/each}
     </div>
   </div>
-</div>
 </div>
 
 <style>
@@ -203,238 +149,144 @@
     position: relative;
   }
 
-  .gallery-container {
+  .gallery-sticky {
     width: 100vw;
     height: 100vh;
-    background-color: transparent;
-    overflow: hidden;
     position: sticky;
     top: 0;
-    z-index: 10;
-    box-sizing: border-box;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    overflow: hidden;
   }
 
-  @media (max-width: 799px) {
-    .gallery-scroll-wrapper {
-      height: auto;
-    }
-
-    .gallery-container {
-      position: relative;
-    }
-  }
-
-  .gallery-wrapper {
+  .cards-container {
     position: relative;
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
   }
 
-  /* LEFT PANEL: Sliding titles vertical conveyor */
-  .titles-column {
-    position: absolute;
-    left: 6vw;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 25vw;
-    height: 270px; /* 3 * 90px */
-    display: flex;
-    align-items: center;
-    z-index: 15;
-  }
-
-  .titles-mask {
-    height: 270px;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-    /* Elegant fading masks at top and bottom to blend text */
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-  }
-
-  .titles-inner {
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    will-change: transform;
-    /* Center first item vertically in mask: (270px - 90px) / 2 = 90px padding-top */
-    padding-top: 90px; 
-    box-sizing: border-box;
-  }
-
-  .project-title-item {
-    height: 90px;
-    line-height: 90px;
-    /* Bold, heavy, condensed impact-style typography matching markclennon.com exactly */
-    font-family: "Impact", "Arial Black", "Helvetica Neue", sans-serif;
-    font-size: 3.6vw;
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    color: #F8F8F8;
-    text-transform: uppercase;
-    white-space: nowrap;
-    opacity: 0.15;
-    transform-origin: left center;
-    transition: opacity 0.3s ease, transform 0.3s ease, color 0.3s ease;
-    cursor: pointer;
-  }
-
-  .project-title-item.active {
-    color: #A7CED8;
-    opacity: 1;
-  }
-
-  /* CENTER PANEL: 3D barrel perspective card stack */
-  .cards-stack-container {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 580px;
-    height: 380px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-  }
-
-  .cards-stack {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    perspective: 900px;
-    will-change: transform;
-  }
-
-  .gallery-card {
+  /* ── Card di vetro ── */
+  .interview-card {
     position: absolute;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
-    border-radius: 1px;
-    overflow: hidden;
-    background-color: #000;
+    left: 0;
+    width: 60vw;
+    height: min(72vh, 580px);
+
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 22px;
     box-shadow:
-      0 35px 70px rgba(0, 0, 0, 0.22),
-      0 15px 30px rgba(0, 0, 0, 0.12);
-    will-change: transform, opacity;
-    cursor: pointer;
+      0 12px 48px rgba(0, 0, 0, 0.09),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+    display: flex;
+    overflow: hidden;
+    will-change: transform, filter, opacity;
   }
 
-  .gallery-card img {
+  /* ── Immagine / video ── */
+  .card-media {
+    flex: 0 0 64%;
+    overflow: hidden;
+    margin: 10px;
+    border-radius: 14px;
+  }
+
+  .card-media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
-  .gallery-card:hover img {
-    transform: scale(1.04);
-  }
-
-  .card-glass-reflection {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  /* TRANSPARENT OUTLINE "PLAY" OVERLAY TEXT */
-  .play-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: "Impact", "Arial Black", "Helvetica Neue", sans-serif;
-    font-size: 74px;
-    font-weight: 900;
-    letter-spacing: 0.05em;
-    color: transparent;
-    -webkit-text-stroke: 2px #ffffff;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 5;
-    pointer-events: none;
-  }
-
-  /* BOTTOM PANEL: Dynamic project description overlay */
-  .project-details {
-    position: absolute;
-    left: 6vw;
-    bottom: 6vh;
-    width: 320px;
-    height: 120px;
-    z-index: 20;
-    pointer-events: none;
-  }
-
-  .details-item {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transform: translateY(15px);
-    pointer-events: none;
-    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-
-  .details-item.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-
-  .meta-row {
+  /* ── Pannello info ── */
+  .card-info {
+    flex: 1;
+    padding: 36px 24px 36px 12px;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
   }
 
-  .project-num {
-    font-family: "Impact", "Arial Black", sans-serif;
-    font-size: 14px;
-    color: #A7CED8;
+  .card-header {
+    display: flex;
+    flex-direction: column;
   }
 
-  .project-year {
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.45);
-    letter-spacing: 0.05em;
-  }
-
-  .project-subtitle {
-    font-size: 12px;
-    font-weight: 800;
-    color: #F8F8F8;
-    letter-spacing: 0.1em;
+  .name-line {
+    font-family: 'Impact', 'Arial Black', 'Helvetica Neue', sans-serif;
+    font-size: clamp(26px, 2.8vw, 46px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
-    margin: 0 0 6px 0;
-  }
-
-  .project-desc {
-    font-size: 13px;
-    line-height: 1.45;
-    color: rgba(255, 255, 255, 0.65);
+    color: #1a2a35;
+    line-height: 1.0;
     margin: 0;
   }
 
-  /* Responsive styling */
-  @media (max-width: 1024px) {
-    .cards-stack-container {
-      width: 440px;
-      height: 290px;
+  .name-divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(26, 42, 53, 0.2);
+    margin: 16px 0;
+  }
+
+  .card-role {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: clamp(12px, 1.1vw, 15px);
+    line-height: 1.7;
+    color: rgba(26, 42, 53, 0.6);
+    margin: 0;
+  }
+
+  /* ── Thumbnail in basso ── */
+  .card-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    opacity: 0.6;
+  }
+
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 799px) {
+    .gallery-scroll-wrapper { height: auto; }
+
+    .gallery-sticky {
+      position: relative;
+      height: auto;
+      overflow: visible;
+      padding: 60px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
-    .project-title-item {
-      font-size: 4.5vw;
+
+    .cards-container {
+      position: static;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .interview-card {
+      position: static;
+      width: 100%;
+      height: auto;
+      min-height: 260px;
+      transform: none !important;
+      filter: none !important;
+      opacity: 1 !important;
     }
   }
 </style>
