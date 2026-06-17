@@ -1,34 +1,41 @@
 <script>
-  import { T, useTask, useThrelte } from "@threlte/core";
+  import { T, useTask } from "@threlte/core";
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
 
   /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number }} */
   let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
 
+  const PARTICLE_COUNT = 7000;
+  const MORPH_DURATION = 1.8; // seconds
+
   const gltf0 = useGltf("/modello_bullettime.glb");
   const gltf1 = useGltf("/modello_3d_sciatore.glb");
-  const { renderer } = useThrelte();
 
-  /** @type {THREE.Group|undefined} */
-  let sceneRef0 = $state(undefined);
-  /** @type {THREE.Group|undefined} */
-  let sceneRef1 = $state(undefined);
-  /** @type {THREE.PerspectiveCamera|undefined} */
-  let cameraRef = $state(undefined);
+  // Single shared geometry — interpolated every frame during morph
+  const currentPos = new Float32Array(PARTICLE_COUNT * 3);
+  const morphGeo   = new THREE.BufferGeometry();
+  const posAttr    = new THREE.BufferAttribute(currentPos, 3);
+  morphGeo.setAttribute('position', posAttr);
 
-  // Per-model reactive positioning (used in template)
-  let off0 = $state({ x: 0, y: 0, z: 0, camZ: 12 });
-  let off1 = $state({ x: 0, y: 0, z: 0, camZ: 12 });
+  /** @type {Float32Array|null} */
+  let posA = null;
+  /** @type {Float32Array|null} */
+  let posB = null;
 
-  // Per-model centering flags (non-reactive, used only in useTask)
-  let centered0 = false, readyFrames0 = 0;
-  let centered1 = false, readyFrames1 = 0;
+  // Morph state — plain vars updated in useTask every frame
+  let morphT    = 0;   // current lerp (0 = model A, 1 = model B)
+  let targetT   = 0;
+  let morphElapsed = 0;
+  let isMorphing   = false;
 
   let autoRotY = 0;
-
   const uTime = { value: 0 };
 
+  /** @type {THREE.Group|undefined} */
+  let groupRef = $state(undefined);
+
+  // ── Particle material (with wave + soft circle shader) ────────────────────
   const particleMaterial = new THREE.PointsMaterial({
     color: 0xC9D7DC,
     size: 2.0,
@@ -41,23 +48,18 @@
 
   particleMaterial.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = uTime;
-
     shader.vertexShader = `uniform float uTime;\n` + shader.vertexShader;
-
     shader.vertexShader = shader.vertexShader.replace(
       '#include <begin_vertex>',
       `
       #include <begin_vertex>
-
       vec3 wave;
       wave.x = sin(transformed.y * 3.5 + uTime * 2.2) * cos(transformed.z * 3.0 + uTime * 1.7);
       wave.y = cos(transformed.x * 3.0 + uTime * 2.0) * sin(transformed.z * 3.5 + uTime * 2.2);
       wave.z = sin(transformed.x * 3.5 + uTime * 1.7) * cos(transformed.y * 3.0 + uTime * 2.5);
-
       transformed += wave * 0.008;
       `
     );
-
     shader.fragmentShader = shader.fragmentShader.replace(
       '#include <color_fragment>',
       `
@@ -71,206 +73,146 @@
     );
   };
 
-  /** @param {THREE.BufferGeometry} geometry @param {number} count */
-  function samplePointsFromGeometry(geometry, count) {
-    const positionAttr = geometry.attributes.position;
-    if (!positionAttr) return geometry;
+  const morphPoints = new THREE.Points(morphGeo, particleMaterial);
 
-    const indexAttr = geometry.index;
-    const vertexCount = positionAttr.count;
-    const sampledPositions = new Float32Array(count * 3);
+  // ── Geometry sampler ──────────────────────────────────────────────────────
+  /**
+   * Sample PARTICLE_COUNT points from a GLTF scene, normalize to height 4,
+   * then sort by Y descending so head↔head and feet↔feet during morph.
+   * @param {THREE.Group} scene
+   * @returns {Float32Array}
+   */
+  function sampleScene(scene) {
+    /** @type {THREE.Mesh[]} */
+    const meshes = [];
+    scene.updateMatrixWorld(true);
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.geometry?.attributes.position) {
+        meshes.push(child);
+      }
+    });
+    if (!meshes.length) return new Float32Array(PARTICLE_COUNT * 3);
 
+    const raw = new Float32Array(PARTICLE_COUNT * 3);
     const vA = new THREE.Vector3();
     const vB = new THREE.Vector3();
     const vC = new THREE.Vector3();
-    const point = new THREE.Vector3();
+    const p  = new THREE.Vector3();
 
-    if (indexAttr) {
-      const triangleCount = indexAttr.count / 3;
-      for (let i = 0; i < count; i++) {
-        const triIndex = Math.floor(Math.random() * triangleCount) * 3;
-        vA.fromBufferAttribute(positionAttr, indexAttr.getX(triIndex));
-        vB.fromBufferAttribute(positionAttr, indexAttr.getY(triIndex));
-        vC.fromBufferAttribute(positionAttr, indexAttr.getZ(triIndex));
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const mesh = meshes[Math.floor(Math.random() * meshes.length)];
+      const geo  = mesh.geometry;
+      const attr = geo.attributes.position;
+      const idx  = geo.index;
 
-        const sqrtR1 = Math.sqrt(Math.random());
-        const r2 = Math.random();
-        const u = 1 - sqrtR1;
-        const v = r2 * sqrtR1;
-
-        point.set(0, 0, 0).addScaledVector(vA, u).addScaledVector(vB, v).addScaledVector(vC, 1 - u - v);
-        sampledPositions[i * 3]     = point.x;
-        sampledPositions[i * 3 + 1] = point.y;
-        sampledPositions[i * 3 + 2] = point.z;
+      if (idx && idx.count >= 3) {
+        const t = Math.floor(Math.random() * (idx.count / 3)) * 3;
+        vA.fromBufferAttribute(attr, idx.getX(t))  .applyMatrix4(mesh.matrixWorld);
+        vB.fromBufferAttribute(attr, idx.getX(t+1)).applyMatrix4(mesh.matrixWorld);
+        vC.fromBufferAttribute(attr, idx.getX(t+2)).applyMatrix4(mesh.matrixWorld);
+        const r1 = Math.sqrt(Math.random()), r2 = Math.random();
+        p.set(0,0,0)
+          .addScaledVector(vA, 1 - r1)
+          .addScaledVector(vB, r1 * (1 - r2))
+          .addScaledVector(vC, r1 * r2);
+      } else {
+        p.fromBufferAttribute(attr, Math.floor(Math.random() * attr.count))
+         .applyMatrix4(mesh.matrixWorld);
       }
-    } else {
-      const triangleCount = vertexCount / 3;
-      for (let i = 0; i < count; i++) {
-        const triIndex = Math.floor(Math.random() * triangleCount) * 3;
-        vA.fromBufferAttribute(positionAttr, triIndex);
-        vB.fromBufferAttribute(positionAttr, triIndex + 1);
-        vC.fromBufferAttribute(positionAttr, triIndex + 2);
 
-        const sqrtR1 = Math.sqrt(Math.random());
-        const r2 = Math.random();
-        const u = 1 - sqrtR1;
-        const v = r2 * sqrtR1;
-
-        point.set(0, 0, 0).addScaledVector(vA, u).addScaledVector(vB, v).addScaledVector(vC, 1 - u - v);
-        sampledPositions[i * 3]     = point.x;
-        sampledPositions[i * 3 + 1] = point.y;
-        sampledPositions[i * 3 + 2] = point.z;
-      }
+      raw[i*3]   = p.x;
+      raw[i*3+1] = p.y;
+      raw[i*3+2] = p.z;
     }
 
-    const sampledGeom = new THREE.BufferGeometry();
-    sampledGeom.setAttribute('position', new THREE.BufferAttribute(sampledPositions, 3));
-    return sampledGeom;
+    // Bounding box → center + scale to height 4
+    let minX=Infinity, maxX=-Infinity;
+    let minY=Infinity, maxY=-Infinity;
+    let minZ=Infinity, maxZ=-Infinity;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const x=raw[i*3], y=raw[i*3+1], z=raw[i*3+2];
+      if(x<minX) minX=x; if(x>maxX) maxX=x;
+      if(y<minY) minY=y; if(y>maxY) maxY=y;
+      if(z<minZ) minZ=z; if(z>maxZ) maxZ=z;
+    }
+    const cx=(minX+maxX)/2, cy=(minY+maxY)/2, cz=(minZ+maxZ)/2;
+    const sc = (maxY - minY) > 0 ? 4.0 / (maxY - minY) : 1;
+
+    // Sort by Y descending: index 0 = topmost particle
+    const indices = Array.from({ length: PARTICLE_COUNT }, (_, i) => i);
+    indices.sort((a, b) => raw[b*3+1] - raw[a*3+1]);
+
+    const sorted = new Float32Array(PARTICLE_COUNT * 3);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const s = indices[i];
+      sorted[i*3]   = (raw[s*3]   - cx) * sc;
+      sorted[i*3+1] = (raw[s*3+1] - cy) * sc;
+      sorted[i*3+2] = (raw[s*3+2] - cz) * sc;
+    }
+    return sorted;
   }
 
-  /** @param {THREE.Group} gltfScene */
-  function convertToParticles(gltfScene) {
-    /** @type {THREE.Mesh[]} */
-    const meshesToConvert = [];
-    gltfScene.traverse((child) => {
-      if (child instanceof THREE.Mesh && !child.userData.isParticleConverted) {
-        meshesToConvert.push(child);
-      }
-    });
-
-    meshesToConvert.forEach((mesh) => {
-      mesh.visible = false;
-      mesh.userData.isParticleConverted = true;
-
-      const denseGeometry = samplePointsFromGeometry(mesh.geometry, 35000);
-      const points = new THREE.Points(denseGeometry, particleMaterial);
-      points.position.copy(mesh.position);
-      points.rotation.copy(mesh.rotation);
-      points.scale.copy(mesh.scale);
-      mesh.parent?.add(points);
-    });
-  }
-
-  $effect(() => { if ($gltf0?.scene) convertToParticles($gltf0.scene); });
-  $effect(() => { if ($gltf1?.scene) convertToParticles($gltf1.scene); });
-
+  // ── Load models ───────────────────────────────────────────────────────────
   $effect(() => {
-    let rafId = requestAnimationFrame(function loop() {
-      uTime.value += 0.015;
-      rafId = requestAnimationFrame(loop);
-    });
-    return () => cancelAnimationFrame(rafId);
+    if ($gltf0?.scene) {
+      posA = sampleScene($gltf0.scene);
+      currentPos.set(posA);
+      posAttr.needsUpdate = true;
+    }
   });
 
-  /**
-   * Centra il modello e aggiorna l'offset reattivo e la camera.
-   * @param {THREE.Group} sceneRef
-   * @param {{ x: number, y: number, z: number, camZ: number }} off
-   */
-  function doCenter(sceneRef, off) {
-    const canvas = renderer.domElement;
-    if (canvas.clientWidth === 0 || canvas.clientHeight === 0) return false;
+  $effect(() => {
+    if ($gltf1?.scene) {
+      posB = sampleScene($gltf1.scene);
+    }
+  });
 
-    const humanKeywords = ['human', 'person', 'figure', 'body', 'atleta', 'uomo', 'corpo', 'character'];
-    let humanMesh = /** @type {THREE.Mesh|null} */ (null);
-    let bestScore = -Infinity;
+  // ── Trigger morph on model change ─────────────────────────────────────────
+  let _mounted = false;
+  $effect(() => {
+    const _dep = activeModel; // reactive dependency
+    if (!_mounted) { _mounted = true; return; }
+    if (activeModel === 1 && !posB) return; // B not loaded yet
+    targetT   = activeModel; // 0 or 1
+    morphElapsed = 0;
+    isMorphing   = true;
+  });
 
-    const sceneBox0 = new THREE.Box3().setFromObject(sceneRef);
-    const sceneCenter0 = sceneBox0.getCenter(new THREE.Vector3());
-
-    sceneRef.traverse((child) => {
-      if (!(child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh)) return;
-
-      const name = child.name.toLowerCase();
-      if (humanKeywords.some(k => name.includes(k))) { humanMesh = /** @type {THREE.Mesh} */ (child); bestScore = Infinity; return; }
-      if (bestScore === Infinity) return;
-
-      const box = new THREE.Box3().setFromObject(child);
-      const meshCenter = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-
-      const distXZ = Math.sqrt((meshCenter.x - sceneCenter0.x) ** 2 + (meshCenter.z - sceneCenter0.z) ** 2);
-      const centrality = 1 / (distXZ + 0.01);
-      const tallness = size.y / Math.max(size.x, size.z, 0.001);
-      const score = centrality * tallness;
-
-      if (score > bestScore) { bestScore = score; humanMesh = /** @type {THREE.Mesh} */ (child); }
-    });
-
-    const humanTarget = humanMesh ?? sceneRef;
-    const humanBox = new THREE.Box3().setFromObject(humanTarget);
-    const center = humanBox.getCenter(new THREE.Vector3());
-    off.x = -center.x;
-    off.y = -center.y;
-    off.z = -center.z;
-
-    const fullBox = new THREE.Box3().setFromObject(sceneRef);
-    const fullSize = fullBox.getSize(new THREE.Vector3());
-    const fovRad = 60 * (Math.PI / 180);
-    const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
-    const fovH = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
-    const distV = (fullSize.y / 2) / Math.tan(fovRad / 2);
-    const distH = (fullSize.x / 2) / Math.tan(fovH / 2);
-    off.camZ = Math.max(distV, distH) * 1.0 + fullSize.z / 2;
-
-    if (cameraRef) cameraRef.position.set(0, 0, off.camZ);
-    return true;
+  // ── Cubic ease in-out ─────────────────────────────────────────────────────
+  /** @param {number} t */
+  function easeInOut(t) {
+    return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
   }
 
+  // ── Per-frame update ──────────────────────────────────────────────────────
   useTask((dt) => {
-    // Centra il modello attivo quando diventa visibile per la prima volta
-    if (activeModel === 0 && !centered0 && sceneRef0) {
-      const canvas = renderer.domElement;
-      if (canvas.clientWidth === 0 || canvas.clientHeight === 0) { readyFrames0 = 0; }
-      else if (++readyFrames0 >= 5) {
-        doCenter(sceneRef0, off0);
-        centered0 = true;
-      }
-    }
-
-    if (activeModel === 1 && !centered1 && sceneRef1) {
-      const canvas = renderer.domElement;
-      if (canvas.clientWidth === 0 || canvas.clientHeight === 0) { readyFrames1 = 0; }
-      else if (++readyFrames1 >= 5) {
-        doCenter(sceneRef1, off1);
-        centered1 = true;
-      }
-    }
-
+    uTime.value += 0.015;
     if (!isDragging) autoRotY += dt * 0.5;
-    if (sceneRef0) sceneRef0.rotation.y = autoRotY + externalRotY;
-    if (sceneRef1) sceneRef1.rotation.y = autoRotY + externalRotY;
-  });
+    if (groupRef) groupRef.rotation.y = autoRotY + externalRotY;
 
-  // Aggiorna la camera quando si torna su un modello già centrato
-  $effect(() => {
-    if (!cameraRef) return;
-    if (activeModel === 0 && centered0) cameraRef.position.setZ(off0.camZ);
-    if (activeModel === 1 && centered1) cameraRef.position.setZ(off1.camZ);
+    if (isMorphing && posA && posB) {
+      morphElapsed += dt;
+      const rawT  = Math.min(morphElapsed / MORPH_DURATION, 1);
+      const eased = easeInOut(rawT);
+      morphT = targetT === 1 ? eased : 1 - eased;
+
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const i3 = i * 3;
+        currentPos[i3]   = posA[i3]   + (posB[i3]   - posA[i3])   * morphT;
+        currentPos[i3+1] = posA[i3+1] + (posB[i3+1] - posA[i3+1]) * morphT;
+        currentPos[i3+2] = posA[i3+2] + (posB[i3+2] - posA[i3+2]) * morphT;
+      }
+      posAttr.needsUpdate = true;
+
+      if (rawT >= 1) isMorphing = false;
+    }
   });
 </script>
 
-<T.PerspectiveCamera makeDefault fov={70} position={[0, 0, 9]} bind:ref={cameraRef} />
-
+<T.PerspectiveCamera makeDefault fov={60} position={[0, 0, 6]} />
 <T.AmbientLight intensity={0.4} />
 <T.PointLight position={[0, 0, 5]} intensity={1.0} distance={20} />
 
-{#if $gltf0}
-  <T
-    is={$gltf0.scene}
-    bind:ref={sceneRef0}
-    scale={[8.5, 8.5, 8.5]}
-    position={[off0.x - 50.0, off0.y, off0.z]}
-    visible={activeModel === 0}
-  />
-{/if}
-
-{#if $gltf1}
-  <T
-    is={$gltf1.scene}
-    bind:ref={sceneRef1}
-    scale={[8.5, 8.5, 8.5]}
-    position={[off1.x - 50.0, off1.y, off1.z]}
-    visible={activeModel === 1}
-  />
-{/if}
+<T.Group bind:ref={groupRef}>
+  <T is={morphPoints} />
+</T.Group>
