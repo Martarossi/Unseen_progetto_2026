@@ -249,7 +249,7 @@
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(12px, 1vw, 16px);
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.62);
+    color: #f8f8f8;
     text-align: left;
     max-width: 45ch;
     margin: 0 0 1.6rem;
@@ -276,7 +276,7 @@
   .stat-label-under {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(10px, 0.8vw, 13px);
-    color: rgba(255, 255, 255, 0.5);
+    color: #f8f8f8;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-top: 0.8rem; /* Distanza dal numero */
@@ -292,7 +292,7 @@
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(9px, 0.7vw, 12px);
     letter-spacing: 0.2em;
-    color: rgba(255, 255, 255, 0.4);
+    color: #f8f8f8;
     text-transform: uppercase;
   }
 

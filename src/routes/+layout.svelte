@@ -14,8 +14,9 @@
 		showAboutOverlay = true;
 	}
 
-	function closeAbout() {
+	async function closeAbout() {
 		showAboutOverlay = false;
+		await new Promise(r => setTimeout(r, 700));
 		animateAboutOpen = false;
 	}
 </script>

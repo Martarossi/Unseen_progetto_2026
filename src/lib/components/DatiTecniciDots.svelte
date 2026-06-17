@@ -124,12 +124,15 @@
           <p class="dt-card-desc">{s.description}</p>
         </div>
         <div class="dt-card-hover" aria-hidden="true">
-          {#each s.details as d}
-            <div class="dt-detail-item">
-              <h4 class="dt-detail-label">{d.label}</h4>
-              <p class="dt-detail-text">{d.text}</p>
-            </div>
-          {/each}
+          <div class="dt-hover-inner">
+            <div class="dt-hover-divider"></div>
+            {#each s.details as d}
+              <div class="dt-detail-item">
+                <h4 class="dt-detail-label">{d.label}</h4>
+                <p class="dt-detail-text">{d.text}</p>
+              </div>
+            {/each}
+          </div>
         </div>
       </button>
     {/each}
@@ -325,6 +328,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
+    align-items: center;
     gap: 18px;
     width: min(88vw, 1260px);
   }
@@ -386,37 +390,32 @@
     z-index: 10;
   }
 
-  /* ── card front (normal content) ── */
+  /* ── card front (always visible) ── */
   .dt-card-front {
     transition: opacity 0.25s ease;
   }
 
-  .dt-card:hover .dt-card-front {
-    opacity: 0;
+  /* ── card hover (expands inline below front) ── */
+  .dt-card-hover {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* ── card hover (expanded detail) ── */
-  .dt-card-hover {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
-    padding: 28px 26px;
-    background: rgba(12, 22, 38, 0.90);
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 22px;
-    clip-path: inset(50% 0 50% 0 round 22px);
-    transition: clip-path 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-    pointer-events: none;
-    z-index: 20;
+  .dt-hover-inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .dt-hover-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.14);
+    margin: 18px 0;
   }
 
   .dt-card:hover .dt-card-hover {
-    clip-path: inset(0% 0 0% 0 round 22px);
-    pointer-events: auto;
+    grid-template-rows: 1fr;
   }
 
   .dt-detail-item {

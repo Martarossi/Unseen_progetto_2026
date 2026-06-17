@@ -9,6 +9,7 @@
     /** @type {HTMLElement|null} */
     let rightColumn = null;
     let opening = $state(false);
+    let closing = $state(false);
 
     const FOCUSED = { filter: "blur(0px)",  opacity: 1,    duration: 0.4, ease: "power2.out" };
     const BLURRED = { filter: "blur(14px)", opacity: 0.35, duration: 0.4, ease: "power2.out" };
@@ -18,6 +19,13 @@
     function onEnterRight() { gsap.to(rightColumn, FOCUSED); }
     function onLeaveRight() { gsap.to(rightColumn, BLURRED); }
 
+    async function handleClose() {
+        if (closing) return;
+        closing = true;
+        await new Promise(r => setTimeout(r, 650));
+        closeOverlay();
+    }
+
     onMount(async () => {
         await tick();
         opening = true;
@@ -26,7 +34,7 @@
     });
 </script>
 
-<div class="about-wrapper" class:opening>
+<div class="about-wrapper" class:opening={opening && !closing} class:closing>
     <div class="about-container">
         <div class="sticky-content">
 
@@ -34,7 +42,7 @@
             <div class="top-bar">
                 <button
                     class="close-btn"
-                    onclick={closeOverlay}
+                    onclick={handleClose}
                     aria-label="Close"
                 >&times;</button>
             </div>
@@ -151,6 +159,12 @@
 
     .about-wrapper.opening {
         clip-path: circle(150% at calc(100% - 130px) 50px);
+    }
+
+    .about-wrapper.closing {
+        clip-path: circle(0% at calc(100% - 130px) 50px);
+        pointer-events: none;
+        transition: clip-path 0.6s ease-in;
     }
 
     .about-container {
