@@ -41,33 +41,36 @@
   function initCanvas() {
     if (!canvasRef) return;
     const canvas = /** @type {HTMLCanvasElement} */ (canvasRef);
-    const ctx = /** @type {CanvasRenderingContext2D} */ (
-      canvas.getContext("2d")
-    );
+    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext("2d"));
     if (!ctx) return;
     const maskCanvas = document.createElement("canvas");
-    const maskCtx = /** @type {CanvasRenderingContext2D} */ (
-      maskCanvas.getContext("2d")
-    );
+    const maskCtx = /** @type {CanvasRenderingContext2D} */ (maskCanvas.getContext("2d"));
     if (!maskCtx) return;
+
+    // Gradient spot pre-renderizzato una sola volta su canvas offscreen.
+    // Viene scalato via drawImage a runtime → zero allocazioni di CanvasGradient per frame.
+    const SPOT_RES = 256;
+    const spotCanvas = document.createElement("canvas");
+    spotCanvas.width = SPOT_RES;
+    spotCanvas.height = SPOT_RES;
+    const spotCtx = /** @type {CanvasRenderingContext2D} */ (spotCanvas.getContext("2d"));
+    if (spotCtx) {
+      const g = spotCtx.createRadialGradient(SPOT_RES / 2, SPOT_RES / 2, 0, SPOT_RES / 2, SPOT_RES / 2, SPOT_RES / 2);
+      g.addColorStop(0, "rgba(255,255,255,1)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      spotCtx.fillStyle = g;
+      spotCtx.fillRect(0, 0, SPOT_RES, SPOT_RES);
+    }
 
     const logoImg = new Image();
     logoImg.src = "/LOGO.png";
     let imgLoaded = false;
-
-    logoImg.onload = () => {
-      imgLoaded = true;
-      resize();
-    };
+    logoImg.onload = () => { imgLoaded = true; resize(); };
 
     const bgImg = new Image();
     bgImg.src = "/SFONDO.png";
     let bgLoaded = false;
-
-    bgImg.onload = () => {
-      bgLoaded = true;
-      resize();
-    };
+    bgImg.onload = () => { bgLoaded = true; resize(); };
 
     function resize() {
       const canvas = /** @type {HTMLCanvasElement} */ (canvasRef);
@@ -88,9 +91,14 @@
     let idleTargetX = canvas.width / 2;
     let idleTargetY = canvas.height / 2;
 
-    const TRAIL_DURATION = 1000; // ms prima che la scia svanisca completamente
-    /** @type {{x: number, y: number, time: number}[]} */
-    let cursorHistory = [];
+    const TRAIL_DURATION = 1000;
+    // Ring buffer con TypedArray: zero allocazioni per frame
+    const MAX_TRAIL = 90;
+    const histX    = new Float32Array(MAX_TRAIL);
+    const histY    = new Float32Array(MAX_TRAIL);
+    const histTime = new Float64Array(MAX_TRAIL);
+    let histHead  = 0;
+    let histCount = 0;
 
     function loop() {
       const now = performance.now();
@@ -101,96 +109,71 @@
       }
 
       const idleTime = Date.now() - lastMoveTime;
-      if (idleTime > 2000) {
-        isIdle = true;
-      }
+      if (idleTime > 2000) isIdle = true;
 
       if (isIdle && showLogo && !isClicked) {
         const dist = Math.hypot(currentX - idleTargetX, currentY - idleTargetY);
-
-        // Se vicino al target o se il target è fuori bordo (dopo un resize), scegline uno nuovo
-        if (
-          dist < 50 ||
-          idleTargetX > canvas.width ||
-          idleTargetY > canvas.height
-        ) {
+        if (dist < 50 || idleTargetX > canvas.width || idleTargetY > canvas.height) {
           idleTargetX = canvas.width * (0.1 + Math.random() * 0.8);
           idleTargetY = canvas.height * (0.1 + Math.random() * 0.8);
         }
-
-        // Muoviti verso il target con una velocità ridotta per un effetto "vagabondaggio"
         currentX += (idleTargetX - currentX) * 0.02;
         currentY += (idleTargetY - currentY) * 0.02;
       } else {
-        // Lerp mouse position
         currentX += (mouseX - currentX) * 0.1;
         currentY += (mouseY - currentY) * 0.1;
       }
 
-      // Campiona ogni frame per una scia continua e fluida
+      // Push nel ring buffer — nessun oggetto allocato
       if (showLogo) {
-        cursorHistory.push({ x: currentX, y: currentY, time: now });
-        // Rimuovi i punti più vecchi di TRAIL_DURATION
-        const cutoff = now - TRAIL_DURATION;
-        cursorHistory = cursorHistory.filter(p => p.time > cutoff);
+        histX[histHead]    = currentX;
+        histY[histHead]    = currentY;
+        histTime[histHead] = now;
+        histHead = (histHead + 1) % MAX_TRAIL;
+        if (histCount < MAX_TRAIL) histCount++;
       }
 
-      // Cancella completamente la mask e ridisegna solo la cronologia con fade basato sull'età
       maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
 
       if (showLogo) {
-        for (const point of cursorHistory) {
-          const age = now - point.time;
-          // Fade lineare: alpha 1 → 0 in TRAIL_DURATION ms, con ease-out
+        const cutoff = now - TRAIL_DURATION;
+        const r = revealRadius;
+        const d = r * 2;
+        // Itera dal più recente al più vecchio: il buffer è ordinato per inserimento
+        for (let n = 0; n < histCount; n++) {
+          const idx = (histHead - 1 - n + MAX_TRAIL) % MAX_TRAIL;
+          const t = histTime[idx];
+          if (t < cutoff) break;
+          const age = now - t;
           const alpha = Math.pow(Math.max(0, 1 - age / TRAIL_DURATION), 1.5);
           if (alpha < 0.01) continue;
-
-          const gradient = maskCtx.createRadialGradient(
-            point.x, point.y, 0,
-            point.x, point.y, revealRadius,
-          );
-          gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
-          gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-          maskCtx.fillStyle = gradient;
-          maskCtx.beginPath();
-          maskCtx.arc(point.x, point.y, revealRadius, 0, Math.PI * 2);
-          maskCtx.fill();
+          maskCtx.globalAlpha = alpha;
+          maskCtx.drawImage(spotCanvas, histX[idx] - r, histY[idx] - r, d, d);
         }
+        maskCtx.globalAlpha = 1;
       }
 
-      // Clear main canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw background with parallax
       const bgScale = canvas.width / bgImg.width;
       const bgDrawHeight = bgImg.height * bgScale;
       const scrollY = window.scrollY;
-      const parallaxSpeed = 1.2; // Velocità differente rispetto allo scroll
-      const bgY = scrollY * parallaxSpeed;
 
       ctx.globalAlpha = canvasBgOpacity;
-      ctx.drawImage(bgImg, 0, bgY, canvas.width, bgDrawHeight);
-      ctx.globalAlpha = 1.0; // Reset alpha to fully draw logo and other elements
+      ctx.drawImage(bgImg, 0, scrollY * 1.2, canvas.width, bgDrawHeight);
+      ctx.globalAlpha = 1.0;
 
-      // Draw logo centered
-      const imgWidth = logoImg.width;
-      const imgHeight = logoImg.height;
-      let dWidth = imgWidth;
-      let dHeight = imgHeight;
       const scale = Math.min(
-        (canvas.width * 0.8) / imgWidth,
-        (canvas.height * 0.8) / imgHeight,
+        (canvas.width * 0.8) / logoImg.width,
+        (canvas.height * 0.8) / logoImg.height,
         1,
       );
-      dWidth *= scale;
-      dHeight *= scale;
-      const dx = (canvas.width - dWidth) / 2;
+      const dWidth  = logoImg.width  * scale;
+      const dHeight = logoImg.height * scale;
+      const dx = (canvas.width  - dWidth)  / 2;
       const dy = (canvas.height - dHeight) / 2;
-
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
-      // Apply mask
       ctx.globalCompositeOperation = "destination-in";
       ctx.drawImage(maskCanvas, 0, 0);
       ctx.globalCompositeOperation = "source-over";

@@ -51,12 +51,16 @@
   {#if isClicked}
     <Canvas
       autoRender={true}
-      createRenderer={(canvas) => new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true,
-        powerPreference: "default",
-      })}
+      createRenderer={(canvas) => {
+        const renderer = new THREE.WebGLRenderer({
+          canvas,
+          alpha: true,
+          antialias: false,
+          powerPreference: "high-performance",
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        return renderer;
+      }}
     >
       <Scene
         {position}
@@ -88,6 +92,9 @@
     pointer-events: none;
     z-index: 50;
     opacity: 0;
+    /* Promuovi a layer GPU separato: Safari non ricompone il canvas WebGL ad ogni frame di scroll */
+    will-change: opacity;
+    transform: translateZ(0);
   }
 
   .model3d-layer.visible {

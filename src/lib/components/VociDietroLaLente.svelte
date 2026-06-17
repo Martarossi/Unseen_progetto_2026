@@ -50,8 +50,10 @@
       let letterStarted = false;
 
       const update3D = () => {
-        modelScale    = [modelProps.scale, modelProps.scale, modelProps.scale];
-        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
       };
@@ -96,7 +98,7 @@
           scrub: 2,
           onEnter: () => {
             model3dVisible = true;
-            modelPosition  = [0, 0, 0];
+            modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
           },
           onLeave: () => {
             model3dVisible = false;
@@ -107,7 +109,7 @@
           },
           onEnterBack: () => {
             model3dVisible = true;
-            modelPosition  = [0, 0, 0];
+            modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
             letterStarted  = false;
             letterTl.pause(0);
             gsap.set(letters,       { opacity: 0, filter: "blur(10px)", y: 20 });

@@ -1,18 +1,19 @@
 <script>
-  import { T, useTask } from "@threlte/core";
+  import { T, useTask, useThrelte } from "@threlte/core";
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
 
   /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number }} */
   let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
 
-  const PARTICLE_COUNT = 7000;
-  const MORPH_DURATION = 1.8; // seconds
+  const PARTICLE_COUNT = 3000;
+  const MORPH_DURATION = 1.8;
 
   const gltf0 = useGltf("/modello_bullettime.glb");
   const gltf1 = useGltf("/modello_3d_sciatore.glb");
 
-  // Single shared geometry — interpolated every frame during morph
+  const { invalidate } = useThrelte();
+
   const currentPos = new Float32Array(PARTICLE_COUNT * 3);
   const morphGeo   = new THREE.BufferGeometry();
   const posAttr    = new THREE.BufferAttribute(currentPos, 3);
@@ -23,19 +24,19 @@
   /** @type {Float32Array|null} */
   let posB = null;
 
-  // Morph state — plain vars updated in useTask every frame
-  let morphT    = 0;   // current lerp (0 = model A, 1 = model B)
-  let targetT   = 0;
+  let morphT       = 0;
+  let targetT      = 0;
   let morphElapsed = 0;
   let isMorphing   = false;
 
   let autoRotY = 0;
-  const uTime = { value: 0 };
+  const uTime  = { value: 0 };
+  let frameN   = 0;
 
   /** @type {THREE.Group|undefined} */
   let groupRef = $state(undefined);
 
-  // ── Particle material (with wave + soft circle shader) ────────────────────
+  // ── Particle material ─────────────────────────────────────────────────────
   const particleMaterial = new THREE.PointsMaterial({
     color: 0xC9D7DC,
     size: 2.0,
@@ -77,8 +78,9 @@
 
   // ── Geometry sampler ──────────────────────────────────────────────────────
   /**
-   * Sample PARTICLE_COUNT points from a GLTF scene, normalize to height 4,
-   * then sort by Y descending so head↔head and feet↔feet during morph.
+   * Campiona PARTICLE_COUNT punti sulla superficie del modello, normalizza,
+   * e ordina per Y in modo che testa↔testa e piedi↔piedi durante il morph.
+   * La pre-estrazione di yVals rende il sort cache-friendly (accesso sequenziale).
    * @param {THREE.Group} scene
    * @returns {Float32Array}
    */
@@ -94,10 +96,10 @@
     if (!meshes.length) return new Float32Array(PARTICLE_COUNT * 3);
 
     const raw = new Float32Array(PARTICLE_COUNT * 3);
-    const vA = new THREE.Vector3();
-    const vB = new THREE.Vector3();
-    const vC = new THREE.Vector3();
-    const p  = new THREE.Vector3();
+    const vA  = new THREE.Vector3();
+    const vB  = new THREE.Vector3();
+    const vC  = new THREE.Vector3();
+    const p   = new THREE.Vector3();
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const mesh = meshes[Math.floor(Math.random() * meshes.length)];
@@ -125,7 +127,7 @@
       raw[i*3+2] = p.z;
     }
 
-    // Bounding box → center + scale to height 4
+    // Bounding box
     let minX=Infinity, maxX=-Infinity;
     let minY=Infinity, maxY=-Infinity;
     let minZ=Infinity, maxZ=-Infinity;
@@ -138,9 +140,11 @@
     const cx=(minX+maxX)/2, cy=(minY+maxY)/2, cz=(minZ+maxZ)/2;
     const sc = (maxY - minY) > 0 ? 4.0 / (maxY - minY) : 1;
 
-    // Sort by Y descending: index 0 = topmost particle
+    // Pre-estrai Y in un array flat → sort cache-friendly (niente stride-3)
+    const yVals = new Float32Array(PARTICLE_COUNT);
+    for (let i = 0; i < PARTICLE_COUNT; i++) yVals[i] = raw[i*3+1];
     const indices = Array.from({ length: PARTICLE_COUNT }, (_, i) => i);
-    indices.sort((a, b) => raw[b*3+1] - raw[a*3+1]);
+    indices.sort((a, b) => yVals[b] - yVals[a]);
 
     const sorted = new Float32Array(PARTICLE_COUNT * 3);
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -153,38 +157,45 @@
   }
 
   // ── Load models ───────────────────────────────────────────────────────────
+  // setTimeout defer: evita di bloccare il main thread durante uno scroll frame attivo.
   $effect(() => {
-    if ($gltf0?.scene) {
-      posA = sampleScene($gltf0.scene);
+    const scene = $gltf0?.scene;
+    if (!scene) return;
+    const id = setTimeout(() => {
+      posA = sampleScene(scene);
       currentPos.set(posA);
       posAttr.needsUpdate = true;
-    }
+      invalidate();
+    }, 50);
+    return () => clearTimeout(id);
   });
 
   $effect(() => {
-    if ($gltf1?.scene) {
-      posB = sampleScene($gltf1.scene);
-    }
+    const scene = $gltf1?.scene;
+    if (!scene) return;
+    const id = setTimeout(() => {
+      posB = sampleScene(scene);
+    }, 50);
+    return () => clearTimeout(id);
   });
 
   // ── Trigger morph on model change ─────────────────────────────────────────
   let _mounted = false;
   $effect(() => {
-    const _dep = activeModel; // reactive dependency
+    const _dep = activeModel;
     if (!_mounted) { _mounted = true; return; }
-    if (activeModel === 1 && !posB) return; // B not loaded yet
-    targetT   = activeModel; // 0 or 1
+    if (activeModel === 1 && !posB) return;
+    targetT      = activeModel;
     morphElapsed = 0;
     isMorphing   = true;
   });
 
-  // ── Cubic ease in-out ─────────────────────────────────────────────────────
   /** @param {number} t */
   function easeInOut(t) {
     return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
   }
 
-  // ── Per-frame update ──────────────────────────────────────────────────────
+  // ── Per-frame update — rendering a 30fps fuori dal morph ─────────────────
   useTask((dt) => {
     uTime.value += 0.015;
     if (!isDragging) autoRotY += dt * 0.5;
@@ -203,9 +214,14 @@
         currentPos[i3+2] = posA[i3+2] + (posB[i3+2] - posA[i3+2]) * morphT;
       }
       posAttr.needsUpdate = true;
-
       if (rawT >= 1) isMorphing = false;
+      invalidate(); // Render ad ogni frame durante il morph
+      return;
     }
+
+    // Fuori dal morph: render a ~30fps per alleggerire Safari
+    frameN++;
+    if (frameN % 2 === 0) invalidate();
   });
 </script>
 

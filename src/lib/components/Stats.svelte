@@ -73,9 +73,11 @@
 
     mm.add("(min-width: 800px)", () => {
       const update3D = () => {
-        modelPosition = [0, 0, 0];
-        modelScale = [2.0, 2.0, 2.0];
-        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
+        modelScale[0] = modelScale[1] = modelScale[2] = 2.0;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
       };

@@ -51,12 +51,16 @@
     mm.add("(min-width: 800px)", () => {
       // SINCRONIZZAZIONE STATO 3D: Aggiorna reattivamente le variabili tridimensionali di Svelte basandosi sui valori correnti dell'oggetto animato da GSAP.
       const update3D = () => {
-        modelPosition = [modelProps.posX, modelProps.posY, modelProps.posZ];
-        modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
-        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        // Mutazione in-place: evita 3 nuove allocazioni di array per ogni tick GSAP (60fps)
+        modelPosition[0] = modelProps.posX;
+        modelPosition[1] = modelProps.posY;
+        modelPosition[2] = modelProps.posZ;
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
-        // Sincronizza il centro dell'orbita di tutte e 3 le card con la posizione dell'oggetto 3D
         orbitProps.centerX  = modelProps.posX;
         orbitProps.centerY  = modelProps.posY;
         orbitProps2.centerX = modelProps.posX;

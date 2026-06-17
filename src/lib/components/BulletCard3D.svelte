@@ -65,12 +65,17 @@
 
 <div class="canvas-container">
   <Canvas
-    createRenderer={(canvas) => new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: "default",
-    })}
+    autoRender={false}
+    createRenderer={(canvas) => {
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: false,
+        powerPreference: "high-performance",
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      return renderer;
+    }}
   >
     <BulletCard3DScene {externalRotY} {isDragging} {activeModel} />
   </Canvas>
@@ -106,6 +111,7 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   transition: background 0.2s, color 0.2s;
 }
