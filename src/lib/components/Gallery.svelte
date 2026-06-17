@@ -52,13 +52,13 @@
   ];
 
   /**
-   * diff = i - index
+   * Depth-tunnel 3-D carousel.
    *
-   * diff == 0   → carta attiva: centrata, scala 1, nitida
-   * diff >  0   → carte in arrivo: piccole, sotto il centro, sfocate
-   * diff <  0   → carte uscite: si ingrandiscono e salgono, poi svaniscono
+   * diff < 0 → carta uscita (va in profondità: si sgonfia, sfoca, svanisce)
+   * diff = 0 → carta attiva (centrata, piena, nitida)
+   * diff > 0 → carte in arrivo (nel fondo, alternano destra/sinistra per parità)
    *
-   * @param {number} index
+   * @param {number} index  (float, driven by GSAP)
    */
   function updateCards(index) {
     if (!cardsContainer) return;
@@ -66,30 +66,35 @@
       cardsContainer.querySelectorAll('.interview-card')
     );
 
-    cards.forEach((card, i) => {
-      const diff = i - index;
-
-      let scale, ty, blur, opacity, zIdx;
+    cards.forEach((card, j) => {
+      const diff = j - index;
+      let xVw, scale, blur, opacity, zIdx, rotY;
 
       if (diff <= 0) {
-        // Carta attiva (diff=0) o in uscita (diff<0)
-        const t = -diff; // 0 = attiva, 1 = appena uscita
-        scale   = 1 + t * 0.5;               // si ingrandisce volando via
-        ty      = -t * 38;                   // sale verso l'alto (vh)
+        const t = -diff;
+        const side = j % 2 === 0 ? -1 : 1;
+        xVw     = side * Math.min(t * 110, 110);
+        scale   = 1 + t * 0.4;
         blur    = 0;
-        opacity = Math.max(0, 1 - t * 2.2);  // sfuma rapidamente
-        zIdx    = 60 + Math.round(t * 10);   // sopra le carte successive durante l'uscita
+        opacity = t >= 1 ? 0 : 1;
+        zIdx    = t >= 1 ? 1 : 70;
+        // lato sinistro in avanti quando esce a sx, lato destro quando esce a dx
+        rotY    = -side * 18 * Math.min(t, 1);
       } else {
-        // Carte future (diff > 0): arrivano dal basso/fondo
-        scale   = Math.max(0.25, 1 - diff * 0.32);
-        ty      = Math.min(20, diff * 10);   // leggermente più in basso rispetto al centro
-        blur    = Math.min(22, diff * 12);
-        opacity = diff > 2.4 ? 0 : Math.max(0, 1 - Math.max(0, diff - 0.3) * 0.5);
-        zIdx    = Math.max(1, 50 - Math.round(diff * 10));
+        const side = j % 2 === 0 ? -1 : 1;
+        xVw     = side * 28 * Math.min(diff, 1.1);
+        scale   = Math.max(0.42, 1 - diff * 0.27);
+        blur    = Math.min(18, diff * 11);
+        opacity = diff > 2.2
+          ? 0
+          : Math.max(0, 1 - Math.max(0, diff - 0.4) * 0.65);
+        zIdx    = Math.max(1, Math.round(50 - diff * 12));
+        // lato che guarda il centro in avanti mentre la carta si avvicina
+        rotY    = side * 18 * Math.min(diff, 1);
       }
 
-      card.style.transform = `translate(-50%, calc(-50% + ${ty}vh)) scale(${scale})`;
-      card.style.filter    = blur > 0 ? `blur(${blur}px)` : 'none';
+      card.style.transform = `translate(calc(-50% + ${xVw}vw), -50%) rotateY(${rotY}deg) scale(${scale})`;
+      card.style.filter    = blur > 0.05 ? `blur(${blur}px)` : 'none';
       card.style.opacity   = String(Math.max(0, Math.min(1, opacity)));
       card.style.zIndex    = String(zIdx);
     });
@@ -106,8 +111,14 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: 'top top',
-          end: '+=3600',
-          scrub: 1,
+          end: '+=4800',
+          scrub: true,
+          snap: {
+            snapTo: 1 / (interviews.length - 1),
+            duration: { min: 0.5, max: 0.9 },
+            ease: 'power3.out',
+            directional: true,
+          },
         },
       });
 
@@ -144,9 +155,6 @@
               </p>
             </div>
 
-            <div class="card-thumb">
-              <img src={iv.thumb} alt="" />
-            </div>
           </div>
 
         </div>
@@ -157,7 +165,7 @@
 
 <style>
   .gallery-scroll-wrapper {
-    height: 3600px;
+    height: calc(4800px + 100vh);
     position: relative;
   }
 
@@ -167,6 +175,9 @@
     position: sticky;
     top: 0;
     overflow: hidden;
+    /* Subtle perspective so scale-based depth reads as 3-D */
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
   }
 
   .cards-container {
@@ -181,7 +192,7 @@
     top: 50%;
     left: 50%;
     /* transform gestito interamente da JS */
-    transform: translate(-50%, -50%) scale(0.25);
+    transform: translate(-50%, -50%) scale(0.42);
     transform-origin: center center;
 
     width: 65vw;
@@ -277,6 +288,7 @@
   /* ── Mobile ── */
   @media (max-width: 799px) {
     .gallery-scroll-wrapper { height: auto; }
+    .gallery-sticky { perspective: none; }
 
     .gallery-sticky {
       position: relative;
