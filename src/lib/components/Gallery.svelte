@@ -51,12 +51,15 @@
     },
   ];
 
-  // Card ha larghezza 60vw; il passo tra una card e la prossima è 66vw (card + gap)
-  // La card attiva ha il bordo sinistro a 8vw
-  const STEP_VW   = 66;
-  const ORIGIN_VW = 8;
-
-  /** @param {number} index */
+  /**
+   * diff = i - index
+   *
+   * diff == 0   → carta attiva: centrata, scala 1, nitida
+   * diff >  0   → carte in arrivo: piccole, sotto il centro, sfocate
+   * diff <  0   → carte uscite: si ingrandiscono e salgono, poi svaniscono
+   *
+   * @param {number} index
+   */
   function updateCards(index) {
     if (!cardsContainer) return;
     const cards = /** @type {NodeListOf<HTMLElement>} */ (
@@ -64,22 +67,31 @@
     );
 
     cards.forEach((card, i) => {
-      const diff  = i - index;
-      const x     = ORIGIN_VW + diff * STEP_VW;
-      const blur  = Math.abs(diff) < 0.05 ? 0 : Math.min(18, Math.abs(diff) * 14);
-      const scale = Math.max(0.88, 1 - Math.abs(diff) * 0.06);
+      const diff = i - index;
 
-      // Carte passate (diff < -0.7): nascoste
-      // Carte future > 2: nascoste
-      const opacity =
-        diff < -0.7  ? 0 :
-        diff >  2.2  ? 0 :
-        1 - Math.max(0, diff - 0.7) * 0.35;
+      let scale, ty, blur, opacity, zIdx;
 
-      card.style.transform = `translateX(${x}vw) translateY(-50%) scale(${scale})`;
+      if (diff <= 0) {
+        // Carta attiva (diff=0) o in uscita (diff<0)
+        const t = -diff; // 0 = attiva, 1 = appena uscita
+        scale   = 1 + t * 0.5;               // si ingrandisce volando via
+        ty      = -t * 38;                   // sale verso l'alto (vh)
+        blur    = 0;
+        opacity = Math.max(0, 1 - t * 2.2);  // sfuma rapidamente
+        zIdx    = 60 + Math.round(t * 10);   // sopra le carte successive durante l'uscita
+      } else {
+        // Carte future (diff > 0): arrivano dal basso/fondo
+        scale   = Math.max(0.25, 1 - diff * 0.32);
+        ty      = Math.min(20, diff * 10);   // leggermente più in basso rispetto al centro
+        blur    = Math.min(22, diff * 12);
+        opacity = diff > 2.4 ? 0 : Math.max(0, 1 - Math.max(0, diff - 0.3) * 0.5);
+        zIdx    = Math.max(1, 50 - Math.round(diff * 10));
+      }
+
+      card.style.transform = `translate(-50%, calc(-50% + ${ty}vh)) scale(${scale})`;
       card.style.filter    = blur > 0 ? `blur(${blur}px)` : 'none';
-      card.style.opacity   = String(Math.max(0, opacity));
-      card.style.zIndex    = String(Math.max(1, 50 - Math.abs(Math.round(diff * 10))));
+      card.style.opacity   = String(Math.max(0, Math.min(1, opacity)));
+      card.style.zIndex    = String(zIdx);
     });
   }
 
@@ -163,13 +175,17 @@
     height: 100%;
   }
 
-  /* ── Card di vetro ── */
+  /* ── Card di vetro centrata ── */
   .interview-card {
     position: absolute;
     top: 50%;
-    left: 0;
-    width: 60vw;
-    height: min(72vh, 580px);
+    left: 50%;
+    /* transform gestito interamente da JS */
+    transform: translate(-50%, -50%) scale(0.25);
+    transform-origin: center center;
+
+    width: 65vw;
+    height: min(70vh, 530px);
 
     background: rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(28px);
@@ -177,17 +193,18 @@
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 22px;
     box-shadow:
-      0 12px 48px rgba(0, 0, 0, 0.09),
+      0 16px 56px rgba(0, 0, 0, 0.10),
       inset 0 1px 0 rgba(255, 255, 255, 0.75);
 
     display: flex;
     overflow: hidden;
+    opacity: 0;
     will-change: transform, filter, opacity;
   }
 
   /* ── Immagine / video ── */
   .card-media {
-    flex: 0 0 64%;
+    flex: 0 0 63%;
     overflow: hidden;
     margin: 10px;
     border-radius: 14px;
@@ -241,7 +258,7 @@
     margin: 0;
   }
 
-  /* ── Thumbnail in basso ── */
+  /* ── Thumbnail ── */
   .card-thumb {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -266,9 +283,6 @@
       height: auto;
       overflow: visible;
       padding: 60px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
     }
 
     .cards-container {
