@@ -3,27 +3,30 @@
   import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
 
-  /** @type {{ externalRotY?: number, isDragging?: boolean }} */
-  let { externalRotY = 0, isDragging = false } = $props();
+  /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number }} */
+  let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
 
-  const gltf = useGltf("/modello_bullettime.glb");
+  const gltf0 = useGltf("/modello_bullettime.glb");
+  const gltf1 = useGltf("/modello_3d_sciatore.glb");
   const { renderer } = useThrelte();
 
   /** @type {THREE.Group|undefined} */
-  let sceneRef = $state(undefined);
+  let sceneRef0 = $state(undefined);
+  /** @type {THREE.Group|undefined} */
+  let sceneRef1 = $state(undefined);
   /** @type {THREE.PerspectiveCamera|undefined} */
   let cameraRef = $state(undefined);
 
-  let centered = false;
-  let readyFrames = 0;
-  let offsetX = $state(0);
-  let offsetY = $state(0);
-  let offsetZ = $state(0);
-  let cameraZ = $state(12);
+  // Per-model reactive positioning (used in template)
+  let off0 = $state({ x: 0, y: 0, z: 0, camZ: 12 });
+  let off1 = $state({ x: 0, y: 0, z: 0, camZ: 12 });
+
+  // Per-model centering flags (non-reactive, used only in useTask)
+  let centered0 = false, readyFrames0 = 0;
+  let centered1 = false, readyFrames1 = 0;
 
   let autoRotY = 0;
 
-  // Materiale particellare identico a Scene.svelte
   const uTime = { value: 0 };
 
   const particleMaterial = new THREE.PointsMaterial({
@@ -68,7 +71,6 @@
     );
   };
 
-  // Campionamento uniforme sulla superficie dei triangoli (identico a Scene.svelte)
   /** @param {THREE.BufferGeometry} geometry @param {number} count */
   function samplePointsFromGeometry(geometry, count) {
     const positionAttr = geometry.attributes.position;
@@ -126,13 +128,11 @@
     return sampledGeom;
   }
 
-  // Conversione mesh → particelle (identica a Scene.svelte)
-  $effect(() => {
-    if (!$gltf?.scene) return;
-
+  /** @param {THREE.Group} gltfScene */
+  function convertToParticles(gltfScene) {
     /** @type {THREE.Mesh[]} */
     const meshesToConvert = [];
-    $gltf.scene.traverse((child) => {
+    gltfScene.traverse((child) => {
       if (child instanceof THREE.Mesh && !child.userData.isParticleConverted) {
         meshesToConvert.push(child);
       }
@@ -149,9 +149,11 @@
       points.scale.copy(mesh.scale);
       mesh.parent?.add(points);
     });
-  });
+  }
 
-  // Animazione uTime
+  $effect(() => { if ($gltf0?.scene) convertToParticles($gltf0.scene); });
+  $effect(() => { if ($gltf1?.scene) convertToParticles($gltf1.scene); });
+
   $effect(() => {
     let rafId = requestAnimationFrame(function loop() {
       uTime.value += 0.015;
@@ -160,60 +162,91 @@
     return () => cancelAnimationFrame(rafId);
   });
 
+  /**
+   * Centra il modello e aggiorna l'offset reattivo e la camera.
+   * @param {THREE.Group} sceneRef
+   * @param {{ x: number, y: number, z: number, camZ: number }} off
+   */
+  function doCenter(sceneRef, off) {
+    const canvas = renderer.domElement;
+    if (canvas.clientWidth === 0 || canvas.clientHeight === 0) return false;
+
+    const humanKeywords = ['human', 'person', 'figure', 'body', 'atleta', 'uomo', 'corpo', 'character'];
+    let humanMesh = /** @type {THREE.Mesh|null} */ (null);
+    let bestScore = -Infinity;
+
+    const sceneBox0 = new THREE.Box3().setFromObject(sceneRef);
+    const sceneCenter0 = sceneBox0.getCenter(new THREE.Vector3());
+
+    sceneRef.traverse((child) => {
+      if (!(child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh)) return;
+
+      const name = child.name.toLowerCase();
+      if (humanKeywords.some(k => name.includes(k))) { humanMesh = /** @type {THREE.Mesh} */ (child); bestScore = Infinity; return; }
+      if (bestScore === Infinity) return;
+
+      const box = new THREE.Box3().setFromObject(child);
+      const meshCenter = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+
+      const distXZ = Math.sqrt((meshCenter.x - sceneCenter0.x) ** 2 + (meshCenter.z - sceneCenter0.z) ** 2);
+      const centrality = 1 / (distXZ + 0.01);
+      const tallness = size.y / Math.max(size.x, size.z, 0.001);
+      const score = centrality * tallness;
+
+      if (score > bestScore) { bestScore = score; humanMesh = /** @type {THREE.Mesh} */ (child); }
+    });
+
+    const humanTarget = humanMesh ?? sceneRef;
+    const humanBox = new THREE.Box3().setFromObject(humanTarget);
+    const center = humanBox.getCenter(new THREE.Vector3());
+    off.x = -center.x;
+    off.y = -center.y;
+    off.z = -center.z;
+
+    const fullBox = new THREE.Box3().setFromObject(sceneRef);
+    const fullSize = fullBox.getSize(new THREE.Vector3());
+    const fovRad = 60 * (Math.PI / 180);
+    const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
+    const fovH = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
+    const distV = (fullSize.y / 2) / Math.tan(fovRad / 2);
+    const distH = (fullSize.x / 2) / Math.tan(fovH / 2);
+    off.camZ = Math.max(distV, distH) * 1.0 + fullSize.z / 2;
+
+    if (cameraRef) cameraRef.position.set(0, 0, off.camZ);
+    return true;
+  }
+
   useTask((dt) => {
-    if (!centered && sceneRef) {
+    // Centra il modello attivo quando diventa visibile per la prima volta
+    if (activeModel === 0 && !centered0 && sceneRef0) {
       const canvas = renderer.domElement;
-      if (canvas.clientWidth === 0 || canvas.clientHeight === 0) { readyFrames = 0; return; }
-      if (++readyFrames < 5) return;
-      centered = true;
+      if (canvas.clientWidth === 0 || canvas.clientHeight === 0) { readyFrames0 = 0; }
+      else if (++readyFrames0 >= 5) {
+        doCenter(sceneRef0, off0);
+        centered0 = true;
+      }
+    }
 
-      const sceneBox0 = new THREE.Box3().setFromObject(sceneRef);
-      const sceneCenter0 = sceneBox0.getCenter(new THREE.Vector3());
-
-      const humanKeywords = ['human', 'person', 'figure', 'body', 'atleta', 'uomo', 'corpo', 'character'];
-      let humanMesh = /** @type {THREE.Mesh|null} */ (null);
-      let bestScore = -Infinity;
-
-      sceneRef.traverse((child) => {
-        if (!(child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh)) return;
-
-        const name = child.name.toLowerCase();
-        if (humanKeywords.some(k => name.includes(k))) { humanMesh = /** @type {THREE.Mesh} */ (child); bestScore = Infinity; return; }
-        if (bestScore === Infinity) return;
-
-        const box = new THREE.Box3().setFromObject(child);
-        const meshCenter = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-
-        const distXZ = Math.sqrt((meshCenter.x - sceneCenter0.x) ** 2 + (meshCenter.z - sceneCenter0.z) ** 2);
-        const centrality = 1 / (distXZ + 0.01);
-        const tallness = size.y / Math.max(size.x, size.z, 0.001);
-        const score = centrality * tallness;
-
-        if (score > bestScore) { bestScore = score; humanMesh = /** @type {THREE.Mesh} */ (child); }
-      });
-
-      const humanTarget = humanMesh ?? sceneRef;
-      const humanBox = new THREE.Box3().setFromObject(humanTarget);
-      const center = humanBox.getCenter(new THREE.Vector3());
-      offsetX = -center.x;
-      offsetY = -center.y;
-      offsetZ = -center.z;
-
-      const fullBox = new THREE.Box3().setFromObject(sceneRef);
-      const fullSize = fullBox.getSize(new THREE.Vector3());
-      const fovRad = 60 * (Math.PI / 180);
-      const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
-      const fovH = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
-      const distV = (fullSize.y / 2) / Math.tan(fovRad / 2);
-      const distH = (fullSize.x / 2) / Math.tan(fovH / 2);
-      cameraZ = Math.max(distV, distH) * 1.0 + fullSize.z / 2;
-
-      if (cameraRef) cameraRef.position.set(0, 0, cameraZ);
+    if (activeModel === 1 && !centered1 && sceneRef1) {
+      const canvas = renderer.domElement;
+      if (canvas.clientWidth === 0 || canvas.clientHeight === 0) { readyFrames1 = 0; }
+      else if (++readyFrames1 >= 5) {
+        doCenter(sceneRef1, off1);
+        centered1 = true;
+      }
     }
 
     if (!isDragging) autoRotY += dt * 0.5;
-    if (sceneRef) sceneRef.rotation.y = autoRotY + externalRotY;
+    if (sceneRef0) sceneRef0.rotation.y = autoRotY + externalRotY;
+    if (sceneRef1) sceneRef1.rotation.y = autoRotY + externalRotY;
+  });
+
+  // Aggiorna la camera quando si torna su un modello già centrato
+  $effect(() => {
+    if (!cameraRef) return;
+    if (activeModel === 0 && centered0) cameraRef.position.setZ(off0.camZ);
+    if (activeModel === 1 && centered1) cameraRef.position.setZ(off1.camZ);
   });
 </script>
 
@@ -222,11 +255,22 @@
 <T.AmbientLight intensity={0.4} />
 <T.PointLight position={[0, 0, 5]} intensity={1.0} distance={20} />
 
-{#if $gltf}
+{#if $gltf0}
   <T
-    is={$gltf.scene}
-    bind:ref={sceneRef}
+    is={$gltf0.scene}
+    bind:ref={sceneRef0}
     scale={[8.5, 8.5, 8.5]}
-    position={[offsetX - 50.0, offsetY, offsetZ]}
+    position={[off0.x - 50.0, off0.y, off0.z]}
+    visible={activeModel === 0}
+  />
+{/if}
+
+{#if $gltf1}
+  <T
+    is={$gltf1.scene}
+    bind:ref={sceneRef1}
+    scale={[8.5, 8.5, 8.5]}
+    position={[off1.x - 50.0, off1.y, off1.z]}
+    visible={activeModel === 1}
   />
 {/if}

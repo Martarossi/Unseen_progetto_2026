@@ -6,6 +6,8 @@
   let isDragging = $state(false);
   let externalRotY = $state(0);
   let lastX = 0;
+  let activeModel = $state(0);
+  const TOTAL_MODELS = 2;
 
   /** @type {HTMLDivElement | undefined} */
   let dragZone = $state(undefined);
@@ -27,9 +29,20 @@
   function onPointerUp() {
     isDragging = false;
   }
+
+  /** @param {MouseEvent} e */
+  function nextModel(e) {
+    e.stopPropagation();
+    if (activeModel < TOTAL_MODELS - 1) activeModel++;
+  }
+
+  /** @param {MouseEvent} e */
+  function prevModel(e) {
+    e.stopPropagation();
+    if (activeModel > 0) activeModel--;
+  }
 </script>
 
-<!-- Zona drag: stessa area del contenitore, cattura i pointer events -->
 <div
   bind:this={dragZone}
   class="drag-zone"
@@ -42,7 +55,14 @@
   style="cursor: {isDragging ? 'grabbing' : 'grab'}"
 ></div>
 
-<!-- Canvas in un wrapper assoluto molto più grande: Threlte lo dimensiona fisicamente 2× -->
+{#if activeModel > 0}
+  <button class="arrow-btn left" onclick={prevModel} aria-label="Modello precedente">&#8249;</button>
+{/if}
+
+{#if activeModel < TOTAL_MODELS - 1}
+  <button class="arrow-btn right" onclick={nextModel} aria-label="Modello successivo">&#8250;</button>
+{/if}
+
 <div class="canvas-container">
   <Canvas
     createRenderer={(canvas) => new THREE.WebGLRenderer({
@@ -52,12 +72,11 @@
       powerPreference: "default",
     })}
   >
-    <BulletCard3DScene {externalRotY} {isDragging} />
+    <BulletCard3DScene {externalRotY} {isDragging} {activeModel} />
   </Canvas>
 </div>
 
 <style>
-/* Contenitore radice: deve avere position relative perché canvas-container è absolute rispetto a questo */
 :global(.bullet-scene-wrap) {
   position: relative;
   overflow: visible !important;
@@ -69,12 +88,46 @@
   z-index: 2;
 }
 
+.arrow-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.75);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s, color 0.2s;
+}
+
+.arrow-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 1);
+}
+
+.arrow-btn.right {
+  right: 10px;
+}
+
+.arrow-btn.left {
+  left: 10px;
+}
+
 .canvas-container {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* 1.6× rispetto al contenitore: abbastanza da overflow visivo senza uscire dalla pagina */
   width: 160%;
   height: 160%;
   pointer-events: none;
