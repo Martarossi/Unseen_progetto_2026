@@ -3,7 +3,9 @@
 
   <span class="footer-title">LE OLIMPIADI DEGLI INVISIBILI</span>
   <span class="footer-copy">&copy;</span>
-  <img src="/logopolimi.png" alt="Politecnico di Milano 1863" class="footer-logo" />
+  <div class="footer-logo-wrap">
+    <img src="/logopolimi.png" alt="Politecnico di Milano 1863" class="footer-logo" />
+  </div>
 </footer>
 
 <style>
@@ -42,16 +44,22 @@
     text-transform: uppercase;
     color: #f8f8f8;
     white-space: nowrap;
+    flex: 1;
   }
 
   .footer-copy {
     font-family: "Helvetica", Arial, sans-serif;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     color: #f8f8f8;
     opacity: 0.85;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    flex: 0;
+    white-space: nowrap;
+  }
+
+  .footer-logo-wrap {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
   }
 
   .footer-logo {
