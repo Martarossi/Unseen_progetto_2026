@@ -7,7 +7,7 @@
   let externalRotY = $state(0);
   let lastX = 0;
   let activeModel = $state(0);
-  const TOTAL_MODELS = 2;
+  const TOTAL_MODELS = 3;
 
   /** @type {HTMLDivElement | undefined} */
   let dragZone = $state(undefined);

@@ -11,19 +11,21 @@
 
   const gltf0 = useGltf("/modello_bullettime.glb");
   const gltf1 = useGltf("/modello_3d_sciatore.glb");
+  const gltf2 = useGltf("/modello_3d_bob.glb");
 
   const currentPos = new Float32Array(PARTICLE_COUNT * 3);
+  const morphFrom  = new Float32Array(PARTICLE_COUNT * 3); // snapshot at morph start
   const morphGeo   = new THREE.BufferGeometry();
   const posAttr    = new THREE.BufferAttribute(currentPos, 3);
   morphGeo.setAttribute('position', posAttr);
 
-  /** @type {Float32Array|null} */
-  let posA = null;
-  /** @type {Float32Array|null} */
-  let posB = null;
+  // Sampled positions for each model (indexed 0–2)
+  /** @type {(Float32Array|null)[]} */
+  const pos = [null, null, null];
 
-  let morphT       = 0;
-  let targetT      = 0;
+  // Morph state
+  /** @type {Float32Array|null} */
+  let morphTo      = null;
   let morphElapsed = 0;
   let isMorphing   = false;
 
@@ -79,9 +81,10 @@
    * e ordina per Y in modo che testa↔testa e piedi↔piedi durante il morph.
    * La pre-estrazione di yVals rende il sort cache-friendly (accesso sequenziale).
    * @param {THREE.Group} scene
+   * @param {number} [targetHeight]
    * @returns {Float32Array}
    */
-  function sampleScene(scene) {
+  function sampleScene(scene, targetHeight = 4.0) {
     /** @type {THREE.Mesh[]} */
     const meshes = [];
     scene.updateMatrixWorld(true);
@@ -135,7 +138,7 @@
       if(z<minZ) minZ=z; if(z>maxZ) maxZ=z;
     }
     const cx=(minX+maxX)/2, cy=(minY+maxY)/2, cz=(minZ+maxZ)/2;
-    const sc = (maxY - minY) > 0 ? 4.0 / (maxY - minY) : 1;
+    const sc = (maxY - minY) > 0 ? targetHeight / (maxY - minY) : 1;
 
     // Pre-estrai Y in un array flat → sort cache-friendly (niente stride-3)
     const yVals = new Float32Array(PARTICLE_COUNT);
@@ -159,8 +162,8 @@
     const scene = $gltf0?.scene;
     if (!scene) return;
     const id = setTimeout(() => {
-      posA = sampleScene(scene);
-      currentPos.set(posA);
+      pos[0] = sampleScene(scene);
+      currentPos.set(pos[0]);
       posAttr.needsUpdate = true;
     }, 50);
     return () => clearTimeout(id);
@@ -170,7 +173,16 @@
     const scene = $gltf1?.scene;
     if (!scene) return;
     const id = setTimeout(() => {
-      posB = sampleScene(scene);
+      pos[1] = sampleScene(scene);
+    }, 50);
+    return () => clearTimeout(id);
+  });
+
+  $effect(() => {
+    const scene = $gltf2?.scene;
+    if (!scene) return;
+    const id = setTimeout(() => {
+      pos[2] = sampleScene(scene, 7 / 3);
     }, 50);
     return () => clearTimeout(id);
   });
@@ -180,8 +192,10 @@
   $effect(() => {
     const _dep = activeModel;
     if (!_mounted) { _mounted = true; return; }
-    if (activeModel === 1 && !posB) return;
-    targetT      = activeModel;
+    const target = pos[activeModel];
+    if (!target) return;
+    morphFrom.set(currentPos); // snapshot current visual state
+    morphTo      = target;
     morphElapsed = 0;
     isMorphing   = true;
   });
@@ -191,27 +205,26 @@
     return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
   }
 
-  // ── Per-frame update — rendering a 30fps fuori dal morph ─────────────────
+  // ── Per-frame update ──────────────────────────────────────────────────────
   useTask((dt) => {
     uTime.value += 0.015;
     if (!isDragging) autoRotY += dt * 0.5;
     if (groupRef) groupRef.rotation.y = autoRotY + externalRotY;
 
-    if (isMorphing && posA && posB) {
+    if (isMorphing && morphTo) {
       morphElapsed += dt;
       const rawT  = Math.min(morphElapsed / MORPH_DURATION, 1);
       const eased = easeInOut(rawT);
-      morphT = targetT === 1 ? eased : 1 - eased;
 
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const i3 = i * 3;
-        currentPos[i3]   = posA[i3]   + (posB[i3]   - posA[i3])   * morphT;
-        currentPos[i3+1] = posA[i3+1] + (posB[i3+1] - posA[i3+1]) * morphT;
-        currentPos[i3+2] = posA[i3+2] + (posB[i3+2] - posA[i3+2]) * morphT;
+        currentPos[i3]   = morphFrom[i3]   + (morphTo[i3]   - morphFrom[i3])   * eased;
+        currentPos[i3+1] = morphFrom[i3+1] + (morphTo[i3+1] - morphFrom[i3+1]) * eased;
+        currentPos[i3+2] = morphFrom[i3+2] + (morphTo[i3+2] - morphFrom[i3+2]) * eased;
       }
       posAttr.needsUpdate = true;
-      if (rawT >= 1) isMorphing = false;
-      return;
+
+      if (rawT >= 1) { isMorphing = false; morphTo = null; }
     }
   });
 </script>
