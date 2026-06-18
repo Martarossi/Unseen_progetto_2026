@@ -318,7 +318,7 @@
           stagger: 0.02,
           ease: "power2.in",
         },
-        "+=1.5", // Attende 1.5 secondi prima di scomparire
+        "-=0.7",
       )
       .call(() => {
         showLogo = true;

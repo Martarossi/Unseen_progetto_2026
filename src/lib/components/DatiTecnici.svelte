@@ -10,7 +10,6 @@
     currentTwistZ  = $bindable(80),
     model3dVisible  = $bindable(false),
     dotsVisible     = $bindable(false),
-    dotsRingVisible = $bindable(false),
     dotsRingAngle   = $bindable(0),
   } = $props();
 
@@ -50,54 +49,38 @@
       const ringProps = { angle: 0 };
       const updateRing = () => { dotsRingAngle = ringProps.angle; };
 
-      // Cerchio appare prima che la sezione si pinni
-      const earlyRingTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: scrollWrapper,
-          start: 'top 85%',
-          end: 'top top',
-          onEnter:     () => { dotsRingVisible = true; },
-          onLeaveBack: () => { dotsRingVisible = false; dotsRingAngle = 0; },
-        }
-      });
-
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
           start: 'top top',
           end: '+=4500',
           scrub: 2,
-          onEnter:     () => { model3dVisible = true;  dotsVisible = true;                       },
-          onLeave:     () => {                          dotsVisible = false; dotsRingVisible = false; },
-          onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  dotsRingVisible = true;  },
-          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; dotsRingVisible = false; ringProps.angle = 0; dotsRingAngle = 0; },
+          onEnter:     () => { model3dVisible = true;  dotsVisible = true;  },
+          onLeave:     () => { dotsVisible = false; },
+          onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  },
+          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; ringProps.angle = 0; dotsRingAngle = 0; },
         },
       });
 
+      // Scroll-driven reveals: ring → dots → cards (concurrent con Phase 1)
+      tl.fromTo('.dt-orbit-ring', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0);
+      tl.fromTo('.dt-dot-group',  { opacity: 0 }, { opacity: 1, duration: 0.25, stagger: 0.07, ease: 'power2.out' }, 0.3);
+      tl.fromTo('.dt-cards-row',  { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.7);
+
       // Phase 1 (~750px): model calms into display state
-      tl.to(modelProps, { ...displayState, duration: 1.0, ease: 'power2.out', onUpdate: update3D });
-
+      tl.to(modelProps, { ...displayState, duration: 1.0, ease: 'power2.out', onUpdate: update3D }, 0);
       // Phase 2 (~750px): GUIDE active — hold
-      tl.to({}, { duration: 1.0 });
-
+      tl.to({}, { duration: 1.0 }, 1.0);
       // Phase 3 (~750px): ring rotates to ENHANCING
-      tl.to(ringProps, { angle: 120, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing });
-
+      tl.to(ringProps, { angle: 120, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing }, 2.0);
       // Phase 4 (~750px): ENHANCING active — hold
-      tl.to({}, { duration: 1.0 });
-
+      tl.to({}, { duration: 1.0 }, 3.0);
       // Phase 5 (~750px): ring rotates to HIGHLIGHT
-      tl.to(ringProps, { angle: 240, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing });
-
+      tl.to(ringProps, { angle: 240, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing }, 4.0);
       // Phase 6 (~750px): HIGHLIGHT active + subtle model drift
-      tl.to(modelProps, {
-        rotY: displayState.rotY + Math.PI * 0.4,
-        duration: 1.0,
-        ease: 'sine.inOut',
-        onUpdate: update3D,
-      });
+      tl.to(modelProps, { rotY: displayState.rotY + Math.PI * 0.4, duration: 1.0, ease: 'sine.inOut', onUpdate: update3D }, 5.0);
 
-      return () => { tl.kill(); earlyRingTl.kill(); };
+      return () => { tl.kill(); };
     });
 
     mm.add('(max-width: 799px)', () => {

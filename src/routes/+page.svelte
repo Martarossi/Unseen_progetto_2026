@@ -188,37 +188,43 @@
   />
 
   {#if hasBeenClicked}
-    <Stats
-      bind:modelPosition
-      bind:modelScale
-      bind:modelRotation
-      bind:currentTwistX
-      bind:currentTwistZ
-      bind:model3dVisible
-    />
+    <div class="section-gap">
+      <Stats
+        bind:modelPosition
+        bind:modelScale
+        bind:modelRotation
+        bind:currentTwistX
+        bind:currentTwistZ
+        bind:model3dVisible
+      />
+    </div>
 
-    <DatiTecnici
-      bind:modelPosition
-      bind:modelScale
-      bind:modelRotation
-      bind:currentTwistX
-      bind:currentTwistZ
-      bind:model3dVisible
-      bind:dotsVisible={datiDotsVisible}
-      bind:dotsRingAngle={datiRingAngle}
-    />
+    <div class="section-gap">
+      <DatiTecnici
+        bind:modelPosition
+        bind:modelScale
+        bind:modelRotation
+        bind:currentTwistX
+        bind:currentTwistZ
+        bind:model3dVisible
+        bind:dotsVisible={datiDotsVisible}
+        bind:dotsRingAngle={datiRingAngle}
+      />
+    </div>
 
-    <Citazione />
-    <VociDietroLaLente
-      bind:modelPosition
-      bind:modelScale
-      bind:modelRotation
-      bind:currentTwistX
-      bind:currentTwistZ
-      bind:model3dVisible
-    />
+    <div class="section-gap"><Citazione /></div>
+    <div class="section-gap">
+      <VociDietroLaLente
+        bind:modelPosition
+        bind:modelScale
+        bind:modelRotation
+        bind:currentTwistX
+        bind:currentTwistZ
+        bind:model3dVisible
+      />
+    </div>
 
-    <Gallery />
+    <div class="section-gap"><Gallery /></div>
     <div class="footer-spacer"></div>
     <Footer />
   {/if}
@@ -259,6 +265,10 @@
 
   .page.clicked {
     background: transparent;
+  }
+
+  .section-gap {
+    margin-top: 40vh;
   }
 
   .footer-spacer {

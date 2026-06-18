@@ -83,7 +83,7 @@
   <!-- Rotating dashed ring with dots -->
   <div
     class="dt-orbit-ring"
-    style="transform: translate(-50%, -50%) rotate({ringAngle}deg)"
+    style:--ring-angle="{ringAngle}deg"
   >
     <svg class="dt-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <circle
@@ -155,28 +155,6 @@
     transition: none; /* entry è gestita dai figli */
   }
 
-  /* ── RE-ENTRY (reverse of exit) ──────────────── */
-  .dt-overlay.visible.reenter .dt-orbit-ring {
-    animation: dt-ring-reenter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  @keyframes dt-ring-reenter {
-    from { opacity: 0; scale: 1.07; }
-    to   { opacity: 1; scale: 1;    }
-  }
-
-  .dt-overlay.visible.reenter .dt-arm:nth-child(2) .dt-dot-group { animation: dt-fade-in 0.3s ease 0.1s  forwards; }
-  .dt-overlay.visible.reenter .dt-arm:nth-child(3) .dt-dot-group { animation: dt-fade-in 0.3s ease 0.05s forwards; }
-  .dt-overlay.visible.reenter .dt-arm:nth-child(4) .dt-dot-group { animation: dt-fade-in 0.3s ease 0s    forwards; }
-
-  .dt-overlay.visible.reenter .dt-card:nth-child(1) { animation: dt-card-reenter 0.45s ease 0.16s both; }
-  .dt-overlay.visible.reenter .dt-card:nth-child(2) { animation: dt-card-reenter 0.45s ease 0.08s both; }
-  .dt-overlay.visible.reenter .dt-card:nth-child(3) { animation: dt-card-reenter 0.45s ease 0s    both; }
-
-  @keyframes dt-card-reenter {
-    from { opacity: 0; transform: scale(0.93) translateY(22px); }
-    to   { opacity: 1; transform: scale(1)    translateY(0);    }
-  }
 
   /* ── EXIT ─────────────────────────────────────── */
   .dt-overlay.exiting {
@@ -221,9 +199,9 @@
     left: 50%;
     width: 82vh;
     height: 82vh;
+    transform: translate(-50%, -50%) rotate(var(--ring-angle, 0deg));
     will-change: transform;
     opacity: 0;
-    scale: 0.88;
   }
 
   .dt-ring-svg {
@@ -234,14 +212,6 @@
     overflow: visible;
   }
 
-  .dt-overlay.visible .dt-orbit-ring {
-    animation: dt-ring-in 1.0s cubic-bezier(0.22, 1, 0.36, 1) 0s forwards;
-  }
-
-  @keyframes dt-ring-in {
-    from { opacity: 0; scale: 0.88; }
-    to   { opacity: 1; scale: 1; }
-  }
 
   /* Each arm fills the ring and is offset by the section's base angle.
      The ring rotates the whole element; the arm adds per-section offset. */
@@ -262,20 +232,6 @@
     opacity: 0;
   }
 
-  .dt-overlay.visible .dt-arm:nth-child(2) .dt-dot-group {
-    animation: dt-fade-in 0.5s ease 1.1s forwards;
-  }
-  .dt-overlay.visible .dt-arm:nth-child(3) .dt-dot-group {
-    animation: dt-fade-in 0.5s ease 1.3s forwards;
-  }
-  .dt-overlay.visible .dt-arm:nth-child(4) .dt-dot-group {
-    animation: dt-fade-in 0.5s ease 1.5s forwards;
-  }
-
-  @keyframes dt-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
 
   .dt-dot {
     position: relative;
@@ -341,20 +297,6 @@
     pointer-events: auto;
   }
 
-  .dt-overlay.visible .dt-card:nth-child(1) {
-    animation: dt-card-enter 0.7s ease 2.0s both;
-  }
-  .dt-overlay.visible .dt-card:nth-child(2) {
-    animation: dt-card-enter 0.7s ease 2.2s both;
-  }
-  .dt-overlay.visible .dt-card:nth-child(3) {
-    animation: dt-card-enter 0.7s ease 2.4s both;
-  }
-
-  @keyframes dt-card-enter {
-    from { opacity: 0; translate: 0 14px; }
-    to   { translate: 0 0; }
-  }
 
   .dt-card {
     flex: 1;

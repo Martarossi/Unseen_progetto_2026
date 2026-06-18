@@ -75,7 +75,7 @@
         .to(
           letters,
           { opacity: 0, filter: "blur(10px)", y: -20, duration: 0.8, stagger: 0.02, ease: "power2.in" },
-          "+=1.5"
+          "-=0.7"
         )
         .fromTo(
           headingRef,
@@ -94,7 +94,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=2200",
+          end: "+=1100",
           scrub: 2,
           onEnter: () => {
             model3dVisible = true;
@@ -120,7 +120,7 @@
             gsap.set(vociBackground, { opacity: 0 });
           },
           onLeaveBack: () => {
-            model3dVisible = false;
+            model3dVisible = true;
             letterStarted  = false;
             letterTl.pause(0);
             gsap.set(letters,       { opacity: 0 });
@@ -174,8 +174,8 @@
       const blurTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top+=5000 top",
-          end: "top+=7000 top",
+          start: "top+=2500 top",
+          end: "top+=3500 top",
           scrub: 1.5,
         }
       });
@@ -258,7 +258,7 @@
   }
 
   .voci-scroll-wrapper {
-    height: 9000px;
+    height: 4500px;
     position: relative;
   }
 
