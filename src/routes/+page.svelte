@@ -212,7 +212,16 @@
       />
     </div>
 
-    <div class="section-gap"><Citazione /></div>
+    <div class="section-gap section-gap--large">
+      <Citazione
+        bind:modelPosition
+        bind:modelScale
+        bind:modelRotation
+        bind:currentTwistX
+        bind:currentTwistZ
+        bind:model3dVisible
+      />
+    </div>
     <div class="section-gap">
       <VociDietroLaLente
         bind:modelPosition
@@ -269,6 +278,10 @@
 
   .section-gap {
     margin-top: 40vh;
+  }
+
+  .section-gap--large {
+    margin-top: 120vh;
   }
 
   .footer-spacer {

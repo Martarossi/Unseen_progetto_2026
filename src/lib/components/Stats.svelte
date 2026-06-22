@@ -45,11 +45,11 @@
   let counterEls = [];
 
   const modelProps = {
-    rotX: Math.PI * 4.5,
-    rotY: Math.PI * 7.5,
-    rotZ: Math.PI * 4.5,
-    twistX: 160,
-    twistZ: 220,
+    rotX: Math.PI * 3.5,
+    rotY: Math.PI * 5.8,
+    rotZ: Math.PI * 3.5,
+    twistX: 150,
+    twistZ: 200,
   };
 
   const circleState = {
@@ -90,7 +90,6 @@
           scrub: 2,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
-          onLeaveBack: () => { model3dVisible = false; },
         },
       });
 
