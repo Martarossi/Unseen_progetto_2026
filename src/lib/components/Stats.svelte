@@ -10,6 +10,7 @@
     currentTwistX = $bindable(360),
     currentTwistZ = $bindable(200),
     model3dVisible = $bindable(false),
+    showGlass = $bindable(true),
   } = $props();
 
   const stats = [
@@ -88,9 +89,11 @@
           trigger: scrollWrapper,
           start: "top top",
           end: "+=1200",
-          scrub: 2,
-          onEnter:     () => { model3dVisible = true; },
-          onEnterBack: () => { model3dVisible = true; },
+          scrub: 0.5,
+          onEnter:     () => { model3dVisible = true; showGlass = false; },
+          onLeave:     () => { showGlass = true; },
+          onEnterBack: () => { model3dVisible = true; showGlass = false; },
+          onLeaveBack: () => { showGlass = true; },
         },
       });
 

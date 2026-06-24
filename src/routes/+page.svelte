@@ -71,6 +71,7 @@
   const orbitProps2 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
   const orbitProps3 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
   let model3dVisible = $state(false);
+  let showGlass = $state(true);
 
   /**
    * @param {{ x: number, y: number, width: number, height: number } | null} _rect
@@ -148,6 +149,7 @@
   {expandCardIndex}
   {onCardExpanded}
   dotsVisible={datiDotsVisible}
+  {showGlass}
 />
 
 <DatiTecniciDots
@@ -198,6 +200,7 @@
         bind:currentTwistX
         bind:currentTwistZ
         bind:model3dVisible
+        bind:showGlass
       />
     </div>
 

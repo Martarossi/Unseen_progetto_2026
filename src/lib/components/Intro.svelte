@@ -75,7 +75,7 @@
           trigger: scrollWrapper,
           start: "top top",
           end: "+=14000",
-          scrub: 1,
+          scrub: 0.5,
           onEnter:      () => { update3D(); model3dVisible = true; },
           onEnterBack:  () => { update3D(); model3dVisible = true; },
           onLeaveBack:  () => { model3dVisible = false; },

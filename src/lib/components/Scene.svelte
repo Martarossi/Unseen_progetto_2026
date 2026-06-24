@@ -50,6 +50,7 @@
     expandCardIndex = -1,
     onCardExpanded = undefined,
     dotsVisible = false,
+    showGlass = true,
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
@@ -293,6 +294,26 @@
     );
   };
 
+  /**
+   * Calcola la matrice di trasformazione di un nodo rispetto a un root di riferimento.
+   * @param {THREE.Object3D} node
+   * @param {THREE.Object3D} root
+   * @returns {THREE.Matrix4}
+   */
+  function getRelativeMatrix(node, root) {
+    const relativeMatrix = new THREE.Matrix4();
+    let current = node;
+    const ancestors = [];
+    while (current && current !== root) {
+      ancestors.push(current);
+      current = current.parent;
+    }
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+      relativeMatrix.multiply(ancestors[i].matrix);
+    }
+    return relativeMatrix;
+  }
+
   // Funzione ultra-rapida per campionare punti in modo uniforme sulla superficie dei triangoli (Barycentric Sampling)
   /** @param {THREE.BufferGeometry} geometry @param {number} count */
   function samplePointsFromGeometry(geometry, count) {
@@ -400,9 +421,24 @@
 
   $effect(() => {
     if ($gltf && $gltf.scene) {
-      const box = new THREE.Box3().setFromObject($gltf.scene);
-      customUniforms.bboxMin.value.copy(box.min);
-      customUniforms.bboxMax.value.copy(box.max);
+      const localBox = new THREE.Box3();
+      $gltf.scene.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const geom = child.geometry;
+          if (geom) {
+            geom.computeBoundingBox();
+            if (geom.boundingBox) {
+              const relativeMatrix = getRelativeMatrix(child, $gltf.scene);
+              const meshBox = geom.boundingBox.clone().applyMatrix4(relativeMatrix);
+              localBox.union(meshBox);
+            }
+          }
+        }
+      });
+      if (!localBox.isEmpty()) {
+        customUniforms.bboxMin.value.copy(localBox.min);
+        customUniforms.bboxMax.value.copy(localBox.max);
+      }
     }
   });
 
@@ -431,9 +467,10 @@
           const sampledGeom = samplePointsFromGeometry(geom, 1);
           const pos = sampledGeom.attributes.position.array;
 
-          // Trasforma il punto locale applicando la matrice locale del componente rispetto al baricentro del modello
+          // Trasforma il punto nel sistema di coordinate del root ($gltf.scene)
           const localPoint = new THREE.Vector3(pos[0], pos[1], pos[2]);
-          localPoint.applyMatrix4(randomMesh.matrix);
+          const relativeMatrix = getRelativeMatrix(randomMesh, $gltf.scene);
+          localPoint.applyMatrix4(relativeMatrix);
 
           posArr[sampledCount * 3] = localPoint.x;
           posArr[sampledCount * 3 + 1] = localPoint.y;
@@ -459,12 +496,25 @@
         // Campiona 20000 particelle distribuite uniformemente per ogni mesh (super denso!)
         const denseGeometry = samplePointsFromGeometry(mesh.geometry, 20000);
         
+        // Trasforma la geometria nel sistema di coordinate del root ($gltf.scene)
+        const relativeMatrix = getRelativeMatrix(mesh, $gltf.scene);
+        denseGeometry.applyMatrix4(relativeMatrix);
+
         const points = new THREE.Points(denseGeometry, particleMaterial);
-        points.position.copy(mesh.position);
-        points.rotation.copy(mesh.rotation);
-        points.scale.copy(mesh.scale);
-        
-        mesh.parent?.add(points);
+        points.name = mesh.name;
+        // Aggiungi direttamente al root, dato che i punti sono già nel sistema di coordinate del root
+        $gltf.scene.add(points);
+      });
+    }
+  });
+
+  // Mostra o nasconde la scocca principale (fotocamera "Glass") in base alla prop showGlass
+  $effect(() => {
+    if ($gltf && $gltf.scene) {
+      $gltf.scene.traverse((child) => {
+        if (child instanceof THREE.Points && child.name === "Glass") {
+          child.visible = showGlass;
+        }
       });
     }
   });

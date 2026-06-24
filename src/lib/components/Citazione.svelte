@@ -59,7 +59,7 @@
           trigger: scrollWrapper,
           start: 'top bottom',
           end: 'bottom top',
-          scrub: 2,
+          scrub: true,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
         },

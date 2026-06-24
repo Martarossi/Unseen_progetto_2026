@@ -44,6 +44,7 @@
     onCardExpanded = undefined,
     dotsVisible = false,
     onPositionsUpdate = undefined,
+    showGlass = true,
   } = $props();
 </script>
 
@@ -77,6 +78,7 @@
         {onCardExpanded}
         {dotsVisible}
         {onPositionsUpdate}
+        {showGlass}
       />
     </Canvas>
   {/if}
