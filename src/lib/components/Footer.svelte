@@ -1,8 +1,9 @@
 <footer class="footer">
   <div class="footer-grain" aria-hidden="true"></div>
 
-  <span class="footer-title">LE OLIMPIADI DEGLI INVISIBILI</span>
   <img src="/copyright.png" alt="Copyright" class="footer-copy" />
+
+  <span class="footer-title">LE OLIMPIADI DEGLI INVISIBILI</span>
   <div class="footer-logo-wrap">
     <img
       src="/logopolimi.png"
@@ -19,10 +20,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 40px 48px 40px;
+    padding: 20px 24px; /* ✅ padding ridotto */
     box-sizing: border-box;
-    isolation: isolate;
-
     background: transparent;
   }
 
@@ -44,32 +43,42 @@
     font-family: "Akira Expanded", "Arial Black", sans-serif;
     font-weight: 900;
     font-size: 0.78rem;
+    transform: translate(-20%, -50%);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #f8f8f8;
     white-space: nowrap;
     flex: 1;
+    margin: 0; /* nessun margine extra */
+    padding: 0; /* nessun padding extra */
   }
 
-    .footer-copy {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      height: 36px;
-      width: auto;
-      opacity: 0.85;
-      z-index: 2;
-    }
+  .footer-copy {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(
+      -50%,
+      -50%
+    ); /* centrato sia orizzontalmente che verticalmente */
+    height: 36px;
+    width: auto;
+    opacity: 0.85;
+    z-index: 2;
+    margin: 0;
+    display: block;
+  }
 
   .footer-logo-wrap {
     flex: 1;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
   }
 
   .footer-logo {
     height: 36px;
+    transform: translate(-50%, -50%);
     width: auto;
     object-fit: contain;
     opacity: 0.9;
