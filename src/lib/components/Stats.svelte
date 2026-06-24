@@ -86,8 +86,8 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=2000",
-          scrub: 2,
+          end: "+=4000",
+          scrub: 0.5,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
         },
@@ -100,7 +100,7 @@
         twistX: circleState.twistX,
         twistZ: circleState.twistZ,
         duration: 1.0,
-        ease: "power2.out",
+        ease: "none",
         onUpdate: update3D,
       });
 
@@ -113,7 +113,7 @@
         twistX: wakeState.twistX,
         twistZ: wakeState.twistZ,
         duration: 1.5,
-        ease: "power1.inOut",
+        ease: "none",
         onUpdate: update3D,
       });
 
@@ -209,7 +209,7 @@
 
   @media (min-width: 800px) {
     .stats-scroll-wrapper {
-      height: 2000px;
+      height: 5000px;
     }
 
     .stats-section {

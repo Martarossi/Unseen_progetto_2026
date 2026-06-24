@@ -29,13 +29,14 @@
   /** @type {HTMLElement|null} */
   let vociBackground = null;
 
+  // Corrisponde allo stato finale di Citazione (settleState)
   const modelProps = {
     scale: 2.2,
-    rotX: Math.PI * 6.0,
-    rotY: Math.PI * 10.4,
-    rotZ: Math.PI * 6.0,
-    twistX: 72,
-    twistZ: 72,
+    rotX: Math.PI * 7.2,
+    rotY: Math.PI * 12.5,
+    rotZ: Math.PI * 7.2,
+    twistX: 140,
+    twistZ: 140,
   };
 
   /** @param {string} str */
@@ -64,8 +65,7 @@
       gsap.set(colLeftRef,  { filter: "blur(0px)" });
       gsap.set(colRightRef, { filter: "blur(16px)" });
 
-      // Time-based: lettere in → out → heading + container colonne compaiono
-      // Le colonne restano sfocate: letterTl anima solo opacity/y del container, non il blur dei figli
+      // Time-based: blocca lo scroll, anima le lettere, sblocca al termine
       const letterTl = gsap.timeline({ paused: true })
         .fromTo(
           letters,
@@ -87,7 +87,10 @@
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
           "-=0.5"
-        );
+        )
+        .call(() => {
+          document.body.style.overflow = "";
+        });
 
       // Scrub: modello si rimpicciolisce + sfondo si schiarisce
       const shrinkTl = gsap.timeline({
@@ -95,7 +98,7 @@
           trigger: scrollWrapper,
           start: "top top",
           end: "+=1100",
-          scrub: 2,
+          scrub: true,
           onEnter: () => {
             model3dVisible = true;
             modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
@@ -104,6 +107,7 @@
             model3dVisible = false;
             if (!letterStarted) {
               letterStarted = true;
+              document.body.style.overflow = "hidden";
               letterTl.play(0);
             }
           },
@@ -111,6 +115,7 @@
             model3dVisible = true;
             modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
             letterStarted  = false;
+            document.body.style.overflow = "";
             letterTl.pause(0);
             gsap.set(letters,       { opacity: 0, filter: "blur(10px)", y: 20 });
             gsap.set(headingRef,    { opacity: 0, y: 20 });
@@ -122,6 +127,7 @@
           onLeaveBack: () => {
             model3dVisible = true;
             letterStarted  = false;
+            document.body.style.overflow = "";
             letterTl.pause(0);
             gsap.set(letters,       { opacity: 0 });
             gsap.set(headingRef,    { opacity: 0 });
@@ -135,8 +141,8 @@
 
       shrinkTl.fromTo(
         modelProps,
-        { scale: 2.2, rotX: Math.PI * 6.0, rotY: Math.PI * 10.4, rotZ: Math.PI * 6.0, twistX: 72, twistZ: 72 },
-        { scale: 0.0, rotX: Math.PI * 8.0, rotY: Math.PI * 13.0, rotZ: Math.PI * 8.0, twistX: 200, twistZ: 220, duration: 4, ease: "power2.in", onUpdate: update3D },
+        { scale: 2.2, rotX: Math.PI * 7.2, rotY: Math.PI * 12.5, rotZ: Math.PI * 7.2, twistX: 140, twistZ: 140 },
+        { scale: 0.0, rotX: Math.PI * 8.0, rotY: Math.PI * 13.0, rotZ: Math.PI * 8.0, twistX: 200, twistZ: 220, duration: 4, ease: "none", onUpdate: update3D },
         0
       );
 
@@ -340,7 +346,7 @@
   .col-text p {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(18px, 1.8vw, 24px);
-    line-height: 1.65;
+    line-height: 1.3;
     color: #1a2a35;
     margin: 0;
     font-weight: 400;

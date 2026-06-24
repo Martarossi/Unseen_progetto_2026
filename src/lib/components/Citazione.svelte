@@ -15,10 +15,10 @@
   /** @type {HTMLElement | null} */
   let scrollWrapper = null;
 
-  // Corrisponde allo stato finale di DatiTecnici
+  // Corrisponde allo stato finale di DatiTecnici (displayState)
   const modelProps = {
     rotX: Math.PI * 6.0,
-    rotY: Math.PI * 10.4,
+    rotY: Math.PI * 10.0,
     rotZ: Math.PI * 6.0,
     twistX: 72,
     twistZ: 72,
@@ -59,7 +59,7 @@
           trigger: scrollWrapper,
           start: 'top bottom',
           end: '+=3500',
-          scrub: 2,
+          scrub: true,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
         },
@@ -68,7 +68,7 @@
       tl.to(modelProps, {
         ...midState,
         duration: 1.5,
-        ease: 'power2.inOut',
+        ease: 'none',
         onUpdate: update3D,
       });
 
@@ -77,7 +77,7 @@
       tl.to(modelProps, {
         ...settleState,
         duration: 1.5,
-        ease: 'power2.out',
+        ease: 'none',
         onUpdate: update3D,
       });
 

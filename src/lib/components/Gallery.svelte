@@ -11,11 +11,12 @@
   const interviews = [
     {
       id: 1,
-      firstName: 'LUCIO',
-      lastName: 'PIAZZINI',
-      role: 'Videomaker\nPilota di droni',
+      firstName: 'JORDAN',
+      lastName: 'COWAN',
+      role: 'Videomaker\npattinatore professionista',
       image: '/gallery_milanocortina.png',
       thumb: '/gallery_helvetica.png',
+      video: '/video_interviste/Intro-Cowan.mp4',
     },
     {
       id: 2,
@@ -113,12 +114,6 @@
           start: 'top top',
           end: '+=4800',
           scrub: true,
-          snap: {
-            snapTo: 1 / (interviews.length - 1),
-            duration: { min: 0.5, max: 0.9 },
-            ease: 'power3.out',
-            directional: true,
-          },
         },
       });
 
@@ -140,7 +135,11 @@
         <div class="interview-card">
 
           <div class="card-media">
-            <img src={iv.image} alt="{iv.firstName} {iv.lastName}" />
+            {#if iv.video}
+              <video src={iv.video} autoplay muted loop playsinline></video>
+            {:else}
+              <img src={iv.image} alt="{iv.firstName} {iv.lastName}" />
+            {/if}
           </div>
 
           <div class="card-info">
@@ -221,7 +220,8 @@
     border-radius: 14px;
   }
 
-  .card-media img {
+  .card-media img,
+  .card-media video {
     width: 100%;
     height: 100%;
     object-fit: cover;

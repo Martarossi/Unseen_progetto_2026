@@ -18,7 +18,9 @@
   /** @type {HTMLElement | null} */
   let sectionEl = null;
 
+  // Stato iniziale: corrisponde esattamente a dove Stats termina (wakeState)
   const modelProps = {
+    scale: 2.0,
     rotX: Math.PI * 5.5,
     rotY: Math.PI * 9.0,
     rotZ: Math.PI * 5.5,
@@ -27,6 +29,7 @@
   };
 
   const displayState = {
+    scale: 2.2,
     rotX: Math.PI * 6.0,
     rotY: Math.PI * 10.0,
     rotZ: Math.PI * 6.0,
@@ -40,7 +43,7 @@
     mm.add('(min-width: 800px)', () => {
       const update3D = () => {
         modelPosition = [0, 0, 0];
-        modelScale    = [2.2, 2.2, 2.2];
+        modelScale    = [modelProps.scale, modelProps.scale, modelProps.scale];
         modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
         currentTwistX = modelProps.twistX;
         currentTwistZ = modelProps.twistZ;
@@ -54,31 +57,31 @@
           trigger: scrollWrapper,
           start: 'top top',
           end: '+=4500',
-          scrub: 2,
+          scrub: 0.5,          // 1:1 con scroll, zero lag autonomo
           onEnter:     () => { model3dVisible = true;  dotsVisible = true;  },
           onLeave:     () => { dotsVisible = false; },
           onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  },
-          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; ringProps.angle = 0; dotsRingAngle = 0; },
+          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; },
         },
       });
 
-      // Scroll-driven reveals: ring → dots → cards (concurrent con Phase 1)
-      tl.fromTo('.dt-orbit-ring', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0);
-      tl.fromTo('.dt-dot-group',  { opacity: 0 }, { opacity: 1, duration: 0.25, stagger: 0.07, ease: 'power2.out' }, 0.3);
-      tl.fromTo('.dt-cards-row',  { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.7);
+      // Reveals: ring → dots → cards
+      tl.fromTo('.dt-orbit-ring', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'none' }, 0);
+      tl.fromTo('.dt-dot-group',  { opacity: 0 }, { opacity: 1, duration: 0.25, stagger: 0.07, ease: 'none' }, 0.3);
+      tl.fromTo('.dt-cards-row',  { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'none' }, 0.7);
 
-      // Phase 1 (~750px): model calms into display state
-      tl.to(modelProps, { ...displayState, duration: 1.0, ease: 'power2.out', onUpdate: update3D }, 0);
-      // Phase 2 (~750px): GUIDE active — hold
-      tl.to({}, { duration: 1.0 }, 1.0);
-      // Phase 3 (~750px): ring rotates to ENHANCING
-      tl.to(ringProps, { angle: 120, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing }, 2.0);
-      // Phase 4 (~750px): ENHANCING active — hold
-      tl.to({}, { duration: 1.0 }, 3.0);
-      // Phase 5 (~750px): ring rotates to HIGHLIGHT
-      tl.to(ringProps, { angle: 240, duration: 1.0, ease: 'sine.inOut', onUpdate: updateRing }, 4.0);
-      // Phase 6 (~750px): HIGHLIGHT active + subtle model drift
-      tl.to(modelProps, { rotY: displayState.rotY + Math.PI * 0.4, duration: 1.0, ease: 'sine.inOut', onUpdate: update3D }, 5.0);
+      // Phase 1: modello si stabilizza (0→1.0) — lineare, segue lo scroll
+      tl.to(modelProps, { ...displayState, duration: 1.0, ease: 'none', onUpdate: update3D }, 0);
+      // Buffer GUIDE: l'utente può leggere senza che nulla si muova (1.0→1.5)
+      tl.to({}, { duration: 0.5 }, 1.0);
+      // Phase 2: anello ruota verso ENHANCING (1.5→2.5)
+      tl.to(ringProps, { angle: 120, duration: 1.0, ease: 'none', onUpdate: updateRing }, 1.5);
+      // Buffer ENHANCING (2.5→3.0)
+      tl.to({}, { duration: 0.5 }, 2.5);
+      // Phase 3: anello ruota verso HIGHLIGHT (3.0→4.0)
+      tl.to(ringProps, { angle: 240, duration: 1.0, ease: 'none', onUpdate: updateRing }, 3.0);
+      // Buffer HIGHLIGHT (4.0→4.5)
+      tl.to({}, { duration: 0.5 }, 4.0);
 
       return () => { tl.kill(); };
     });
@@ -111,7 +114,7 @@
 
   @media (min-width: 800px) {
     .dt-scroll-wrapper {
-      height: 5250px;
+      height: 5500px;
     }
 
     .dt-section {
