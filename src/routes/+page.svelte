@@ -17,6 +17,7 @@
   import DatiTecniciDots from "$lib/components/DatiTecniciDots.svelte";
   import DatiTecniciOverlay from "$lib/components/DatiTecniciOverlay.svelte";
 
+
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
     if ('scrollRestoration' in history) {
@@ -116,6 +117,7 @@
           scrub: true,
         }
       });
+
     }
   });
 </script>
