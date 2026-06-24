@@ -153,26 +153,85 @@
     });
 
     mm.add("(max-width: 799px)", () => {
+      const update3D = () => {
+        modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+      };
+
+      // Set starting scale slightly smaller for mobile
+      modelProps.scale = 1.35;
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionEl,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.5,
+          onEnter:     () => { model3dVisible = true; showGlass = false; },
+          onLeave:     () => { showGlass = true; },
+          onEnterBack: () => { model3dVisible = true; showGlass = false; },
+          onLeaveBack: () => { showGlass = true; },
+        },
+      });
+
+      tl.to(modelProps, {
+        rotX: circleState.rotX,
+        rotY: circleState.rotY,
+        rotZ: circleState.rotZ,
+        twistX: circleState.twistX,
+        twistZ: circleState.twistZ,
+        duration: 1.0,
+        ease: "none",
+        onUpdate: update3D,
+      });
+
+      tl.to({}, { duration: 1.5 });
+
+      tl.to(modelProps, {
+        rotX: wakeState.rotX,
+        rotY: wakeState.rotY,
+        rotZ: wakeState.rotZ,
+        twistX: wakeState.twistX,
+        twistZ: wakeState.twistZ,
+        duration: 1.5,
+        ease: "none",
+        onUpdate: update3D,
+      });
+
+      /** @type {gsap.core.Tween[]} */
+      const counterTweens = [];
+
       stats.forEach((stat, i) => {
         const el = counterEls[i];
         if (!el) return;
 
         const proxy = { val: 0 };
 
-        gsap.to(proxy, {
+        const tween = gsap.to(proxy, {
           val: stat.target,
           duration: stat.duration,
           ease: 'power1.out',
           scrollTrigger: {
             trigger: sectionEl,
-            start: 'top 25%',
+            start: 'top 75%',
             toggleActions: 'play none none reset',
           },
           onUpdate() {
             if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
           },
         });
+        counterTweens.push(tween);
       });
+
+      return () => {
+        tl.kill();
+        counterTweens.forEach(t => t.kill());
+      };
     });
   });
 </script>

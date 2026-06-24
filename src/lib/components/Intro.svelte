@@ -410,6 +410,338 @@
       };
     });
 
+    mm.add("(max-width: 799px)", () => {
+      const update3D = () => {
+        modelPosition[0] = modelProps.posX;
+        modelPosition[1] = modelProps.posY;
+        modelPosition[2] = modelProps.posZ;
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+        orbitProps.centerX  = modelProps.posX;
+        orbitProps.centerY  = modelProps.posY;
+        orbitProps2.centerX = modelProps.posX;
+        orbitProps2.centerY = modelProps.posY;
+        orbitProps3.centerX = modelProps.posX;
+        orbitProps3.centerY = modelProps.posY;
+      };
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: "top top",
+          end: "+=6000",
+          scrub: 0.5,
+          onEnter:      () => { update3D(); model3dVisible = true; },
+          onEnterBack:  () => { update3D(); model3dVisible = true; },
+          onLeaveBack:  () => { model3dVisible = false; },
+        },
+      });
+
+      tl.to(
+        textImage,
+        {
+          opacity: 0,
+          y: "-=40",
+          filter: "blur(10px)",
+          duration: 1.5,
+          ease: "power2.inOut",
+        },
+        0,
+      );
+
+      tl.fromTo(
+        modelProps,
+        { posX: 0, posY: -0.5, scale: 0, rotY: 0 },
+        {
+          posX: 0,
+          posY: 0.2,
+          scale: 1.2,
+          rotY: Math.PI * 2,
+          duration: 1.5,
+          ease: "back.out(1.4)",
+          onUpdate: update3D,
+        },
+        0,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          posX: 0,
+          posY: -0.2,
+          scale: 1.1,
+          rotX: Math.PI * 0.3,
+          rotY: Math.PI * 0.5,
+          rotZ: Math.PI * 0.2,
+          duration: 1.6,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        0.8,
+      );
+
+      tl.to(
+        p1,
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          y: 0,
+          pointerEvents: "auto",
+          duration: 1.2,
+          ease: "power2.out",
+        },
+        1.8,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 0.55,
+          rotY: Math.PI * 1.0,
+          rotZ: Math.PI * 0.45,
+          duration: 1.2,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        1.8,
+      );
+
+      tl.to({}, { duration: 0.4 });
+
+      tl.to(
+        p1,
+        {
+          opacity: 0.1,
+          filter: "blur(10px)",
+          duration: 2.2,
+          ease: "power1.inOut",
+        },
+        2.6,
+      );
+
+      tl.to(
+        p2,
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          y: 0,
+          pointerEvents: "auto",
+          duration: 1.2,
+          ease: "power2.inOut",
+        },
+        2.6,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 0.9,
+          rotY: Math.PI * 1.5,
+          rotZ: Math.PI * 0.85,
+          duration: 1.2,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        2.6,
+      );
+
+      tl.to({}, { duration: 0.3 });
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 20,
+          twistZ: 140,
+          duration: 2.197,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        0
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: -150,
+          twistZ: 180,
+          duration: 2.607,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        2.197
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 20,
+          twistZ: 140,
+          duration: 2.234,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        4.804
+      );
+
+      tl.to(
+        modelProps,
+        {
+          twistX: 180,
+          twistZ: 120,
+          duration: 1.862,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        7.038
+      );
+
+      tl.to(
+        p1,
+        {
+          opacity: 0,
+          y: -40,
+          filter: "blur(8px)",
+          duration: 0.8,
+          ease: "power2.inOut",
+        },
+        4.8,
+      );
+
+      tl.to(
+        p2,
+        {
+          opacity: 0,
+          y: -40,
+          filter: "blur(8px)",
+          duration: 0.8,
+          ease: "power2.inOut",
+        },
+        4.9,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          posX: 0,
+          posY: 0,
+          scale: 1.3,
+          rotX: Math.PI * 1.5,
+          rotY: Math.PI * 2.2,
+          rotZ: Math.PI * 1.4,
+          duration: 0.8,
+          ease: "power2.inOut",
+          onUpdate: update3D,
+        },
+        4.8,
+      );
+
+      tl.fromTo(
+        bigText,
+        { yPercent: 120, opacity: 1 },
+        {
+          yPercent: -200,
+          opacity: 1,
+          duration: 2.7,
+          ease: "none",
+          immediateRender: false,
+        },
+        5.0,
+      );
+
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 2.0,
+          rotY: Math.PI * 3.0,
+          rotZ: Math.PI * 1.8,
+          scale: 1.2,
+          twistX: 60,
+          twistZ: 160,
+          duration: 2.5,
+          ease: "none",
+          onUpdate: update3D,
+        },
+        5.0,
+      );
+
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.0);
+      tl.fromTo(
+        orbitProps,
+        { angle: Math.PI, y: -2.2 },
+        { angle: Math.PI * 4, y: 2.2, duration: 4.0, ease: "none" },
+        7.0
+      );
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 10.4);
+
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.8);
+      tl.fromTo(
+        orbitProps2,
+        { angle: Math.PI, y: -2.2 },
+        { angle: Math.PI * 4, y: 2.2, duration: 4.0, ease: "none" },
+        7.8
+      );
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.2);
+
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.6);
+      tl.fromTo(
+        orbitProps3,
+        { angle: Math.PI, y: -2.2 },
+        { angle: Math.PI * 4, y: 2.2, duration: 4.0, ease: "none" },
+        8.6
+      );
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.0);
+
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 2.3,
+          rotY: Math.PI * 4.2,
+          rotZ: Math.PI * 2.3,
+          twistX: 50,
+          twistZ: 130,
+          scale: 1.3,
+          duration: 5.6,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        7.0
+      );
+
+      tl.to(
+        modelProps,
+        {
+          rotX: Math.PI * 3.5,
+          rotY: Math.PI * 5.8,
+          rotZ: Math.PI * 3.5,
+          twistX: 150,
+          twistZ: 200,
+          duration: 1.0,
+          ease: "power1.inOut",
+          onUpdate: update3D,
+        },
+        12.6,
+      );
+
+      const cardFrontTimes = [9.0, 9.8, 10.6];
+      scrollToCard = (cardIndex) => {
+        const st = tl.scrollTrigger;
+        if (!st) return;
+        const t = cardFrontTimes[cardIndex] ?? cardFrontTimes[0];
+        const progress = t / tl.totalDuration();
+        const targetScroll = st.start + progress * (st.end - st.start);
+        window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      };
+
+      return () => {
+        tl.kill();
+        scrollToCard = undefined;
+      };
+    });
+
   });
 </script>
 
@@ -474,11 +806,45 @@
 
   @media (max-width: 799px) {
     .intro-scroll-wrapper {
-      height: auto;
+      height: 6000px;
     }
 
     .intro-container {
-      position: relative;
+      width: 100vw;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      background-color: transparent;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .overlay {
+      padding: 32px 20px;
+    }
+
+    .texts-container {
+      width: 85%;
+      left: 7.5%;
+      gap: 2rem;
+    }
+
+    .para-title {
+      font-size: 1.8rem;
+    }
+
+    .paragraph-wrapper p {
+      font-size: 1.05rem;
+      max-width: 100%;
+    }
+
+    .big-text {
+      font-size: 8vw;
+      padding: 0 24px;
+    }
+
+    .initial-text-wrapper {
+      width: 85%;
     }
   }
 
