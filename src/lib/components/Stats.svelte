@@ -45,6 +45,7 @@
   let counterEls = [];
 
   const modelProps = {
+    scale: 2.0,
     rotX: Math.PI * 3.5,
     rotY: Math.PI * 5.8,
     rotZ: Math.PI * 3.5,
@@ -74,7 +75,7 @@
     mm.add("(min-width: 800px)", () => {
       const update3D = () => {
         modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
-        modelScale[0] = modelScale[1] = modelScale[2] = 2.0;
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
         modelRotation[0] = modelProps.rotX;
         modelRotation[1] = modelProps.rotY;
         modelRotation[2] = modelProps.rotZ;
@@ -86,8 +87,8 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=4000",
-          scrub: 0.5,
+          end: "+=1200",
+          scrub: 2,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
         },
@@ -209,7 +210,7 @@
 
   @media (min-width: 800px) {
     .stats-scroll-wrapper {
-      height: 5000px;
+      height: 1200px;
     }
 
     .stats-section {

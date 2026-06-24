@@ -139,10 +139,9 @@
         },
       });
 
-      shrinkTl.fromTo(
+      shrinkTl.to(
         modelProps,
-        { scale: 2.2, rotX: Math.PI * 7.2, rotY: Math.PI * 12.5, rotZ: Math.PI * 7.2, twistX: 140, twistZ: 140 },
-        { scale: 0.0, rotX: Math.PI * 8.0, rotY: Math.PI * 13.0, rotZ: Math.PI * 8.0, twistX: 200, twistZ: 220, duration: 4, ease: "none", onUpdate: update3D },
+        { scale: 0.0, rotX: Math.PI * 8.0, rotY: Math.PI * 13.0, rotZ: Math.PI * 8.0, twistX: 200, twistZ: 220, duration: 4, ease: "power2.in", onUpdate: update3D },
         0
       );
 

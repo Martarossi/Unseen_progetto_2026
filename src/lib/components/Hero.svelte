@@ -16,6 +16,7 @@
   let hintX = $state(0);
   let hintY = $state(0);
   let showLogo = $state(false);
+  let isTouchDevice = $state(false);
   let isClicked = $state(false);
   let canvasBgOpacity = $state(1);
   let scrollY = $state(0);
@@ -201,6 +202,31 @@
     isIdle = false;
   }
 
+  /** @param {TouchEvent} e */
+  function handleTouchStart(e) {
+    isTouchDevice = true;
+    if (!heroRef || isClicked) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const rect = heroRef.getBoundingClientRect();
+    mouseX = touch.clientX - rect.left;
+    mouseY = touch.clientY - rect.top;
+    lastMoveTime = Date.now();
+    isIdle = false;
+  }
+
+  /** @param {TouchEvent} e */
+  function handleTouchMove(e) {
+    if (!heroRef || isClicked) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const rect = heroRef.getBoundingClientRect();
+    mouseX = touch.clientX - rect.left;
+    mouseY = touch.clientY - rect.top;
+    lastMoveTime = Date.now();
+    isIdle = false;
+  }
+
   async function handleClick() {
     if (!showLogo || isClicked) return;
     isClicked = true;
@@ -337,6 +363,8 @@
   class="hero"
   bind:this={heroRef}
   onmousemove={handleMouseMove}
+  ontouchstart={handleTouchStart}
+  ontouchmove={handleTouchMove}
   onclick={handleClick}
   role="presentation"
   style="cursor: {showLogo && !isClicked ? 'pointer' : 'default'}"
@@ -382,12 +410,11 @@
 </div>
 
 {#if showLogo && !isClicked}
-  <div
-    class="click-hint"
-    style="left: {hintX}px; top: {hintY}px;"
-  >
-    click to reveal
-  </div>
+  {#if isTouchDevice}
+    <div class="click-hint click-hint--mobile">tap to reveal</div>
+  {:else}
+    <div class="click-hint" style="left: {hintX}px; top: {hintY}px;">click to reveal</div>
+  {/if}
 {/if}
 
 <style>
@@ -513,5 +540,43 @@
     pointer-events: none;
     -webkit-clip-path: circle(var(--expand-radius) at calc(100% - 137px) 53px);
     clip-path: circle(var(--expand-radius) at calc(100% - 137px) 53px);
+  }
+
+  /* ── MOBILE ──────────────────────────────────────── */
+  @media (max-width: 799px) {
+    .description {
+      font-size: clamp(28px, 9vw, 38px);
+      line-height: 1.25;
+      padding: 0 6vw;
+      text-align: center;
+    }
+
+    .subtitle {
+      top: calc(50% + 80px);
+      font-size: 15px;
+      white-space: normal;
+      text-align: center;
+      width: 80%;
+    }
+
+    .scroll-prompt {
+      font-size: 12px;
+      bottom: 40px;
+    }
+
+    .click-hint--mobile {
+      position: fixed;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: auto;
+      font-family: "Helvetica", "Arial", sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: #4E7785;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
   }
 </style>

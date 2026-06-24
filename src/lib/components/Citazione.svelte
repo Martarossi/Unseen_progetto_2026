@@ -58,8 +58,8 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: 'top bottom',
-          end: '+=3500',
-          scrub: true,
+          end: 'bottom top',
+          scrub: 2,
           onEnter:     () => { model3dVisible = true; },
           onEnterBack: () => { model3dVisible = true; },
         },
@@ -87,34 +87,22 @@
 </script>
 
 <div class="citazione-wrapper" bind:this={scrollWrapper}>
-  <div class="citazione-sticky">
-    <img src="/citazione.png" alt="citazione" class="citazione-img" />
-    <p class="citazione-autore">
-      <strong>Yiannis Exarchos,</strong> <em>CEO di Olympic<br />Broadcasting Services (OBS)</em>
-    </p>
-  </div>
+  <img src="/citazione.png" alt="citazione" class="citazione-img" />
+  <p class="citazione-autore">
+    <strong>Yiannis Exarchos,</strong> <em>CEO di Olympic<br />Broadcasting Services (OBS)</em>
+  </p>
 </div>
 
 <style>
   .citazione-wrapper {
-    height: calc(100vh + 250px);
-  }
-
-  @media (min-width: 800px) {
-    .citazione-wrapper {
-      height: 4000px;
-    }
-  }
-
-  .citazione-sticky {
-    position: sticky;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 12vh 0;
+    box-sizing: border-box;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
