@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import gsap from 'gsap';
-  import ScrollTrigger from 'gsap/dist/ScrollTrigger';
 
   /** @type {HTMLElement|null} */
   let scrollWrapper = null;
@@ -13,10 +12,12 @@
       id: 1,
       firstName: 'JORDAN',
       lastName: 'COWAN',
-      role: 'Videomaker\npattinatore professionista',
+      role: 'Videomaker\nEx pattinatore professionista',
       image: '/gallery_milanocortina.png',
       thumb: '/gallery_helvetica.png',
       video: '/video_interviste/Intro-Cowan.mp4',
+      youtubeUrl: 'https://youtu.be/KLLawK2Y0jo',
+      desc: 'Cosa succede quando un ex pattinatore artistico del Team USA decide di portare la macchina da presa sul ghiaccio? In questa intervista esclusiva, Jordan Cowan, fondatore di On Ice Perspectives, ci racconta come ha rivoluzionato il modo in cui il mondo guarda il pattinaggio artistico, arrivando a filmare direttamente sulla pista delle Olimpiadi.',
     },
     {
       id: 2,
@@ -101,6 +102,14 @@
     });
   }
 
+  /** @type {Record<number, boolean>} */
+  let videoEnded = $state({});
+
+  /** @param {number} id */
+  function onVideoEnded(id) {
+    videoEnded = { ...videoEnded, [id]: true };
+  }
+
   onMount(() => {
     updateCards(0);
 
@@ -136,7 +145,26 @@
 
           <div class="card-media">
             {#if iv.video}
-              <video src={iv.video} autoplay muted loop playsinline></video>
+              <div class="video-wrapper">
+                <video
+                  src={iv.video}
+                  autoplay
+                  muted
+                  playsinline
+                  onended={() => onVideoEnded(iv.id)}
+                ></video>
+                {#if videoEnded[iv.id] && iv.youtubeUrl}
+                  <a
+                    href={iv.youtubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="video-end-overlay"
+                  >
+                    <span>per la versione integrale</span>
+                    <span>clicca qui</span>
+                  </a>
+                {/if}
+              </div>
             {:else}
               <img src={iv.image} alt="{iv.firstName} {iv.lastName}" />
             {/if}
@@ -154,6 +182,9 @@
               </p>
             </div>
 
+            {#if iv.desc}
+              <p class="card-desc">{iv.desc}</p>
+            {/if}
           </div>
 
         </div>
@@ -228,6 +259,56 @@
     display: block;
   }
 
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .video-end-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(53, 91, 99, 0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #ffffff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: clamp(13px, 1.2vw, 17px);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-align: center;
+    padding: 5% 20px 0;
+    animation: veo-fade-in 0.9s ease forwards;
+  }
+
+  .video-end-overlay span {
+    display: block;
+    transition: filter 0.4s ease, opacity 0.4s ease;
+  }
+
+  .video-end-overlay:hover span {
+    filter: blur(6px);
+    opacity: 0.5;
+  }
+
+  @keyframes veo-fade-in {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to   { opacity: 1; backdrop-filter: blur(14px); }
+  }
+
   /* ── Pannello info ── */
   .card-info {
     flex: 1;
@@ -244,12 +325,12 @@
   }
 
   .name-line {
-    font-family: 'Impact', 'Arial Black', 'Helvetica Neue', sans-serif;
+    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
     font-size: clamp(26px, 2.8vw, 46px);
     font-weight: 900;
     letter-spacing: -0.02em;
     text-transform: uppercase;
-    color: #1a2a35;
+    color: #273b42;
     line-height: 1.0;
     margin: 0;
   }
@@ -263,26 +344,19 @@
 
   .card-role {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: clamp(12px, 1.1vw, 15px);
+    font-size: clamp(14px, 1.4vw, 19px);
     line-height: 1.7;
     color: rgba(26, 42, 53, 0.6);
     margin: 0;
   }
 
-  /* ── Thumbnail ── */
-  .card-thumb {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 10px;
-    overflow: hidden;
-    opacity: 0.6;
-  }
-
-  .card-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  .card-desc {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: clamp(12px, 1.1vw, 15px);
+    line-height: 1.65;
+    color: #273b42;
+    margin: 0;
+    align-self: flex-end;
   }
 
   /* ── Mobile ── */
