@@ -83,6 +83,47 @@
 
       return () => { tl.kill(); };
     });
+
+    mm.add('(max-width: 799px)', () => {
+      const update3D = () => {
+        modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
+        modelScale[0] = modelScale[1] = modelScale[2] = 1.35;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+      };
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+          onEnter:     () => { model3dVisible = true; },
+          onEnterBack: () => { model3dVisible = true; },
+        },
+      });
+
+      tl.to(modelProps, {
+        ...midState,
+        duration: 1.5,
+        ease: 'none',
+        onUpdate: update3D,
+      });
+
+      tl.to({}, { duration: 0.5 });
+
+      tl.to(modelProps, {
+        ...settleState,
+        duration: 1.5,
+        ease: 'none',
+        onUpdate: update3D,
+      });
+
+      return () => { tl.kill(); };
+    });
   });
 </script>
 

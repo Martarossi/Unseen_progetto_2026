@@ -87,17 +87,33 @@
     });
 
     mm.add('(max-width: 799px)', () => {
+      const update3D = () => {
+        modelPosition = [0, 0, 0];
+        modelScale    = [modelProps.scale, modelProps.scale, modelProps.scale];
+        modelRotation = [modelProps.rotX, modelProps.rotY, modelProps.rotZ];
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+      };
+
+      // Set starting scale slightly smaller for mobile
+      modelProps.scale = 1.35;
+      displayState.scale = 1.35;
+
       const mobileTl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionEl,
-          start: 'top 75%',
-          end: 'bottom 25%',
-          onEnter:     () => { dotsVisible = true;  },
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.5,
+          onEnter:     () => { model3dVisible = true;  dotsVisible = true;  },
           onLeave:     () => { dotsVisible = false; },
-          onEnterBack: () => { dotsVisible = true;  },
-          onLeaveBack: () => { dotsVisible = false; },
+          onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  },
+          onLeaveBack: () => { model3dVisible = false; dotsVisible = false; },
         }
       });
+
+      mobileTl.to(modelProps, { ...displayState, duration: 1.0, ease: 'none', onUpdate: update3D });
+
       return () => { mobileTl.kill(); };
     });
   });

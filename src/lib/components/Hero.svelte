@@ -312,6 +312,11 @@
     // Inizializza il centro
     mouseX = window.innerWidth / 2;
     mouseY = window.innerHeight / 2;
+    hintX = mouseX;
+    hintY = mouseY;
+
+    // Rileva se è un dispositivo touch all'avvio
+    isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
     // BLOCCO INIZIALE DELLO SCROLL: Disabilita lo scorrimento sul body all'avvio per mantenere l'utente focalizzato sull'animazione iniziale.
     document.body.style.overflow = "hidden";
@@ -411,7 +416,10 @@
 
 {#if showLogo && !isClicked}
   {#if isTouchDevice}
-    <div class="click-hint click-hint--mobile">tap to reveal</div>
+    <div class="click-hint click-hint--mobile">
+      <span class="hint-primary">drag to discover</span>
+      <span class="hint-secondary">tap to reveal</span>
+    </div>
   {:else}
     <div class="click-hint" style="left: {hintX}px; top: {hintY}px;">click to reveal</div>
   {/if}
@@ -510,10 +518,11 @@
     left: 50%;
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
-    font-size: 14px;
+    font-size: 1.1rem;
     color: #4E7785;
     z-index: 20;
     opacity: 0;
+    letter-spacing: 0.05em;
   }
 
   .click-hint {
@@ -522,11 +531,12 @@
     z-index: 9999;
     transform: translate(-50%, 28px);
     font-family: "Helvetica", "Arial", sans-serif;
-    font-size: 0.65rem;
+    font-size: 1.1rem;
     font-weight: 400;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     color: #4E7785;
     white-space: nowrap;
+    animation: pulse-intermittent 0.7s ease-in-out infinite alternate;
   }
 
   .transition-overlay {
@@ -560,7 +570,6 @@
     }
 
     .scroll-prompt {
-      font-size: 12px;
       bottom: 40px;
     }
 
@@ -571,12 +580,30 @@
       transform: translateX(-50%);
       top: auto;
       font-family: "Helvetica", "Arial", sans-serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
       color: #4E7785;
       pointer-events: none;
       z-index: 9999;
       white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .click-hint--mobile .hint-secondary {
+      opacity: 0.8;
+      font-weight: 300;
+    }
+  }
+
+  @keyframes pulse-intermittent {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.2;
     }
   }
 </style>

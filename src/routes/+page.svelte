@@ -108,17 +108,37 @@
 
   onMount(() => {
     if (browser) {
-      // Parallax: background scrolls up at ~50% of page speed (100vh travel over full scroll range)
-      gsap.to(".parallax-bg", {
-        yPercent: -70,
-        ease: "none",
-        scrollTrigger: {
-          start: 0,
-          end: "max",
-          scrub: true,
-        }
+      const mm = gsap.matchMedia();
+
+      // Desktop: more pronounced parallax
+      mm.add("(min-width: 800px)", () => {
+        gsap.to(".parallax-bg", {
+          yPercent: -70,
+          ease: "none",
+          scrollTrigger: {
+            start: 0,
+            end: "max",
+            scrub: true,
+          }
+        });
       });
 
+      // Mobile: subtle parallax to avoid fast/jerky movement
+      mm.add("(max-width: 799px)", () => {
+        gsap.to(".parallax-bg", {
+          yPercent: -15,
+          ease: "none",
+          scrollTrigger: {
+            start: 0,
+            end: "max",
+            scrub: true,
+          }
+        });
+      });
+
+      return () => {
+        mm.revert();
+      };
     }
   });
 </script>
@@ -287,6 +307,16 @@
 
   .section-gap--large {
     margin-top: 120vh;
+  }
+
+  @media (max-width: 799px) {
+    .section-gap {
+      margin-top: 20vh;
+    }
+
+    .section-gap--large {
+      margin-top: 60vh;
+    }
   }
 
   .footer-spacer {

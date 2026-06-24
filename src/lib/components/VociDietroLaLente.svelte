@@ -203,6 +203,146 @@
         blurTl.kill();
       };
     });
+
+    mm.add("(max-width: 799px)", () => {
+      let letterStarted = false;
+
+      const update3D = () => {
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
+        modelRotation[0] = modelProps.rotX;
+        modelRotation[1] = modelProps.rotY;
+        modelRotation[2] = modelProps.rotZ;
+        currentTwistX = modelProps.twistX;
+        currentTwistZ = modelProps.twistZ;
+      };
+
+      // Set starting scale for mobile
+      modelProps.scale = 1.35;
+
+      const letters = introTextRef?.querySelectorAll(".voci-letter") ?? [];
+
+      gsap.set(colLeftRef,  { filter: "blur(0px)" });
+      gsap.set(colRightRef, { filter: "blur(8px)" });
+
+      const letterTl = gsap.timeline({ paused: true })
+        .fromTo(
+          letters,
+          { opacity: 0, filter: "blur(6px)", y: 15 },
+          { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.0, stagger: 0.02, ease: "power2.out" }
+        )
+        .to(
+          letters,
+          { opacity: 0, filter: "blur(6px)", y: -15, duration: 0.7, stagger: 0.015, ease: "power2.in" },
+          "-=0.6"
+        )
+        .fromTo(
+          headingRef,
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+        )
+        .fromTo(
+          columnsRef,
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+          "-=0.4"
+        )
+        .call(() => {
+          document.body.style.overflow = "";
+        });
+
+      const shrinkTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: "top top",
+          end: "+=800",
+          scrub: true,
+          onEnter: () => {
+            model3dVisible = true;
+            modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
+          },
+          onLeave: () => {
+            model3dVisible = false;
+            if (!letterStarted) {
+              letterStarted = true;
+              document.body.style.overflow = "hidden";
+              letterTl.play(0);
+            }
+          },
+          onEnterBack: () => {
+            model3dVisible = true;
+            modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
+            letterStarted  = false;
+            document.body.style.overflow = "";
+            letterTl.pause(0);
+            gsap.set(letters,       { opacity: 0 });
+            gsap.set(headingRef,    { opacity: 0 });
+            gsap.set(columnsRef,    { opacity: 0 });
+            gsap.set(colLeftRef,  { filter: "blur(0px)" });
+            gsap.set(colRightRef, { filter: "blur(8px)" });
+            gsap.set(vociBackground, { opacity: 0 });
+          },
+          onLeaveBack: () => {
+            model3dVisible = true;
+            letterStarted  = false;
+            document.body.style.overflow = "";
+            letterTl.pause(0);
+            gsap.set(letters,       { opacity: 0 });
+            gsap.set(headingRef,    { opacity: 0 });
+            gsap.set(columnsRef,    { opacity: 0 });
+            gsap.set(colLeftRef,  { filter: "blur(0px)" });
+            gsap.set(colRightRef, { filter: "blur(8px)" });
+            gsap.set(vociBackground, { opacity: 0 });
+          },
+        },
+      });
+
+      shrinkTl.to(
+        modelProps,
+        { scale: 0.0, rotX: Math.PI * 8.0, rotY: Math.PI * 13.0, rotZ: Math.PI * 8.0, twistX: 200, twistZ: 220, duration: 4, ease: "power2.in", onUpdate: update3D },
+        0
+      );
+
+      shrinkTl.fromTo(".parallax-bg",
+        { filter: "brightness(1)" },
+        { filter: "brightness(1.5)", duration: 3.5, ease: "power1.inOut" },
+        0.5);
+
+      shrinkTl.fromTo(vociBackground,
+        { opacity: 0 },
+        { opacity: 1, duration: 3.5, ease: "power1.inOut" },
+        0.5);
+
+      shrinkTl.fromTo(whiteOverlay,
+        { opacity: 0 },
+        { opacity: 0.4, duration: 3.5, ease: "power1.inOut" },
+        0.5);
+
+      const blurTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: "top+=1800 top",
+          end: "top+=2800 top",
+          scrub: 1.0,
+        }
+      });
+
+      blurTl
+        .fromTo(colLeftRef,
+          { filter: "blur(0px)" },
+          { filter: "blur(8px)", duration: 0.4, ease: "power1.inOut" }
+        )
+        .fromTo(colRightRef,
+          { filter: "blur(8px)" },
+          { filter: "blur(0px)", duration: 0.4, ease: "power1.inOut" },
+          "<"
+        );
+
+      return () => {
+        shrinkTl.kill();
+        letterTl.kill();
+        blurTl.kill();
+      };
+    });
   });
 </script>
 
@@ -353,5 +493,23 @@
 
   .col-text strong {
     font-weight: 700;
+  }
+
+  @media (max-width: 799px) {
+    .voci-columns {
+      flex-direction: column;
+      bottom: 12vh;
+      gap: 3vh;
+    }
+    
+    .voci-heading {
+      top: 30%;
+      left: 6vw;
+      width: 88%;
+    }
+    
+    .col-text p {
+      font-size: clamp(15px, 4.5vw, 19px);
+    }
   }
 </style>
