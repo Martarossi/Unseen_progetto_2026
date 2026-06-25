@@ -1,12 +1,12 @@
 <footer class="footer">
   <div class="footer-grain" aria-hidden="true"></div>
 
-  <img src="/copyright.png" alt="Copyright" class="footer-copy" />
+  <img src="/copyright.svg" alt="Copyright" class="footer-copy" />
 
   <span class="footer-title">LE OLIMPIADI DEGLI INVISIBILI</span>
   <div class="footer-logo-wrap">
     <img
-      src="/logopolimi.png"
+      src="/logopolimi.svg"
       alt="Politecnico di Milano 1863"
       class="footer-logo"
     />
@@ -20,7 +20,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px; /* ✅ padding ridotto */
+    padding: 20px 24px; /* padding ridotto */
     box-sizing: border-box;
     background: transparent;
   }
@@ -42,11 +42,11 @@
   .footer-title {
     font-family: "Akira Expanded", "Arial Black", sans-serif;
     font-weight: 900;
-    font-size: 0.78rem;
-    transform: translate(-20%, -50%);
+    font-size: 0.8rem;
+    transform: translate(-17%, -50%);
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #f8f8f8;
+    color: #273b42;
     white-space: nowrap;
     flex: 1;
     margin: 0; /* nessun margine extra */
@@ -61,7 +61,7 @@
       -50%,
       -50%
     ); /* centrato sia orizzontalmente che verticalmente */
-    height: 36px;
+    height: 28px;
     width: auto;
     opacity: 0.85;
     z-index: 2;
