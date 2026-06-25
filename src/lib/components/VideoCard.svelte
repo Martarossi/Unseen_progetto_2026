@@ -13,7 +13,8 @@
    *   cardSubtitle?: string,
    *   onCardClick?: (rect: CardRect | null) => void,
    *   isExpanding?: boolean,
-   *   onCardExpanded?: () => void
+   *   onCardExpanded?: () => void,
+   *   isMobile?: boolean
    * }} */
   let {
     orbitProps = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 },
@@ -24,13 +25,17 @@
     onCardClick = undefined,
     isExpanding = false,
     onCardExpanded = undefined,
+    isMobile = false,
   } = $props();
 
   const { camera } = useThrelte();
 
   const ORBIT_RADIUS = 3.5;
-  const CARD_W = 4.1;
-  const CARD_H = 2.306; // 16:9
+  // isMobile viene passato come prop da Modello3D → Scene → VideoCard
+  // Mobile: card più piccola e portrait; Desktop: card landscape 16:9
+  const CARD_W = isMobile ? 2.0 : 4.1;
+  const CVS_H = isMobile ? 720 : 360;
+  const CARD_H = CARD_W * (CVS_H / 640);   // mantiene proporzioni canvas ↔ geometria
   const CARD_DEPTH = 0.03;
   const CORNER_R = 0.22; // raggio angoli fronte – non clampato dalla depth con ExtrudeGeometry
 
@@ -62,7 +67,7 @@
 
   const cvs = document.createElement('canvas');
   cvs.width = 640;
-  cvs.height = 360;
+  cvs.height = CVS_H;
 
   const cardTexture = new THREE.CanvasTexture(cvs);
 
@@ -391,49 +396,129 @@
     cardGroup.scale.setScalar(1 + hoverProgress * 0.16 + clickPulse * 0.07);
     cardGroup.position.z = baseZ + hoverProgress * 0.5;
 
-    // ── Floating label parallax: lerpa leggermente più lentamente della card ──
-    if (labelGroup && (cardTitle || cardSubtitle)) {
-      const LAG = Math.min(1, delta * 15);
-      labelPosX += (cardGroup.position.x - labelPosX) * LAG;
-      labelPosY += (cardGroup.position.y - labelPosY) * LAG;
-      labelPosZ += (cardGroup.position.z - labelPosZ) * LAG;
-      labelRotY += (selfRot - labelRotY) * LAG;
-      labelGroup.visible = clamped > 0.01;
-      labelGroup.position.set(
-        labelPosX,
-        labelPosY - (CARD_H / 2 - 0.4),
-        labelPosZ + 0.50,
-      );
-      labelGroup.rotation.y = labelRotY;
-      labelGroup.scale.setScalar(cardGroup.scale.x);
-      labelMat.opacity = finalOpacity;
-      labelGroup.renderOrder = cardGroup.renderOrder;
+    // ── Floating label: su mobile nascosto se c'è video (testo è nel canvas); su desktop sempre visibile ──
+    if (labelGroup) {
+      if (videoSrc && isMobile) {
+        labelGroup.visible = false;
+      } else if (cardTitle || cardSubtitle) {
+        const LAG = Math.min(1, delta * 15);
+        labelPosX += (cardGroup.position.x - labelPosX) * LAG;
+        labelPosY += (cardGroup.position.y - labelPosY) * LAG;
+        labelPosZ += (cardGroup.position.z - labelPosZ) * LAG;
+        labelRotY += (selfRot - labelRotY) * LAG;
+        labelGroup.visible = clamped > 0.01;
+        labelGroup.position.set(
+          labelPosX,
+          labelPosY - (CARD_H / 2 - 0.4),
+          labelPosZ + 0.50,
+        );
+        labelGroup.rotation.y = labelRotY;
+        labelGroup.scale.setScalar(cardGroup.scale.x);
+        labelMat.opacity = finalOpacity;
+        labelGroup.renderOrder = cardGroup.renderOrder;
+      }
     }
 
     // Disegno del frame video sulla texture Three.js
     if (videoEl && videoEl.readyState >= 2) {
       const ctx = cvs.getContext('2d');
       if (ctx) {
-        ctx.clearRect(0, 0, 640, 360);
+        const W = 640;
+        const H = CVS_H;
+        ctx.clearRect(0, 0, W, H);
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 640, 360, [39]);
-        ctx.clip();
+        if (isMobile) {
+          // ── MOBILE: card portrait – video in alto (16:9 sulla larghezza), testo in basso ──
+          const VIDEO_H = Math.round(W * 9 / 16); // 360px, mantiene proporzioni 16:9
 
-        ctx.drawImage(videoEl, 0, 0, 640, 360);
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(0, 0, W, H, [39]);
+          ctx.clip();
 
-        ctx.fillStyle = 'rgba(78, 119, 133, 0.12)';
-        ctx.fillRect(0, 0, 640, 360);
+          // Sfondo scuro per area testo
+          ctx.fillStyle = '#080F12';
+          ctx.fillRect(0, 0, W, H);
 
-        const grad = ctx.createLinearGradient(0, 360, 0, 0);
-        grad.addColorStop(0,    '#070F11');
-        grad.addColorStop(0.20, '#0F2124');
-        grad.addColorStop(1,    'rgba(78, 119, 133, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 640, 360);
+          // Video in alto, dimensioni reali 16:9 (nessuno stretching)
+          ctx.drawImage(videoEl, 0, 0, W, VIDEO_H);
+          ctx.fillStyle = 'rgba(78, 119, 133, 0.10)';
+          ctx.fillRect(0, 0, W, VIDEO_H);
 
-        ctx.restore();
+          // Sfumatura raccordo video → area testo
+          const fadeGrad = ctx.createLinearGradient(0, VIDEO_H, 0, VIDEO_H - 32);
+          fadeGrad.addColorStop(0, '#080F12');
+          fadeGrad.addColorStop(1, 'rgba(8, 15, 18, 0)');
+          ctx.fillStyle = fadeGrad;
+          ctx.fillRect(0, VIDEO_H - 32, W, 32);
+
+          ctx.restore();
+
+          // Linea separatrice
+          ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(22, VIDEO_H + 12);
+          ctx.lineTo(W - 22, VIDEO_H + 12);
+          ctx.stroke();
+
+          // Titolo: ogni parola su riga separata
+          if (cardTitle) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 64px "Akira Expanded", Arial, sans-serif';
+            const words = cardTitle.split(' ');
+            let ty = VIDEO_H + 78;
+            for (const word of words) {
+              ctx.fillText(word, 22, ty);
+              ty += 72;
+            }
+          }
+
+          // Sottotitolo con word-wrap
+          if (cardSubtitle) {
+            ctx.fillStyle = 'rgba(255,255,255,0.68)';
+            ctx.font = '26px Arial, Helvetica, sans-serif';
+            const maxW = W - 44;
+            const words = cardSubtitle.split(' ');
+            let line = '';
+            // Posizione sottotitolo: dopo titolo + margine
+            const titleLines = cardTitle ? cardTitle.split(' ').length : 0;
+            let sy = VIDEO_H + 78 + titleLines * 72 + 20;
+            for (const word of words) {
+              const test = line ? `${line} ${word}` : word;
+              if (ctx.measureText(test).width > maxW && line) {
+                ctx.fillText(line, 22, sy);
+                line = word;
+                sy += 26;
+              } else {
+                line = test;
+              }
+            }
+            if (line) ctx.fillText(line, 22, sy);
+          }
+
+        } else {
+          // ── DESKTOP: card landscape 16:9 – video pieno con overlay gradiente ──
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(0, 0, W, H, [39]);
+          ctx.clip();
+
+          ctx.drawImage(videoEl, 0, 0, W, H);
+
+          ctx.fillStyle = 'rgba(78, 119, 133, 0.12)';
+          ctx.fillRect(0, 0, W, H);
+
+          const grad = ctx.createLinearGradient(0, H, 0, 0);
+          grad.addColorStop(0,    '#070F11');
+          grad.addColorStop(0.20, '#0F2124');
+          grad.addColorStop(1,    'rgba(78, 119, 133, 0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, W, H);
+
+          ctx.restore();
+        }
+
         cardTexture.needsUpdate = true;
       }
     }

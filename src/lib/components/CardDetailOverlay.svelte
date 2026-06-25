@@ -524,4 +524,106 @@
 .overlay-wrapper.opening .nav-card {
   animation: ov-fade-up 0.9s ease-out 1.08s both;
 }
+
+@media (max-width: 799px) {
+  /* Il wrapper rimane fixed ma NON crea il contesto di scroll:
+     evita il bug di iOS Safari per cui un canvas WebGL dentro un
+     elemento position:fixed + overflow-y:auto diventa invisibile. */
+  .overlay-wrapper {
+    padding: 0;
+    overflow: hidden;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  /* Il background rimane fisso così non scorre con il contenuto */
+  .card-glass-bg {
+    position: fixed;
+  }
+
+  /* Il pulsante chiudi rimane fisso in alto anche durante lo scroll */
+  .close-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 36px;
+  }
+
+  /* overlay-inner diventa il contenitore scrollabile reale:
+     height: 100% lo vincola all'altezza del wrapper fixed,
+     overflow-y: auto permette lo scroll del contenuto. */
+  .overlay-inner {
+    max-height: none;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 64px 20px 48px;
+  }
+
+  /* Colonna singola: le colonne diventano trasparenti,
+     i loro figli partecipano direttamente al flex padre */
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: auto;
+  }
+
+  .left-col,
+  .right-col {
+    display: contents;
+  }
+
+  /* Ordine: titolo → video → nav card → modello 3D (bullet) / info (nascosta) */
+  .main-card          { order: 1; padding: 0; flex: none; }
+  .video-card         { order: 2; flex: none; aspect-ratio: 16 / 9; }
+  .nav-card           { order: 3; height: auto; min-height: 0; }
+  .info-card-double   { display: none; }
+
+  /* Bullet: il modello 3D appare sotto la nav card.
+     will-change + isolation forzano un layer GPU separato,
+     necessario su iOS per rendere il canvas WebGL visibile
+     dentro un contenitore overflow-y: auto. */
+  .bullet-scene-wrap {
+    order: 4;
+    display: block;
+    /* flex: 8 dal desktop imposta flex-basis:0, rendendo height:480px ignorato
+       in un container height:auto → il canvas ottiene altezza 0 e non renderizza */
+    flex: none;
+    height: 480px;
+    min-height: 480px;
+    overflow: hidden;
+    position: relative;
+    pointer-events: auto;
+    border-radius: 24px;
+    will-change: transform;
+    isolation: isolate;
+  }
+
+  .main-card h2 {
+    font-size: clamp(38px, 11vw, 54px);
+    margin-bottom: 12px;
+  }
+
+  .main-card .divider {
+    margin-bottom: 14px;
+  }
+
+  .subtitle {
+    font-size: clamp(15px, 4vw, 20px);
+  }
+
+  .nav-content p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .nav-progress {
+    padding: 16px 20px 0;
+  }
+
+  .nav-content {
+    padding: 0 20px 20px;
+  }
+}
 </style>

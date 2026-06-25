@@ -2,6 +2,7 @@
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
   import * as THREE from "three";
+  import { onMount } from "svelte";
 
   /**
    * @typedef {{ opacity: number, groupRotY: number, riseY: number }} CardProps
@@ -46,41 +47,55 @@
     onPositionsUpdate = undefined,
     showGlass = true,
   } = $props();
+
+  // Reattivo: aggiornato via matchMedia listener → forza ricreazione della Canvas con {#key}
+  let isMobile = $state(false);
+
+  onMount(() => {
+    const mq = window.matchMedia('(max-width: 799px)');
+    isMobile = mq.matches;
+    const handler = (/** @type {MediaQueryListEvent} */ e) => { isMobile = e.matches; };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  });
 </script>
 
 <div class="model3d-layer" class:visible>
   {#if isClicked}
-    <Canvas
-      autoRender={true}
-      createRenderer={(canvas) => {
-        const renderer = new THREE.WebGLRenderer({
-          canvas,
-          alpha: true,
-          antialias: false,
-          powerPreference: "high-performance",
-        });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        return renderer;
-      }}
-    >
-      <Scene
-        {position}
-        {scale}
-        {rotation}
-        {twistX}
-        {twistZ}
-        {visible}
-        {orbitProps}
-        {orbitProps2}
-        {orbitProps3}
-        {onCardClick}
-        {expandCardIndex}
-        {onCardExpanded}
-        {dotsVisible}
-        {onPositionsUpdate}
-        {showGlass}
-      />
-    </Canvas>
+    {#key isMobile}
+      <Canvas
+        autoRender={true}
+        createRenderer={(canvas) => {
+          const renderer = new THREE.WebGLRenderer({
+            canvas,
+            alpha: true,
+            antialias: false,
+            powerPreference: "high-performance",
+          });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+          return renderer;
+        }}
+      >
+        <Scene
+          {position}
+          {scale}
+          {rotation}
+          {twistX}
+          {twistZ}
+          {visible}
+          {orbitProps}
+          {orbitProps2}
+          {orbitProps3}
+          {onCardClick}
+          {expandCardIndex}
+          {onCardExpanded}
+          {dotsVisible}
+          {onPositionsUpdate}
+          {showGlass}
+          {isMobile}
+        />
+      </Canvas>
+    {/key}
   {/if}
 </div>
 

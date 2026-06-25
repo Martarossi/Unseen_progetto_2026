@@ -83,7 +83,7 @@
 <style>
 :global(.bullet-scene-wrap) {
   position: relative;
-  overflow: visible !important;
+  overflow: visible; /* senza !important: mobile può sovrascrivere con overflow: hidden */
 }
 
 .drag-zone {
@@ -137,6 +137,19 @@
   height: 160%;
   pointer-events: none;
   z-index: 100;
+}
+
+@media (max-width: 799px) {
+  .canvas-container {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    /* translate3d(0,0,0) promuove il canvas su un layer GPU separato:
+       su iOS Safari evita che il renderer WebGL venga scartato
+       quando il contenitore parent è uno scroll container. */
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .canvas-container :global(canvas) {

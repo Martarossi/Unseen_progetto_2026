@@ -51,6 +51,7 @@
     onCardExpanded = undefined,
     dotsVisible = false,
     showGlass = true,
+    isMobile = false,
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
@@ -540,6 +541,7 @@
 
 <VideoCard
   {orbitProps}
+  {isMobile}
   label="VIDEOAI1"
   videoSrc="/video_card/spacetime_slices.mov"
   cardTitle="SPACETIME SLICES"
@@ -550,6 +552,7 @@
 />
 <VideoCard
   orbitProps={orbitProps2}
+  {isMobile}
   label="VIDEOAI2"
   videoSrc="/video_card/tracker.mov"
   cardTitle="TRACKER ATHLETES"
@@ -560,6 +563,7 @@
 />
 <VideoCard
   orbitProps={orbitProps3}
+  {isMobile}
   label="VIDEOAI3"
   videoSrc="/video_card/Bullet_time.mov"
   cardTitle="BULLET TIMING"
