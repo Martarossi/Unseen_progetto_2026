@@ -1,13 +1,18 @@
 <script>
-    import { onMount, tick } from "svelte";
+    import { onMount, onDestroy, tick } from "svelte";
     import gsap from "gsap";
+    import ScrollTrigger from "gsap/dist/ScrollTrigger";
 
     let { closeOverlay } = $props();
 
     /** @type {HTMLElement|null} */
+    let aboutWrapperEl = $state(null);
+    /** @type {HTMLElement|null} */
     let leftColumn = null;
     /** @type {HTMLElement|null} */
     let rightColumn = null;
+    /** @type {HTMLElement|null} */
+    let footerNamesEl = null;
     let opening = $state(false);
     let closing = $state(false);
 
@@ -26,23 +31,79 @@
         closeOverlay();
     }
 
+    /** @type {any[]} */
+    const scrollTriggers = [];
+
     onMount(async () => {
         await tick();
         opening = true;
-        // Il blur/hover si applica solo su desktop
-        if (!window.matchMedia('(max-width: 799px)').matches) {
+
+        if (window.matchMedia('(max-width: 799px)').matches) {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const sections = [leftColumn, rightColumn, footerNamesEl].filter(Boolean);
+
+            // Stato iniziale
+            gsap.set(leftColumn, { filter: 'blur(0px)', opacity: 1 });
+            gsap.set(rightColumn, { filter: 'blur(6px)', opacity: 0.45 });
+            gsap.set(footerNamesEl, { filter: 'blur(6px)', opacity: 0.45 });
+
+            // Animazione per il secondo paragrafo (rightColumn)
+            const animRight = gsap.fromTo(rightColumn,
+                { filter: 'blur(6px)', opacity: 0.45 },
+                {
+                    filter: 'blur(0px)',
+                    opacity: 1,
+                    scrollTrigger: {
+                        trigger: ".sticky-content",
+                        scroller: aboutWrapperEl,
+                        start: "top+=30 top",
+                        end: "top+=180 top",
+                        scrub: true
+                    }
+                }
+            );
+            if (animRight.scrollTrigger) scrollTriggers.push(animRight.scrollTrigger);
+
+            // Animazione per il footer names
+            const animFooter = gsap.fromTo(footerNamesEl,
+                { filter: 'blur(6px)', opacity: 0.45 },
+                {
+                    filter: 'blur(0px)',
+                    opacity: 1,
+                    scrollTrigger: {
+                        trigger: ".sticky-content",
+                        scroller: aboutWrapperEl,
+                        start: "top+=180 top",
+                        end: "top+=350 top",
+                        scrub: true
+                    }
+                }
+            );
+            if (animFooter.scrollTrigger) scrollTriggers.push(animFooter.scrollTrigger);
+        } else {
+            // Desktop: blur su hover
             gsap.set(leftColumn,  { filter: "blur(14px)", opacity: 0.35 });
             gsap.set(rightColumn, { filter: "blur(14px)", opacity: 0.35 });
         }
     });
+
+    onDestroy(() => {
+        scrollTriggers.forEach(st => {
+            if (st) st.kill();
+        });
+    });
 </script>
 
-<div class="about-wrapper" class:opening={opening && !closing} class:closing>
+<div class="about-wrapper" bind:this={aboutWrapperEl} class:opening={opening && !closing} class:closing>
     <div class="about-container">
         <div class="sticky-content">
 
             <!-- Top bar -->
             <div class="top-bar">
+                <div class="top-bar-logo">
+                    <img src="/topbarunseen.png" alt="Unseen logo" />
+                </div>
                 <button
                     class="close-btn"
                     onclick={handleClose}
@@ -191,9 +252,15 @@
     /* ── Top bar ── */
     .top-bar {
         display: flex;
-        justify-content: flex-end;
-        align-items: flex-start;
+        justify-content: space-between;
+        align-items: center;
         z-index: 10;
+    }
+
+    .top-bar-logo img {
+        height: 16px;
+        width: auto;
+        display: block;
     }
 
     .close-btn {
@@ -298,101 +365,116 @@
     
     /* ── Mobile ── */
     @media (max-width: 799px) {
-        /* Il container non è più 200vh fisso: il contenuto occupa ~300vh naturalmente */
         .about-container {
             height: auto;
         }
 
-        /* sticky-content torna flusso normale: le sezioni scorrono */
+        /* Utilizziamo flexbox column per riordinare gli elementi e portarli in alto */
         .sticky-content {
-            position: static;
+            position: relative;
             height: auto;
             overflow: visible;
-            padding: 0;
-            display: block;
+            padding: 90px 24px 40px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
         }
 
-        /* Close button fisso in alto a destra */
         .top-bar {
             position: fixed;
             top: 0;
-            right: 0;
-            padding: 16px 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
             z-index: 100;
-            background: transparent;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
+            box-sizing: border-box;
+        }
+
+        .top-bar-logo img {
+            height: 14px;
+            width: auto;
+            display: block;
         }
 
         .close-btn {
             font-size: 40px;
         }
 
-        /* Le due colonne si impilano verticalmente come blocchi,
-           ciascuna occupa una schermata intera */
-        .content-columns {
-            display: block;
-            margin-top: 0;
-            padding: 0;
-        }
-
-        /* Ogni colonna = una schermata di 100vh, testo allineato in basso */
-        .col {
-            min-height: 100vh;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 64px 28px 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            /* Annulla il blur GSAP: su mobile niente hover */
-            filter: none !important;
-            opacity: 1 !important;
-        }
-
-        .col h2 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        .col p {
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        /* "ABOUT US" rimane FISSO in basso: sempre visibile durante lo scroll */
+        /* "ABOUT US" in alto (ordine 1) */
         .huge-image-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
+            order: 1;
+            position: relative;
+            bottom: auto;
+            left: auto;
             width: 100%;
             z-index: 10;
-            margin: 0;
-            pointer-events: none;
+            margin: 10px 0 20px;
+            pointer-events: auto;
+            display: flex;
+            justify-content: flex-start;
         }
 
         .huge-about-img {
-            width: calc(100% - 40px);
-            margin: 0 20px 16px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0;
             height: auto;
             display: block;
         }
 
-        /* Sezione nomi: schermata intera, testo centrato */
+        /* Colonne di testo (ordine 2) */
+        .content-columns {
+            order: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* avvicina i paragrafi */
+            margin-top: 0;
+            padding: 0;
+        }
+
+        /* I paragrafi non occupano più 100vh ciascuno e fluiscono naturalmente */
+        .col {
+            min-height: auto;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0;
+            display: block;
+            /* Rimuoviamo !important per permettere a GSAP di animarli */
+        }
+
+        .col h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            margin-top: 15px;
+        }
+
+        .col p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Nomi footer in fondo (ordine 3), allineati a sinistra */
         .footer-names {
-            min-height: 100vh;
+            order: 3;
+            min-height: auto;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
             justify-content: flex-start;
-            padding: 64px 28px 200px;
-            text-align: center;
-            gap: 28px;
+            padding: 30px 0 50px;
+            text-align: left;
+            gap: 24px;
             flex-wrap: nowrap;
             font-size: 15px;
         }
 
         .footer-person {
-            align-items: center;
+            align-items: flex-start;
         }
 
         .footer-phone {
