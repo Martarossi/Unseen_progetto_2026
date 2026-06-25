@@ -159,18 +159,18 @@
       const scrollY = window.scrollY;
 
       ctx.globalAlpha = canvasBgOpacity;
-      if (canvas.width <= 799) {
-        // Mobile: scala per coprire l'altezza intera, parte da sinistra (stessa area del desktop)
-        const bgScale = canvas.height / bgImg.height;
-        const bgDrawWidth = bgImg.width * bgScale;
-        const bgDrawHeight = bgImg.height * bgScale;
-        ctx.drawImage(bgImg, 0, 0, bgDrawWidth, bgDrawHeight);
-      } else {
-        // Desktop: formula originale — scala per larghezza, parte da sinistra
-        const bgScale = canvas.width / bgImg.width;
-        const bgDrawHeight = bgImg.height * bgScale;
-        ctx.drawImage(bgImg, 0, scrollY * 1.2, canvas.width, bgDrawHeight);
-      }
+      // Scala "cover" centrata per allinearsi perfettamente con il background-size: cover e background-position: center del CSS
+      const virtualHeight = canvas.width <= 799 ? (canvas.height * 1.10) : (canvas.height * 1.12);
+      const scaleX = canvas.width / bgImg.width;
+      const scaleY = virtualHeight / bgImg.height;
+      const bgScale = Math.max(scaleX, scaleY) * 1.25; // Moltiplicato per 1.25 per allinearsi al scale(1.25) del CSS sfocato
+      const bgDrawWidth = bgImg.width * bgScale;
+      const bgDrawHeight = bgImg.height * bgScale;
+      const x = (canvas.width - bgDrawWidth) / 2;
+      const y = (canvas.height - bgDrawHeight) / 2;
+      ctx.filter = "blur(48px)"; // Applica la stessa sfocatura dell'immagine di sfondo globale del sito (48px)
+      ctx.drawImage(bgImg, x, y, bgDrawWidth, bgDrawHeight);
+      ctx.filter = "none"; // Ripristina il filtro per non influenzare il logo o la maschera
       ctx.globalAlpha = 1.0;
 
       const scale = Math.min(

@@ -1,6 +1,6 @@
 <script>
-  import { onMount, tick } from 'svelte';
-  import gsap from 'gsap';
+  import { onMount, tick } from "svelte";
+  import gsap from "gsap";
 
   let { onClicked } = $props();
 
@@ -35,29 +35,39 @@
   function initCanvas() {
     if (!canvasRef) return;
     const canvas = canvasRef;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const maskCanvas = document.createElement('canvas');
-    const maskCtx = maskCanvas.getContext('2d');
+    const maskCanvas = document.createElement("canvas");
+    const maskCtx = maskCanvas.getContext("2d");
     if (!maskCtx) return;
 
     const SPOT_RES = 256;
-    const spotCanvas = document.createElement('canvas');
+    const spotCanvas = document.createElement("canvas");
     spotCanvas.width = SPOT_RES;
     spotCanvas.height = SPOT_RES;
-    const spotCtx = spotCanvas.getContext('2d');
+    const spotCtx = spotCanvas.getContext("2d");
     if (spotCtx) {
-      const g = spotCtx.createRadialGradient(SPOT_RES / 2, SPOT_RES / 2, 0, SPOT_RES / 2, SPOT_RES / 2, SPOT_RES / 2);
-      g.addColorStop(0, 'rgba(255,255,255,1)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
+      const g = spotCtx.createRadialGradient(
+        SPOT_RES / 2,
+        SPOT_RES / 2,
+        0,
+        SPOT_RES / 2,
+        SPOT_RES / 2,
+        SPOT_RES / 2,
+      );
+      g.addColorStop(0, "rgba(255,255,255,1)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
       spotCtx.fillStyle = g;
       spotCtx.fillRect(0, 0, SPOT_RES, SPOT_RES);
     }
 
     const logoImg = new Image();
-    logoImg.src = '/LOGO.png';
+    logoImg.src = "/LOGO.png";
     let imgLoaded = false;
-    logoImg.onload = () => { imgLoaded = true; resize(); };
+    logoImg.onload = () => {
+      imgLoaded = true;
+      resize();
+    };
 
     function resize() {
       if (!canvasRef) return;
@@ -67,7 +77,7 @@
       maskCanvas.height = canvas.height;
     }
 
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
     resize();
 
     let animationFrame = 0;
@@ -78,10 +88,10 @@
 
     const TRAIL_DURATION = 1000;
     const MAX_TRAIL = 90;
-    const histX    = new Float32Array(MAX_TRAIL);
-    const histY    = new Float32Array(MAX_TRAIL);
+    const histX = new Float32Array(MAX_TRAIL);
+    const histY = new Float32Array(MAX_TRAIL);
     const histTime = new Float64Array(MAX_TRAIL);
-    let histHead  = 0;
+    let histHead = 0;
     let histCount = 0;
 
     function loop() {
@@ -97,7 +107,11 @@
 
       if (isIdle && showLogo && !isClicked) {
         const dist = Math.hypot(currentX - idleTargetX, currentY - idleTargetY);
-        if (dist < 50 || idleTargetX > canvas.width || idleTargetY > canvas.height) {
+        if (
+          dist < 50 ||
+          idleTargetX > canvas.width ||
+          idleTargetY > canvas.height
+        ) {
           idleTargetX = canvas.width * (0.1 + Math.random() * 0.8);
           idleTargetY = canvas.height * (0.1 + Math.random() * 0.8);
         }
@@ -109,8 +123,8 @@
       }
 
       if (showLogo) {
-        histX[histHead]    = currentX;
-        histY[histHead]    = currentY;
+        histX[histHead] = currentX;
+        histY[histHead] = currentY;
         histTime[histHead] = now;
         histHead = (histHead + 1) % MAX_TRAIL;
         if (histCount < MAX_TRAIL) histCount++;
@@ -138,7 +152,7 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Sfondo bianco esplicito sul canvas così il logo si rivela su bianco
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const scale = Math.min(
@@ -146,15 +160,15 @@
         (canvas.height * 0.55) / logoImg.height,
         1,
       );
-      const dWidth  = logoImg.width  * scale;
+      const dWidth = logoImg.width * scale;
       const dHeight = logoImg.height * scale;
-      const dx = (canvas.width  - dWidth)  / 2;
+      const dx = (canvas.width - dWidth) / 2;
       const dy = (canvas.height - dHeight) / 2 - canvas.height * 0.05;
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
-      ctx.globalCompositeOperation = 'destination-in';
+      ctx.globalCompositeOperation = "destination-in";
       ctx.drawImage(maskCanvas, 0, 0);
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalCompositeOperation = "source-over";
 
       animationFrame = requestAnimationFrame(loop);
     }
@@ -162,7 +176,7 @@
     loop();
 
     return () => {
-      window.removeEventListener('resize', resize);
+      window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrame);
     };
   }
@@ -194,7 +208,7 @@
   async function handleTap() {
     if (!showLogo || isClicked) return;
     isClicked = true;
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
     if (onClicked) onClicked();
 
     await tick();
@@ -203,55 +217,84 @@
     gsap.to(obj, {
       radius: 3000,
       duration: 1.5,
-      ease: 'power2.inOut',
-      onUpdate: () => { revealRadius = obj.radius; },
+      ease: "power2.inOut",
+      onUpdate: () => {
+        revealRadius = obj.radius;
+      },
     });
 
     gsap.fromTo(
-      '.hero-mobile-subtitle, .hero-mobile-scroll-prompt',
+      ".hero-mobile-subtitle, .hero-mobile-scroll-prompt",
       { opacity: 0, y: 20 },
       {
-        opacity: 1, y: 0, duration: 1, stagger: 0.3, ease: 'power3.out', delay: 0.6,
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        stagger: 0.3,
+        ease: "power3.out",
+        delay: 0.6,
         onComplete: () => {
-          scrollPromptPulse = gsap.to('.hero-mobile-scroll-prompt', {
-            opacity: 0.2, duration: 0.7, ease: 'sine.inOut', yoyo: true, repeat: -1,
+          scrollPromptPulse = gsap.to(".hero-mobile-scroll-prompt", {
+            opacity: 0.2,
+            duration: 0.7,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
           });
         },
-      }
+      },
     );
   }
 
   /** @param {string} str */
   function splitIntoLetters(str) {
-    return str.split('').map(c => c === ' ' ? '&nbsp;' : c);
+    return str.split("").map((c) => (c === " " ? "&nbsp;" : c));
   }
 
   onMount(() => {
     mouseX = window.innerWidth / 2;
     mouseY = window.innerHeight / 2;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
-    const pieces = descriptionRef?.querySelectorAll('.text-piece') ?? [];
+    const pieces = descriptionRef?.querySelectorAll(".text-piece") ?? [];
     const tl = gsap.timeline({ delay: 0.2 });
 
     tl.fromTo(
       pieces,
-      { opacity: 0, filter: 'blur(10px)', y: 20 },
-      { opacity: 1, filter: 'blur(0px)', y: 0, duration: 1.2, stagger: 0.03, ease: 'power2.out' }
+      { opacity: 0, filter: "blur(10px)", y: 20 },
+      {
+        opacity: 1,
+        filter: "blur(0px)",
+        y: 0,
+        duration: 1.2,
+        stagger: 0.03,
+        ease: "power2.out",
+      },
     )
-    .to(
-      pieces,
-      { opacity: 0, filter: 'blur(10px)', y: -20, duration: 0.8, stagger: 0.02, ease: 'power2.in' },
-      '-=0.7'
-    )
-    .call(() => { showLogo = true; });
+      .to(
+        pieces,
+        {
+          opacity: 0,
+          filter: "blur(10px)",
+          y: -20,
+          duration: 0.8,
+          stagger: 0.02,
+          ease: "power2.in",
+        },
+        "-=0.7",
+      )
+      .call(() => {
+        showLogo = true;
+      });
 
     const cleanup = initCanvas();
-    return () => { cleanup?.(); };
+    return () => {
+      cleanup?.();
+    };
   });
 </script>
 
-<svelte:window bind:scrollY />
+le card <svelte:window bind:scrollY />
 
 <div
   class="hero-mobile"
@@ -265,13 +308,13 @@
   <p class="hero-mobile-description" bind:this={descriptionRef}>
     <span class="phrase">
       <b>
-        {#each splitIntoLetters('Scopri') as char}
+        {#each splitIntoLetters("Scopri") as char}
           <span class="text-piece">{@html char}</span>
         {/each}
       </b>
     </span>
     <span class="phrase">
-      {#each splitIntoLetters(' quello che resta') as char}
+      {#each splitIntoLetters(" quello che resta") as char}
         <span class="text-piece">{@html char}</span>
       {/each}
     </span>
@@ -279,23 +322,33 @@
     <span class="phrase">
       {#each splitIntoLetters("fuori dall'") as char}
         <span class="text-piece">{@html char}</span>
-      {/each}<b>{#each splitIntoLetters('inquadratura') as char}
-        <span class="text-piece">{@html char}</span>
-      {/each}</b>
+      {/each}<b
+        >{#each splitIntoLetters("inquadratura") as char}
+          <span class="text-piece">{@html char}</span>
+        {/each}</b
+      >
     </span>
   </p>
 
-  <div class="logo-reveal" class:visible={showLogo} style="opacity: {showLogo ? scrollOpacity : 0};">
+  <div
+    class="logo-reveal"
+    class:visible={showLogo}
+    style="opacity: {showLogo ? scrollOpacity : 0};"
+  >
     <canvas bind:this={canvasRef}></canvas>
   </div>
 
   {#if showLogo && !isClicked}
-    <div class="hero-mobile-tap-hint">trascina per rivelare · tocca per entrare</div>
+    <div class="hero-mobile-tap-hint">
+      trascina per rivelare · tocca per entrare
+    </div>
   {/if}
 
   {#if isClicked}
     <div class="hero-mobile-after" style="opacity: {scrollOpacity};">
-      <p class="hero-mobile-subtitle">La prima <i>Intelligent Olympic</i> della storia</p>
+      <p class="hero-mobile-subtitle">
+        La prima <i>Intelligent Olympic</i> della storia
+      </p>
       <p class="hero-mobile-scroll-prompt">scroll down to explore</p>
     </div>
   {/if}
@@ -314,7 +367,7 @@
   }
 
   .hero-mobile-description {
-    font-family: 'Helvetica', sans-serif;
+    font-family: "Helvetica", sans-serif;
     font-size: clamp(28px, 9vw, 38px);
     line-height: 1.25;
     color: #1a1a1a;
@@ -325,7 +378,9 @@
     z-index: 10;
   }
 
-  .phrase { display: inline; }
+  .phrase {
+    display: inline;
+  }
 
   .text-piece {
     display: inline-block;
@@ -341,7 +396,9 @@
     z-index: 1;
   }
 
-  .logo-reveal.visible { opacity: 1; }
+  .logo-reveal.visible {
+    opacity: 1;
+  }
 
   .logo-reveal canvas {
     width: 100%;
@@ -354,10 +411,10 @@
     top: 68%;
     left: 50%;
     transform: translateX(-50%);
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: "Helvetica", Arial, sans-serif;
     font-size: 0.85rem;
     letter-spacing: 0.08em;
-    color: #4E7785;
+    color: #4e7785;
     white-space: nowrap;
     z-index: 20;
     pointer-events: none;
@@ -365,8 +422,12 @@
   }
 
   @keyframes hint-pulse {
-    from { opacity: 1; }
-    to   { opacity: 0; }
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
   }
 
   .hero-mobile-after {
@@ -384,7 +445,7 @@
   }
 
   .hero-mobile-subtitle {
-    font-family: 'Helvetica', sans-serif;
+    font-family: "Helvetica", sans-serif;
     font-size: 18px;
     color: #1a1a1a;
     text-align: center;
@@ -394,9 +455,9 @@
   }
 
   .hero-mobile-scroll-prompt {
-    font-family: 'Helvetica', sans-serif;
+    font-family: "Helvetica", sans-serif;
     font-size: 12px;
-    color: #4E7785;
+    color: #4e7785;
     letter-spacing: 0.08em;
     margin: 0;
     opacity: 0;

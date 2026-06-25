@@ -113,7 +113,8 @@
       // Desktop: more pronounced parallax
       mm.add("(min-width: 800px)", () => {
         gsap.to(".parallax-bg", {
-          yPercent: -70,
+          yPercent: -10,
+          scale: 1.25,
           ease: "none",
           scrollTrigger: {
             start: 0,
@@ -126,7 +127,8 @@
       // Mobile: subtle parallax to avoid fast/jerky movement
       mm.add("(max-width: 799px)", () => {
         gsap.to(".parallax-bg", {
-          yPercent: -15,
+          yPercent: -7.5,
+          scale: 1.25,
           ease: "none",
           scrollTrigger: {
             start: 0,
@@ -271,7 +273,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 340vh; /* Must satisfy: height × (1 - |yPercent|/100) ≥ 100vh → 340 × 0.3 = 102vh */
+    height: 112vh; /* Per allinearsi al parallasse desktop (yPercent: -10) */
     z-index: -2;
     background-size: cover;
     background-position: center;
@@ -280,10 +282,18 @@
     will-change: transform;
     opacity: 0;
     transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: blur(48px); /* Sfocatura ulteriormente raddoppiata (48px) per un effetto vellutato e ultra-morbido */
+    transform: scale(1.25); /* Aumentato a 1.25 per prevenire aloni trasparenti ai bordi dovuti alla sfocatura di 48px */
   }
 
   .parallax-bg.visible {
     opacity: 0.9;
+  }
+
+  @media (max-width: 799px) {
+    .parallax-bg {
+      height: 110vh; /* Per allinearsi al parallasse mobile (yPercent: -7.5) */
+    }
   }
 
   /* LAYER 2: Contenuti e testi */

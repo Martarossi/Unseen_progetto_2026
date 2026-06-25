@@ -74,7 +74,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=14000",
+          end: "+=16800",
           scrub: 0.5,
           onEnter:      () => { update3D(); model3dVisible = true; },
           onEnterBack:  () => { update3D(); model3dVisible = true; },
@@ -304,7 +304,7 @@
         {
           yPercent: -250,
           opacity: 1,
-          duration: 2.7,
+          duration: 5.4,
           ease: "none",
           immediateRender: false,
         },
@@ -321,44 +321,44 @@
           scale: 1.8,
           twistX: 60,
           twistZ: 160,
-          duration: 2.5,
+          duration: 5.2,
           ease: "none",
           onUpdate: update3D,
         },
         5.0,
       );
 
-      // --- VIDEOAI1: Card compare leggermente prima della fine del bigText (t=7.0 → 11.0) ---
-      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.0);
+      // --- VIDEOAI1: Card compare leggermente prima della fine del bigText (t=9.7 → 13.7) ---
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.7);
       tl.fromTo(
         orbitProps,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        7.0
+        9.7
       );
-      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 10.4);
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.1);
 
-      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=7.8 → 11.8) ---
-      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.8);
+      // --- VIDEOAI2: entra 0.8s dopo la prima card (t=10.5 → 14.5) ---
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 10.5);
       tl.fromTo(
         orbitProps2,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        7.8
+        10.5
       );
-      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.2);
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.9);
 
-      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=8.6 → 12.6) ---
-      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.6);
+      // --- VIDEOAI3: entra 0.8s dopo la seconda card (t=11.3 → 15.3) ---
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 11.3);
       tl.fromTo(
         orbitProps3,
         { angle: Math.PI, y: -3 },
         { angle: Math.PI * 4, y: 3, duration: 4.0, ease: "none" },
-        8.6
+        11.3
       );
-      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.0);
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 14.7);
 
-      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (7.0 → 12.6) ---
+      // --- Modello 3D: rotazione lenta al centro durante tutte e 3 le orbite (9.7 → 15.3) ---
       tl.to(
         modelProps,
         {
@@ -372,10 +372,10 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        7.0
+        9.7
       );
 
-      // Buffer finale: le card finiscono a t=12.6; il modello continua a ruotare.
+      // Buffer finale: le card finiscono a t=15.3; il modello continua a ruotare.
       tl.to(
         modelProps,
         {
@@ -388,12 +388,12 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        12.6,
+        15.3,
       );
 
       // Tempi nella timeline in cui ogni card è esattamente "frontale" (angle = 5π/2, sin=1)
       // Ogni orbita parte a angle=π e va a 4π in 4s linear → metà orbita = +2s
-      const cardFrontTimes = [7.0 + 2.0, 7.8 + 2.0, 8.6 + 2.0]; // [9.0, 9.8, 10.6]
+      const cardFrontTimes = [9.7 + 2.0, 10.5 + 2.0, 11.3 + 2.0]; // [11.7, 12.5, 13.3]
 
       scrollToCard = (cardIndex) => {
         const st = tl.scrollTrigger;
@@ -433,7 +433,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=6000",
+          end: "+=7200",
           scrub: 0.5,
           onEnter:      () => { update3D(); model3dVisible = true; },
           onEnterBack:  () => { update3D(); model3dVisible = true; },
@@ -645,7 +645,7 @@
         {
           yPercent: -400,
           opacity: 1,
-          duration: 1.5,
+          duration: 3.0,
           ease: "none",
           immediateRender: false,
         },
@@ -661,39 +661,39 @@
           scale: 1.2,
           twistX: 60,
           twistZ: 160,
-          duration: 2.5,
+          duration: 3.5,
           ease: "none",
           onUpdate: update3D,
         },
         5.0,
       );
 
-      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.0);
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.5);
       tl.fromTo(
         orbitProps,
-        { angle: Math.PI, y: -2.2 },
-        { angle: Math.PI * 4, y: 2.2, duration: 4.0, ease: "none" },
-        7.0
+        { angle: Math.PI, y: -4.5 },
+        { angle: Math.PI * 4, y: 4.5, duration: 4.0, ease: "none" },
+        8.5
       );
-      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 10.4);
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.9);
 
-      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.8);
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.9);
       tl.fromTo(
         orbitProps2,
-        { angle: Math.PI, y: -2.2 },
-        { angle: Math.PI * 4, y: 2.2, duration: 4.0, ease: "none" },
-        7.8
+        { angle: Math.PI, y: -4.5 },
+        { angle: Math.PI * 4, y: 4.5, duration: 4.0, ease: "none" },
+        9.9
       );
-      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.2);
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.3);
 
-      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.6);
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 11.3);
       tl.fromTo(
         orbitProps3,
-        { angle: Math.PI, y: -2.2 },
-        { angle: Math.PI * 4, y: 2.2, duration: 4.0, ease: "none" },
-        8.6
+        { angle: Math.PI, y: -4.5 },
+        { angle: Math.PI * 4, y: 4.5, duration: 4.0, ease: "none" },
+        11.3
       );
-      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 12.0);
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 14.7);
 
       tl.to(
         modelProps,
@@ -704,11 +704,11 @@
           twistX: 50,
           twistZ: 130,
           scale: 1.3,
-          duration: 5.6,
+          duration: 6.8,
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        7.0
+        8.5
       );
 
       tl.to(
@@ -723,10 +723,10 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        12.6,
+        15.3,
       );
 
-      const cardFrontTimes = [9.0, 9.8, 10.6];
+      const cardFrontTimes = [10.5, 11.9, 13.3];
       scrollToCard = (cardIndex) => {
         const st = tl.scrollTrigger;
         if (!st) return;
@@ -793,7 +793,7 @@
 
 <style>
   .intro-scroll-wrapper {
-    height: 14000px;
+    height: 16800px;
     position: relative;
   }
 
@@ -924,7 +924,7 @@
 
   @media (max-width: 799px) {
     .intro-scroll-wrapper {
-      height: 6000px;
+      height: 7200px;
     }
 
     .intro-container {

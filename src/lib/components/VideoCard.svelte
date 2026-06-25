@@ -322,7 +322,7 @@
       if (!cardMesh || !camera.current) return;
       const clamped = Math.max(0, Math.min(1, orbitProps.opacity));
       if (clamped <= 0.01) return;
-      if (ORBIT_RADIUS * Math.sin(orbitProps.angle) <= 0.5) return;
+      if (!isMobile && ORBIT_RADIUS * Math.sin(orbitProps.angle) <= 0.5) return;
 
       clickNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
       clickNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -348,27 +348,31 @@
 
     const { angle, y, opacity, centerX, centerY } = orbitProps;
 
-    const baseZ = ORBIT_RADIUS * Math.sin(angle);
+    const baseZ = isMobile ? ORBIT_RADIUS : (ORBIT_RADIUS * Math.sin(angle));
     cardGroup.position.set(
-      centerX + ORBIT_RADIUS * Math.cos(angle),
+      isMobile ? centerX : (centerX + ORBIT_RADIUS * Math.cos(angle)),
       centerY + y,
       baseZ
     );
 
     // Primo piano (davanti al modello) quando baseZ > 0, secondo piano (dietro) quando baseZ < 0
-    cardGroup.renderOrder = baseZ > 0 ? 1 : -1;
+    cardGroup.renderOrder = isMobile ? 2 : (baseZ > 0 ? 1 : -1);
 
     let selfRot;
-    if (angle <= 3 * Math.PI / 2) {
-      selfRot = 3 * Math.PI / 4 + Math.PI / 8 * (1 - Math.cos(2 * (angle - Math.PI)));
-    } else if (angle <= 5 * Math.PI / 2) {
-      selfRot = Math.PI / 2 * (1 + Math.cos(angle - 3 * Math.PI / 2));
-    } else if (angle <= 3 * Math.PI) {
-      selfRot = -3 * Math.PI / 4 * (1 - Math.cos(2 * (angle - 5 * Math.PI / 2))) / 2;
-    } else if (angle <= 7 * Math.PI / 2) {
-      selfRot = -3 * Math.PI / 4 - Math.PI / 8 * (1 - Math.cos(2 * (angle - 3 * Math.PI)));
+    if (isMobile) {
+      selfRot = 0;
     } else {
-      selfRot = -Math.PI + Math.PI / 8 * (1 - Math.cos(2 * (angle - 7 * Math.PI / 2)));
+      if (angle <= 3 * Math.PI / 2) {
+        selfRot = 3 * Math.PI / 4 + Math.PI / 8 * (1 - Math.cos(2 * (angle - Math.PI)));
+      } else if (angle <= 5 * Math.PI / 2) {
+        selfRot = Math.PI / 2 * (1 + Math.cos(angle - 3 * Math.PI / 2));
+      } else if (angle <= 3 * Math.PI) {
+        selfRot = -3 * Math.PI / 4 * (1 - Math.cos(2 * (angle - 5 * Math.PI / 2))) / 2;
+      } else if (angle <= 7 * Math.PI / 2) {
+        selfRot = -3 * Math.PI / 4 - Math.PI / 8 * (1 - Math.cos(2 * (angle - 3 * Math.PI)));
+      } else {
+        selfRot = -Math.PI + Math.PI / 8 * (1 - Math.cos(2 * (angle - 7 * Math.PI / 2)));
+      }
     }
     cardGroup.rotation.y = selfRot;
 
@@ -387,7 +391,14 @@
     const hoverTarget = hovered ? 1 : 0;
     hoverProgress += (hoverTarget - hoverProgress) * Math.min(1, delta * 8);
 
-    const finalOpacity = clamped * (0.5 + 0.5 * hoverProgress);
+    let finalOpacity;
+    if (isMobile) {
+      // Su mobile, l'opacità raggiunge il 100% al centro dello schermo (y = 0) e sfuma man mano che la card si allontana
+      const centerFactor = Math.max(0, 1 - Math.abs(y) / 4.0);
+      finalOpacity = clamped * centerFactor;
+    } else {
+      finalOpacity = clamped * (0.5 + 0.5 * hoverProgress);
+    }
     cardMatFront.opacity = finalOpacity;
     cardMatBack.opacity = finalOpacity;
     cardGlassMat.opacity = finalOpacity;
