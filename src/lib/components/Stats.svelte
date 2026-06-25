@@ -18,22 +18,19 @@
       title: "COPERTURA IMMERSIVA\nDEI CONTENUTI",
       desc: "Un ecosistema visivo diffuso tra tutti i cluster olimpici. Dalle ottiche ultra-long-range per lo sci alpino ai sistemi micro-camera per bob e curling, è garantita la copertura totale di ogni momento di gara.",
       target: 800,
-      duration: 4.5,
-      label: "TELECAMERE ATTIVE SUI CAMPI DI GARA" // <-- Nuova riga di testo
+      label: "TELECAMERE ATTIVE SUI CAMPI DI GARA"
     },
     {
       title: "FLUSSO DI PRODUZIONE\nE DISTRIBUZIONE GLOBALE",
       desc: "Il racconto continuo delle Olimpiadi. Grazie alla trasmissione multi-piattaforma in Ultra HD gestita da OBS, ogni sessione competitiva viene prodotta in tempo reale per i broadcaster di tutto il mondo.",
       target: 900,
-      duration: 4.5,
-      label: "ORE DI DIRETTA STREAMING" // <-- Nuova riga di testo
+      label: "ORE DI DIRETTA STREAMING"
     },
     {
-      title: "CENTRI DI COMANDO\n TECNOLOGICO",
+      title: "CENTRI DI COMANDO\nTECNOLOGICO",
       desc: "Infrastrutture ad alta tecnologia suddivise tra regie mobili nei siti di gara e regie virtualizzate presso l'IBC. Una capillarità necessaria per coordinare simultaneamente eventi live paralleli.",
       target: 23,
-      duration: 5.5,
-      label: "REGIE INTERNESSE IN RETE" // <-- Nuova riga di testo
+      label: "REGIE INTERNESSE IN RETE"
     },
   ];
 
@@ -41,9 +38,10 @@
   let scrollWrapper = null;
   /** @type {HTMLElement|null} */
   let sectionEl = null;
-
   /** @type {(HTMLElement|null)[]} */
   let counterEls = [];
+  /** @type {(HTMLElement|null)[]} */
+  let statCols = [];
 
   const modelProps = {
     scale: 2.0,
@@ -84,12 +82,15 @@
         currentTwistZ = modelProps.twistZ;
       };
 
+      const validCols = /** @type {HTMLElement[]} */ (statCols.filter(Boolean));
+      gsap.set(validCols, { opacity: 0, filter: "blur(20px)" });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=1200",
-          scrub: 0.5,
+          end: "bottom bottom",
+          scrub: 0.8,
           onEnter:     () => { model3dVisible = true; showGlass = false; },
           onLeave:     () => { showGlass = true; },
           onEnterBack: () => { model3dVisible = true; showGlass = false; },
@@ -97,6 +98,7 @@
         },
       });
 
+      // Model animation
       tl.to(modelProps, {
         rotX: circleState.rotX,
         rotY: circleState.rotY,
@@ -107,9 +109,7 @@
         ease: "none",
         onUpdate: update3D,
       });
-
       tl.to({}, { duration: 1.5 });
-
       tl.to(modelProps, {
         rotX: wakeState.rotX,
         rotY: wakeState.rotY,
@@ -120,35 +120,41 @@
         ease: "none",
         onUpdate: update3D,
       });
+      // Model ends at t=4.0
 
-      /** @type {gsap.core.Tween[]} */
-      const counterTweens = [];
+      const MODEL_END = 4.0;
+      const SLOT = 3.0;
+      const ENTER_DUR = 0.7;
+      const EXIT_DUR = 0.6;
 
       stats.forEach((stat, i) => {
+        const col = statCols[i];
         const el = counterEls[i];
-        if (!el) return;
+        if (!col) return;
 
         const proxy = { val: 0 };
+        const slotStart = MODEL_END + i * SLOT;
+        const slotEnd = slotStart + SLOT;
 
-        const tween = gsap.to(proxy, {
-          val: stat.target,
-          duration: stat.duration,
-          ease: 'power1.out',
-          scrollTrigger: {
-            trigger: scrollWrapper,
-            start: 'top top',
-            toggleActions: 'play none none reset',
-          },
-          onUpdate() {
-            if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
-          },
-        });
-        counterTweens.push(tween);
+        tl.to(col, { opacity: 1, filter: "blur(0px)", duration: ENTER_DUR, ease: "power2.out" }, slotStart);
+
+        if (el) {
+          tl.to(proxy, {
+            val: stat.target,
+            duration: SLOT * 0.6,
+            ease: "power1.out",
+            onUpdate: () => {
+              el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
+            },
+          }, slotStart + ENTER_DUR * 0.5);
+        }
+
+        tl.to(col, { opacity: 0, filter: "blur(20px)", duration: EXIT_DUR, ease: "power2.in" }, slotEnd - EXIT_DUR);
       });
 
       return () => {
         tl.kill();
-        counterTweens.forEach(t => t.kill());
+        gsap.set(validCols, { clearProps: "all" });
       };
     });
 
@@ -163,15 +169,62 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      // Set starting scale slightly smaller for mobile
       modelProps.scale = 1.35;
+
+      const MODEL_END = 4.0;
+      const SLOT = 4.0;
+      const ENTER_DUR = 0.8;
+      const EXIT_DUR = 0.8;
+      const TOTAL_DUR = MODEL_END + stats.length * SLOT; // 16.0
+
+      const validCols = /** @type {HTMLElement[]} */ (statCols.filter(Boolean));
+      gsap.set(validCols, { y: 80, opacity: 0 });
+
+      // Counter tweens: auto-play, non legati allo scrub
+      /** @type {(gsap.core.Tween | null)[]} */
+      const counterTweens = [];
+      const counterFired = [false, false, false];
+
+      stats.forEach((stat, i) => {
+        const el = counterEls[i];
+        if (!el) { counterTweens.push(null); return; }
+
+        const proxy = { val: 0 };
+        counterTweens.push(gsap.to(proxy, {
+          val: stat.target,
+          duration: 2.5,
+          ease: "power1.out",
+          paused: true,
+          onUpdate: () => {
+            el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
+          },
+        }));
+      });
 
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionEl,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 0.5,
+          trigger: scrollWrapper,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.8,
+          onUpdate: (st) => {
+            stats.forEach((_, i) => {
+              const ct = counterTweens[i];
+              const el = counterEls[i];
+              if (!ct || !el) return;
+
+              const triggerProg = (MODEL_END + i * SLOT + ENTER_DUR) / TOTAL_DUR;
+
+              if (st.progress >= triggerProg && !counterFired[i]) {
+                counterFired[i] = true;
+                ct.restart();
+              } else if (st.progress < triggerProg && counterFired[i]) {
+                counterFired[i] = false;
+                ct.pause().progress(0);
+                el.textContent = '000';
+              }
+            });
+          },
           onEnter:     () => { model3dVisible = true; showGlass = false; },
           onLeave:     () => { showGlass = true; },
           onEnterBack: () => { model3dVisible = true; showGlass = false; },
@@ -189,9 +242,7 @@
         ease: "none",
         onUpdate: update3D,
       });
-
       tl.to({}, { duration: 1.5 });
-
       tl.to(modelProps, {
         rotX: wakeState.rotX,
         rotY: wakeState.rotY,
@@ -203,54 +254,45 @@
         onUpdate: update3D,
       });
 
-      /** @type {gsap.core.Tween[]} */
-      const counterTweens = [];
+      // Scale-up lento: parte insieme a wakeState, completa a metà del secondo blocco
+      tl.to(modelProps, { scale: 4.5, duration: 6.0, ease: "power2.inOut", onUpdate: update3D }, 2.5);
 
-      stats.forEach((stat, i) => {
-        const el = counterEls[i];
-        if (!el) return;
+      // Transizioni blocchi: dissolvenza in entrata e uscita
+      stats.forEach((_, i) => {
+        const col = statCols[i];
+        if (!col) return;
 
-        const proxy = { val: 0 };
+        const slotStart = MODEL_END + i * SLOT;
+        const slotEnd = slotStart + SLOT;
 
-        const tween = gsap.to(proxy, {
-          val: stat.target,
-          duration: stat.duration,
-          ease: 'power1.out',
-          scrollTrigger: {
-            trigger: sectionEl,
-            start: 'top 75%',
-            toggleActions: 'play none none reset',
-          },
-          onUpdate() {
-            if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
-          },
-        });
-        counterTweens.push(tween);
+        tl.to(col, { y: 0, opacity: 1, duration: ENTER_DUR, ease: "power2.out" }, slotStart);
+        tl.to(col, { y: -80, opacity: 0, duration: EXIT_DUR, ease: "power2.in" }, slotEnd - EXIT_DUR);
       });
 
       return () => {
         tl.kill();
-        counterTweens.forEach(t => t.kill());
+        counterTweens.forEach(t => t?.kill());
+        gsap.set(validCols, { clearProps: "all" });
       };
     });
   });
 </script>
 
 <div class="stats-scroll-wrapper" bind:this={scrollWrapper}>
-<section bind:this={sectionEl} class="stats-section">
-  <div class="stats-grid">
-    {#each stats as stat, i}
-      <div class="stat-col">
-        <h3 class="stat-title">{stat.title}</h3>
-        <p class="stat-desc">{stat.desc}</p>
-        <div class="stat-divider"></div>
-        <div class="stat-counter" bind:this={counterEls[i]}>000</div>
-        <span class="stat-label-under">{stat.label}</span> 
-      </div>
-    {/each}
-  </div>
-  <p class="stats-label">ANALISI AUTOMATIZZATA CONTENUTI · OLYMPIC BROADCASTING</p>
-</section>
+  <section bind:this={sectionEl} class="stats-section">
+    <div class="stats-grid">
+      {#each stats as stat, i}
+        <div class="stat-col" bind:this={statCols[i]}>
+          <h3 class="stat-title">{stat.title}</h3>
+          <p class="stat-desc">{stat.desc}</p>
+          <div class="stat-divider"></div>
+          <div class="stat-counter" bind:this={counterEls[i]}>000</div>
+          <span class="stat-label-under">{stat.label}</span>
+        </div>
+      {/each}
+    </div>
+    <p class="stats-label">ANALISI AUTOMATIZZATA CONTENUTI · OLYMPIC BROADCASTING</p>
+  </section>
 </div>
 
 <style>
@@ -261,7 +303,6 @@
   .stats-section {
     position: relative;
     width: 100%;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -272,7 +313,7 @@
 
   @media (min-width: 800px) {
     .stats-scroll-wrapper {
-      height: 1200px;
+      height: 3600px;
     }
 
     .stats-section {
@@ -284,51 +325,68 @@
     }
   }
 
+  @media (max-width: 799px) {
+    .stats-scroll-wrapper {
+      height: 3600px;
+    }
+
+    .stats-section {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      min-height: unset;
+      overflow: hidden;
+    }
+  }
+
   .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8vw;
-    align-items: start;
+    position: relative;
+    flex: 1;
     width: 100%;
+    min-height: 0;
   }
 
   .stat-col {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 
   .stat-title {
     font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-    font-size: clamp(11px, 1.1vw, 18px);
+    font-size: clamp(16px, 1.8vw, 28px);
     font-weight: 900;
     color: #f8f8f8;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     line-height: 1.3;
     white-space: pre-line;
-    margin: 0 0 1.2rem;
+    margin: 0 0 1.4rem;
   }
 
   .stat-desc {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(12px, 1vw, 16px);
-    line-height: 1.6;
+    font-size: clamp(14px, 1.15vw, 18px);
+    line-height: 1.7;
     color: #f8f8f8;
-    text-align: left;
-    max-width: 45ch;
-    margin: 0 0 1.6rem;
+    max-width: 52ch;
+    margin: 0 0 2rem;
   }
 
   .stat-divider {
     width: 36px;
     height: 1px;
     background: rgba(255, 255, 255, 0.22);
-    margin-bottom: 1.4rem;
+    margin: 0 auto 1.8rem;
   }
 
   .stat-counter {
     font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-    font-size: 8vw;
+    font-size: clamp(80px, 14vw, 200px);
     font-weight: 900;
     color: #f8f8f8;
     line-height: 0.88;
@@ -336,55 +394,45 @@
     will-change: contents;
   }
 
-  /* Stile personalizzabile per la nuova riga di testo */
   .stat-label-under {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(10px, 0.8vw, 13px);
+    font-size: clamp(10px, 0.9vw, 14px);
     color: #f8f8f8;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: 0.8rem; /* Distanza dal numero */
+    letter-spacing: 0.12em;
+    margin-top: 1rem;
     line-height: 1.4;
   }
 
   .stats-label {
     position: absolute;
-    bottom: 8vh;
+    bottom: 4vh;
     left: 0;
     right: 0;
     text-align: center;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: clamp(9px, 0.7vw, 12px);
     letter-spacing: 0.2em;
-    color: #f8f8f8;
+    color: rgba(248, 248, 248, 0.5);
     text-transform: uppercase;
   }
 
   @media (max-width: 799px) {
-    .stats-grid {
-      grid-template-columns: 1fr;
-      gap: 6vh;
+    .stat-title {
+      font-size: 18px;
     }
 
     .stat-desc {
-      max-width: 42ch;
+      font-size: 14px;
+      max-width: 38ch;
     }
 
     .stat-counter {
       font-size: 28vw;
     }
 
-    .stat-title {
-      font-size: 14px;
-    }
-
-    .stat-desc {
-      font-size: 13px;
-    }
-
     .stat-label-under {
       font-size: 11px;
-      margin-top: 0.5rem;
     }
   }
 </style>

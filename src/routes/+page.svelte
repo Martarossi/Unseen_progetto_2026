@@ -221,7 +221,7 @@
   />
 
   {#if hasBeenClicked}
-    <div class="section-gap">
+    <div class="section-gap section-gap--stats">
       <Stats
         bind:modelPosition
         bind:modelScale
@@ -335,6 +335,9 @@
       margin-top: 60vh;
     }
 
+    .section-gap--stats {
+      margin-top: 5vh;
+    }
   }
 
   .footer-spacer {
