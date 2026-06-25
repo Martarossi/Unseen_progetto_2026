@@ -156,12 +156,21 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const bgScale = canvas.width / bgImg.width;
-      const bgDrawHeight = bgImg.height * bgScale;
       const scrollY = window.scrollY;
 
       ctx.globalAlpha = canvasBgOpacity;
-      ctx.drawImage(bgImg, 0, scrollY * 1.2, canvas.width, bgDrawHeight);
+      if (canvas.width <= 799) {
+        // Mobile: scala per coprire l'altezza intera, parte da sinistra (stessa area del desktop)
+        const bgScale = canvas.height / bgImg.height;
+        const bgDrawWidth = bgImg.width * bgScale;
+        const bgDrawHeight = bgImg.height * bgScale;
+        ctx.drawImage(bgImg, 0, 0, bgDrawWidth, bgDrawHeight);
+      } else {
+        // Desktop: formula originale — scala per larghezza, parte da sinistra
+        const bgScale = canvas.width / bgImg.width;
+        const bgDrawHeight = bgImg.height * bgScale;
+        ctx.drawImage(bgImg, 0, scrollY * 1.2, canvas.width, bgDrawHeight);
+      }
       ctx.globalAlpha = 1.0;
 
       const scale = Math.min(
@@ -555,7 +564,7 @@
   /* ── MOBILE ──────────────────────────────────────── */
   @media (max-width: 799px) {
     .description {
-      font-size: clamp(28px, 9vw, 38px);
+      font-size: clamp(20px, 6.5vw, 28px);
       line-height: 1.25;
       padding: 0 6vw;
       text-align: center;

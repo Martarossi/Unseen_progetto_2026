@@ -643,13 +643,13 @@
         bigText,
         { yPercent: 120, opacity: 1 },
         {
-          yPercent: -200,
+          yPercent: -400,
           opacity: 1,
-          duration: 2.7,
+          duration: 1.5,
           ease: "none",
           immediateRender: false,
         },
-        5.0,
+        5.5,
       );
 
       tl.to(
