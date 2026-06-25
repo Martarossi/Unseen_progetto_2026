@@ -102,4 +102,10 @@
   .model3d-layer.visible {
     opacity: 1;
   }
+
+  @media (max-width: 799px) {
+    .model3d-layer {
+      z-index: 0;
+    }
+  }
 </style>

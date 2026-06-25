@@ -751,7 +751,10 @@
   <div class="overlay">
     <!-- IMMAGINE TESTUALE DI TAGLINE: L'immagine iniziale centrata che esprime il concetto cardine del progetto -->
     <div class="initial-text-wrapper" bind:this={textImage}>
-      <img src="/nontuttociòcheconta.png" alt="non tutto ciò che conta è visibile" class="tagline-image" />
+      <picture>
+        <source media="(max-width: 799px)" srcset="/mobile/nontuttocio-mobile.png" />
+        <img src="/nontuttociòcheconta.png" alt="non tutto ciò che conta è visibile" class="tagline-image" />
+      </picture>
     </div>
 
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
@@ -802,50 +805,6 @@
     background-color: transparent;
     overflow: hidden;
     pointer-events: none;
-  }
-
-  @media (max-width: 799px) {
-    .intro-scroll-wrapper {
-      height: 6000px;
-    }
-
-    .intro-container {
-      width: 100vw;
-      height: 100vh;
-      position: sticky;
-      top: 0;
-      background-color: transparent;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .overlay {
-      padding: 32px 20px;
-    }
-
-    .texts-container {
-      width: 85%;
-      left: 7.5%;
-      gap: 2rem;
-    }
-
-    .para-title {
-      font-size: 1.8rem;
-    }
-
-    .paragraph-wrapper p {
-      font-size: 1.05rem;
-      max-width: 100%;
-    }
-
-    .big-text {
-      font-size: 8vw;
-      padding: 0 24px;
-    }
-
-    .initial-text-wrapper {
-      width: 85%;
-    }
   }
 
   .overlay {
@@ -961,5 +920,59 @@
     color: #F8F8F8;
     margin: 0;
     max-width: 420px;
+  }
+
+  @media (max-width: 799px) {
+    .intro-scroll-wrapper {
+      height: 6000px;
+    }
+
+    .intro-container {
+      width: 100vw;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      background-color: transparent;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .overlay {
+      padding: 32px 20px;
+    }
+
+    .texts-container {
+      width: 85%;
+      left: 7.5%;
+      gap: 2rem;
+    }
+
+    .para-title {
+      font-size: 2rem;
+    }
+
+    .paragraph-wrapper p {
+      font-size: 1.05rem;
+      max-width: 100%;
+    }
+
+    .big-text {
+      font-size: 11vw;
+      padding: 0 24px;
+    }
+
+    .initial-text-wrapper {
+      width: auto;
+      max-width: none;
+      left: 5%;
+      transform: translateY(-50%);
+      padding: 0;
+    }
+
+    .tagline-image {
+      height: 40vh;
+      width: auto;
+      max-width: none;
+    }
   }
 </style>
