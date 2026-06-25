@@ -393,8 +393,9 @@
 
     let finalOpacity;
     if (isMobile) {
-      // Su mobile, l'opacità raggiunge il 100% al centro dello schermo (y = 0) e sfuma man mano che la card si allontana
-      const centerFactor = Math.max(0, 1 - Math.abs(y) / 4.0);
+      // Su mobile, applichiamo una curva quadratica (Math.pow 2) alla vicinanza al centro (y = 0)
+      // Questo evidenzia nettamente la card al 100% rispetto a quelle adiacenti, che sfumano molto più rapidamente
+      const centerFactor = Math.pow(Math.max(0, 1 - Math.abs(y) / 4.0), 2);
       finalOpacity = clamped * centerFactor;
     } else {
       finalOpacity = clamped * (0.5 + 0.5 * hoverProgress);

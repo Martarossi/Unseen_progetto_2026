@@ -661,39 +661,40 @@
           scale: 1.2,
           twistX: 60,
           twistZ: 160,
-          duration: 3.5,
+          duration: 2.0, // Ridotto da 3.5 a 2.0 per allinearsi con l'inizio anticipato delle card a t=7.0
           ease: "none",
           onUpdate: update3D,
         },
         5.0,
       );
 
-      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.5);
+      // --- TIMINGS ANTICIPATI DELLE CARD SU MOBILE (t=7.0 invece di 8.5) ---
+      tl.to(orbitProps, { opacity: 1, duration: 0.8, ease: "power2.out" }, 7.0);
       tl.fromTo(
         orbitProps,
         { angle: Math.PI, y: -4.5 },
         { angle: Math.PI * 4, y: 4.5, duration: 4.0, ease: "none" },
-        8.5
+        7.0
       );
-      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.9);
+      tl.to(orbitProps, { opacity: 0, duration: 0.6, ease: "power2.in" }, 10.4);
 
-      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.9);
+      tl.to(orbitProps2, { opacity: 1, duration: 0.8, ease: "power2.out" }, 8.4);
       tl.fromTo(
         orbitProps2,
         { angle: Math.PI, y: -4.5 },
         { angle: Math.PI * 4, y: 4.5, duration: 4.0, ease: "none" },
-        9.9
+        8.4
       );
-      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.3);
+      tl.to(orbitProps2, { opacity: 0, duration: 0.6, ease: "power2.in" }, 11.8);
 
-      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 11.3);
+      tl.to(orbitProps3, { opacity: 1, duration: 0.8, ease: "power2.out" }, 9.8);
       tl.fromTo(
         orbitProps3,
         { angle: Math.PI, y: -4.5 },
         { angle: Math.PI * 4, y: 4.5, duration: 4.0, ease: "none" },
-        11.3
+        9.8
       );
-      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 14.7);
+      tl.to(orbitProps3, { opacity: 0, duration: 0.6, ease: "power2.in" }, 13.2);
 
       tl.to(
         modelProps,
@@ -708,7 +709,7 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        8.5
+        7.0 // Spostato da 8.5 a 7.0
       );
 
       tl.to(
@@ -723,10 +724,10 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        15.3,
+        13.8, // Spostato da 15.3 a 13.8
       );
 
-      const cardFrontTimes = [10.5, 11.9, 13.3];
+      const cardFrontTimes = [9.0, 10.4, 11.8]; // Aggiornato con i nuovi punti medi di centratura delle card [7.0+2, 8.4+2, 9.8+2]
       scrollToCard = (cardIndex) => {
         const st = tl.scrollTrigger;
         if (!st) return;
