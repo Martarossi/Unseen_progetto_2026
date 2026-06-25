@@ -527,8 +527,8 @@
     left: 50%;
     transform: translateX(-50%);
     font-family: "Helvetica", sans-serif;
-    font-size: 1.1rem;
-    color: #4E7785;
+    font-size: 13px;
+    color: #F8F8F8;
     z-index: 20;
     opacity: 0;
     letter-spacing: 0.05em;
@@ -540,7 +540,7 @@
     z-index: 9999;
     transform: translate(-50%, 28px);
     font-family: "Helvetica", "Arial", sans-serif;
-    font-size: 1.1rem;
+    font-size: 0.65rem;
     font-weight: 400;
     letter-spacing: 0.12em;
     color: #4E7785;
@@ -589,7 +589,7 @@
       transform: translateX(-50%);
       top: auto;
       font-family: "Helvetica", "Arial", sans-serif;
-      font-size: 1.1rem;
+      font-size: 13px;
       letter-spacing: 0.12em;
       color: #4E7785;
       pointer-events: none;
@@ -602,7 +602,6 @@
     }
 
     .click-hint--mobile .hint-secondary {
-      opacity: 0.8;
       font-weight: 300;
     }
   }

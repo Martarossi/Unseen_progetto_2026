@@ -108,6 +108,11 @@
 
   onMount(() => {
     if (browser) {
+      // Forza lo scroll a 0 all'avvio su mobile per contrastare il ripristino asincrono dello scroll del browser
+      window.scrollTo(0, 0);
+      const scrollReset1 = setTimeout(() => window.scrollTo(0, 0), 50);
+      const scrollReset2 = setTimeout(() => window.scrollTo(0, 0), 150);
+
       const mm = gsap.matchMedia();
 
       // Desktop: more pronounced parallax
@@ -139,6 +144,8 @@
       });
 
       return () => {
+        clearTimeout(scrollReset1);
+        clearTimeout(scrollReset2);
         mm.revert();
       };
     }

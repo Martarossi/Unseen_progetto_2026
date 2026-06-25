@@ -26,6 +26,8 @@
   /** @type {HTMLElement|null} */
   let textImage = null;
   /** @type {HTMLElement|null} */
+  let textsContainer = null;
+  /** @type {HTMLElement|null} */
   let p1 = null;
   /** @type {HTMLElement|null} */
   let p2 = null;
@@ -429,6 +431,8 @@
         orbitProps3.centerY = modelProps.posY;
       };
 
+      gsap.set(textsContainer, { yPercent: -50 });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
@@ -497,9 +501,23 @@
         1.8,
       );
 
+      // p2 compare sfocato in basso mentre p1 è nitido
+      tl.to(
+        p2,
+        {
+          opacity: 0.45,
+          filter: "blur(8px)",
+          y: 0,
+          duration: 1.2,
+          ease: "power2.out",
+        },
+        1.8,
+      );
+
       tl.to(
         modelProps,
         {
+          posY: -1.8,
           rotX: Math.PI * 0.55,
           rotY: Math.PI * 1.0,
           rotZ: Math.PI * 0.45,
@@ -512,13 +530,24 @@
 
       tl.to({}, { duration: 0.4 });
 
+      // Il container sale: p1 esce in alto sfocandosi, p2 sale al suo posto e si nitidifica
+      tl.to(
+        textsContainer,
+        {
+          y: -260,
+          duration: 1.6,
+          ease: "power2.inOut",
+        },
+        2.6,
+      );
+
       tl.to(
         p1,
         {
-          opacity: 0.1,
-          filter: "blur(10px)",
-          duration: 2.2,
-          ease: "power1.inOut",
+          opacity: 0,
+          filter: "blur(12px)",
+          duration: 1.0,
+          ease: "power2.inOut",
         },
         2.6,
       );
@@ -528,10 +557,9 @@
         {
           opacity: 1,
           filter: "blur(0px)",
-          y: 0,
           pointerEvents: "auto",
-          duration: 1.2,
-          ease: "power2.inOut",
+          duration: 1.4,
+          ease: "power2.out",
         },
         2.6,
       );
@@ -597,18 +625,6 @@
           onUpdate: update3D,
         },
         7.038
-      );
-
-      tl.to(
-        p1,
-        {
-          opacity: 0,
-          y: -40,
-          filter: "blur(8px)",
-          duration: 0.8,
-          ease: "power2.inOut",
-        },
-        4.8,
       );
 
       tl.to(
@@ -739,6 +755,7 @@
 
       return () => {
         tl.kill();
+        gsap.set(textsContainer, { clearProps: "transform" });
         scrollToCard = undefined;
       };
     });
@@ -759,7 +776,7 @@
     </div>
 
     <!-- PARAGRAFI IMPILATI A SINISTRA: Contenitore verticale per i blocchi di testo sequenziali che compaiono con transizioni sfocate alternate -->
-    <div class="texts-container">
+    <div class="texts-container" bind:this={textsContainer}>
       <div class="paragraph-wrapper" bind:this={p1}>
         <span class="para-label"><span class="label-main">MILANO–CORTINA</span><span class="label-suffix"> // </span><span class="label-suffix"> 2026</span></span>
         <h2 class="para-title">ANIMA DIGITALE</h2>
