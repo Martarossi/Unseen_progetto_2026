@@ -29,8 +29,11 @@
     onMount(async () => {
         await tick();
         opening = true;
-        gsap.set(leftColumn,  { filter: "blur(14px)", opacity: 0.35 });
-        gsap.set(rightColumn, { filter: "blur(14px)", opacity: 0.35 });
+        // Il blur/hover si applica solo su desktop
+        if (!window.matchMedia('(max-width: 799px)').matches) {
+            gsap.set(leftColumn,  { filter: "blur(14px)", opacity: 0.35 });
+            gsap.set(rightColumn, { filter: "blur(14px)", opacity: 0.35 });
+        }
     });
 </script>
 
@@ -293,29 +296,107 @@
         text-transform: none;
     }
     
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
+    /* ── Mobile ── */
+    @media (max-width: 799px) {
+        /* Il container non è più 200vh fisso: il contenuto occupa ~300vh naturalmente */
+        .about-container {
+            height: auto;
+        }
+
+        /* sticky-content torna flusso normale: le sezioni scorrono */
+        .sticky-content {
+            position: static;
+            height: auto;
+            overflow: visible;
+            padding: 0;
+            display: block;
+        }
+
+        /* Close button fisso in alto a destra */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 16px 20px;
+            z-index: 100;
+            background: transparent;
+        }
+
+        .close-btn {
+            font-size: 40px;
+        }
+
+        /* Le due colonne si impilano verticalmente come blocchi,
+           ciascuna occupa una schermata intera */
         .content-columns {
+            display: block;
+            margin-top: 0;
+            padding: 0;
+        }
+
+        /* Ogni colonna = una schermata di 100vh, testo allineato in basso */
+        .col {
+            min-height: 100vh;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 64px 28px 150px;
+            display: flex;
             flex-direction: column;
-            gap: 30px;
+            justify-content: flex-end;
+            /* Annulla il blur GSAP: su mobile niente hover */
+            filter: none !important;
+            opacity: 1 !important;
         }
 
         .col h2 {
-            font-size: 20px;
-        }
-
-        .col p {
-            font-size: 14px;
-        }
-
-        .huge-image-container {
+            font-size: 24px;
             margin-bottom: 20px;
         }
 
+        .col p {
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* "ABOUT US" rimane FISSO in basso: sempre visibile durante lo scroll */
+        .huge-image-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            margin: 0;
+            pointer-events: none;
+        }
+
+        .huge-about-img {
+            width: calc(100% - 40px);
+            margin: 0 20px 16px;
+            height: auto;
+            display: block;
+        }
+
+        /* Sezione nomi: schermata intera, testo centrato */
         .footer-names {
-            flex-wrap: wrap;
-            gap: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: flex-start;
+            padding: 64px 28px 200px;
+            text-align: center;
+            gap: 28px;
+            flex-wrap: nowrap;
+            font-size: 15px;
+        }
+
+        .footer-person {
+            align-items: center;
+        }
+
+        .footer-phone {
+            font-size: 12px;
         }
     }
 </style>
