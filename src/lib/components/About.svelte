@@ -457,6 +457,10 @@
             line-height: 1.6;
         }
 
+        .col p br {
+            display: none;
+        }
+
         /* Nomi footer in fondo (ordine 3), allineati a sinistra */
         .footer-names {
             order: 3;
