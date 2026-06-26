@@ -95,6 +95,7 @@
     let histCount = 0;
 
     function loop() {
+      if (!ctx || !maskCtx) return;
       const now = performance.now();
 
       if (!imgLoaded) {

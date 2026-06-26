@@ -397,7 +397,7 @@
       // Ogni orbita parte a angle=π e va a 4π in 4s linear → metà orbita = +2s
       const cardFrontTimes = [9.7 + 2.0, 10.5 + 2.0, 11.3 + 2.0]; // [11.7, 12.5, 13.3]
 
-      scrollToCard = (cardIndex) => {
+      scrollToCard = (/** @type {number} */ cardIndex) => {
         const st = tl.scrollTrigger;
         if (!st) return;
         const t = cardFrontTimes[cardIndex] ?? cardFrontTimes[0];
@@ -459,7 +459,7 @@
 
       tl.fromTo(
         modelProps,
-        { posX: 0, posY: -0.5, scale: 0, rotY: 0 },
+        { posX: 0, posY: -0.5, scale: 0.3, rotY: 0 },
         {
           posX: 0,
           posY: 0.2,
@@ -751,7 +751,7 @@
       );
 
       const cardFrontTimes = [9.0, 10.4, 11.8]; // Aggiornato con i nuovi punti medi di centratura delle card [7.0+2, 8.4+2, 9.8+2]
-      scrollToCard = (cardIndex) => {
+      scrollToCard = (/** @type {number} */ cardIndex) => {
         const st = tl.scrollTrigger;
         if (!st) return;
         const t = cardFrontTimes[cardIndex] ?? cardFrontTimes[0];

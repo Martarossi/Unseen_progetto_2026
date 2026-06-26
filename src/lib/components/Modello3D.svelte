@@ -26,6 +26,7 @@
    *   expandCardIndex?: number,
    *   onCardExpanded?: () => void,
    *   dotsVisible?: boolean,
+   *   showGlass?: boolean,
    *   onPositionsUpdate?: (positions: {x: number, y: number}[]) => void
    * }} */
   let {
@@ -120,7 +121,11 @@
 
   @media (max-width: 799px) {
     .model3d-layer {
-      z-index: 0;
+      z-index: 50;
+      /* Rimuovi GPU hints su mobile: su iOS Safari will-change+transform su un canvas WebGL
+         può causare problemi di compositing che lo rendono invisibile anche con z-index corretto */
+      will-change: auto;
+      transform: none;
     }
   }
 </style>

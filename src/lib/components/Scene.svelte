@@ -30,6 +30,9 @@
 
   /** @typedef {{ x: number, y: number, width: number, height: number }} CardRect */
   /** @type {SceneProps & {
+   *   visible?: boolean,
+   *   showGlass?: boolean,
+   *   isMobile?: boolean,
    *   onCardClick?: (rect: CardRect | null, videoSrc?: string, cardIndex?: number) => void,
    *   expandCardIndex?: number,
    *   onCardExpanded?: () => void,
@@ -303,7 +306,7 @@
    */
   function getRelativeMatrix(node, root) {
     const relativeMatrix = new THREE.Matrix4();
-    let current = node;
+    let current = /** @type {import('three').Object3D | null} */ (node);
     const ancestors = [];
     while (current && current !== root) {
       ancestors.push(current);
