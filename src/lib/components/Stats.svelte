@@ -170,6 +170,11 @@
       };
 
       modelProps.scale = 4.5; // Intro ha già portato il modello a questa scala
+      modelProps.rotX = circleState.rotX;
+      modelProps.rotY = circleState.rotY;
+      modelProps.rotZ = circleState.rotZ;
+      modelProps.twistX = circleState.twistX;
+      modelProps.twistZ = circleState.twistZ;
 
       const MODEL_END = 0;
       const SLOT = 4.0;
@@ -225,14 +230,23 @@
               }
             });
           },
-          onEnter:     () => { model3dVisible = true; showGlass = false; },
+          onEnter: () => {
+            model3dVisible = true;
+            showGlass = false;
+            update3D();
+            if (validCols[0]) gsap.set(validCols[0], { y: 0, opacity: 1 });
+            if (!counterFired[0] && counterTweens[0]) {
+              counterFired[0] = true;
+              counterTweens[0].restart();
+            }
+          },
           onLeave:     () => { showGlass = true; },
           onEnterBack: () => { model3dVisible = true; showGlass = false; },
           onLeaveBack: () => { showGlass = true; },
         },
       });
 
-      // Transizioni blocchi: dissolvenza in entrata e uscita
+      // Transizioni blocchi: il primo appare subito su onEnter, gli altri con scrub
       stats.forEach((_, i) => {
         const col = statCols[i];
         if (!col) return;
@@ -240,7 +254,9 @@
         const slotStart = MODEL_END + i * SLOT;
         const slotEnd = slotStart + SLOT;
 
-        tl.to(col, { y: 0, opacity: 1, duration: ENTER_DUR, ease: "power2.out" }, slotStart);
+        if (i > 0) {
+          tl.to(col, { y: 0, opacity: 1, duration: ENTER_DUR, ease: "power2.out" }, slotStart);
+        }
         tl.to(col, { y: -80, opacity: 0, duration: EXIT_DUR, ease: "power2.in" }, slotEnd - EXIT_DUR);
       });
 

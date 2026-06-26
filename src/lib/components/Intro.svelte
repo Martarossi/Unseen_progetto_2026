@@ -743,10 +743,10 @@
         13.8,
       );
 
-      // Scale-up: parte quando l'ultima card inizia a scomparire, durata 3.0
+      // Scale-up: parte quando l'ultima card inizia a scomparire
       tl.to(
         modelProps,
-        { scale: 4.5, duration: 3.0, ease: "power2.inOut", onUpdate: update3D },
+        { scale: 4.5, duration: 1.5, ease: "power3.out", onUpdate: update3D },
         13.2,
       );
 

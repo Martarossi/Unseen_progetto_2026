@@ -332,7 +332,7 @@
     }
 
     .section-gap--large {
-      margin-top: 60vh;
+      margin-top: 0vh;
     }
 
     .section-gap--stats {
