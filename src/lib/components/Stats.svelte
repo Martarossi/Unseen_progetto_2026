@@ -18,18 +18,21 @@
       title: "COPERTURA IMMERSIVA\nDEI CONTENUTI",
       desc: "Un ecosistema visivo diffuso tra tutti i cluster olimpici. Dalle ottiche ultra-long-range per lo sci alpino ai sistemi micro-camera per bob e curling, è garantita la copertura totale di ogni momento di gara.",
       target: 800,
+      duration: 2.5,
       label: "TELECAMERE ATTIVE SUI CAMPI DI GARA"
     },
     {
       title: "FLUSSO DI PRODUZIONE\nE DISTRIBUZIONE GLOBALE",
       desc: "Il racconto continuo delle Olimpiadi. Grazie alla trasmissione multi-piattaforma in Ultra HD gestita da OBS, ogni sessione competitiva viene prodotta in tempo reale per i broadcaster di tutto il mondo.",
       target: 900,
+      duration: 3.0,
       label: "ORE DI DIRETTA STREAMING"
     },
     {
       title: "CENTRI DI COMANDO\nTECNOLOGICO",
       desc: "Infrastrutture ad alta tecnologia suddivise tra regie mobili nei siti di gara e regie virtualizzate presso l'IBC. Una capillarità necessaria per coordinare simultaneamente eventi live paralleli.",
       target: 23,
+      duration: 2.0,
       label: "REGIE INTERNESSE IN RETE"
     },
   ];
@@ -82,15 +85,12 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      const validCols = /** @type {HTMLElement[]} */ (statCols.filter(Boolean));
-      gsap.set(validCols, { opacity: 0, filter: "blur(20px)" });
-
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "bottom bottom",
-          scrub: 0.8,
+          end: "+=1200",
+          scrub: 0.5,
           onEnter:     () => { model3dVisible = true; showGlass = false; },
           onLeave:     () => { showGlass = true; },
           onEnterBack: () => { model3dVisible = true; showGlass = false; },
@@ -98,7 +98,6 @@
         },
       });
 
-      // Model animation
       tl.to(modelProps, {
         rotX: circleState.rotX,
         rotY: circleState.rotY,
@@ -109,7 +108,9 @@
         ease: "none",
         onUpdate: update3D,
       });
+
       tl.to({}, { duration: 1.5 });
+
       tl.to(modelProps, {
         rotX: wakeState.rotX,
         rotY: wakeState.rotY,
@@ -120,41 +121,35 @@
         ease: "none",
         onUpdate: update3D,
       });
-      // Model ends at t=4.0
 
-      const MODEL_END = 4.0;
-      const SLOT = 3.0;
-      const ENTER_DUR = 0.7;
-      const EXIT_DUR = 0.6;
+      /** @type {gsap.core.Tween[]} */
+      const counterTweens = [];
 
       stats.forEach((stat, i) => {
-        const col = statCols[i];
         const el = counterEls[i];
-        if (!col) return;
+        if (!el) return;
 
         const proxy = { val: 0 };
-        const slotStart = MODEL_END + i * SLOT;
-        const slotEnd = slotStart + SLOT;
 
-        tl.to(col, { opacity: 1, filter: "blur(0px)", duration: ENTER_DUR, ease: "power2.out" }, slotStart);
-
-        if (el) {
-          tl.to(proxy, {
-            val: stat.target,
-            duration: SLOT * 0.6,
-            ease: "power1.out",
-            onUpdate: () => {
-              el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
-            },
-          }, slotStart + ENTER_DUR * 0.5);
-        }
-
-        tl.to(col, { opacity: 0, filter: "blur(20px)", duration: EXIT_DUR, ease: "power2.in" }, slotEnd - EXIT_DUR);
+        const tween = gsap.to(proxy, {
+          val: stat.target,
+          duration: stat.duration,
+          ease: 'power1.out',
+          scrollTrigger: {
+            trigger: scrollWrapper,
+            start: 'top top',
+            toggleActions: 'play none none reset',
+          },
+          onUpdate() {
+            if (el) el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
+          },
+        });
+        counterTweens.push(tween);
       });
 
       return () => {
         tl.kill();
-        gsap.set(validCols, { clearProps: "all" });
+        counterTweens.forEach(t => t.kill());
       };
     });
 
@@ -294,6 +289,7 @@
   .stats-section {
     position: relative;
     width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -302,9 +298,10 @@
     box-sizing: border-box;
   }
 
+  /* ── DESKTOP LAYOUT (as it was 2 days ago) ── */
   @media (min-width: 800px) {
     .stats-scroll-wrapper {
-      height: 3600px;
+      height: 1200px;
     }
 
     .stats-section {
@@ -314,8 +311,87 @@
       min-height: unset;
       overflow: hidden;
     }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8vw;
+      align-items: start;
+      width: 100%;
+    }
+
+    .stat-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .stat-title {
+      font-family: 'Akira Expanded', 'Arial Black', sans-serif;
+      font-size: clamp(11px, 1.1vw, 18px);
+      font-weight: 900;
+      color: #f8f8f8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+      white-space: pre-line;
+      margin: 0 0 1.2rem;
+      text-align: left;
+    }
+
+    .stat-desc {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: clamp(12px, 1vw, 16px);
+      line-height: 1.6;
+      color: #f8f8f8;
+      text-align: left;
+      max-width: 45ch;
+      margin: 0 0 1.6rem;
+    }
+
+    .stat-divider {
+      width: 36px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.22);
+      margin-bottom: 1.4rem;
+    }
+
+    .stat-counter {
+      font-family: 'Akira Expanded', 'Arial Black', sans-serif;
+      font-size: 8vw;
+      font-weight: 900;
+      color: #f8f8f8;
+      line-height: 0.88;
+      letter-spacing: 0.04em;
+      will-change: contents;
+    }
+
+    .stat-label-under {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: clamp(10px, 0.8vw, 13px);
+      color: #f8f8f8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .stats-label {
+      position: absolute;
+      bottom: 8vh;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: clamp(9px, 0.7vw, 12px);
+      letter-spacing: 0.2em;
+      color: #f8f8f8;
+      text-transform: uppercase;
+    }
   }
 
+  /* ── MOBILE LAYOUT (fades & stacked columns) ── */
   @media (max-width: 799px) {
     .stats-scroll-wrapper {
       height: 3600px;
@@ -328,118 +404,86 @@
       min-height: unset;
       overflow: hidden;
     }
-  }
 
-  .stats-grid {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    min-height: 0;
-  }
-
-  .stat-col {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-
-  .stat-title {
-    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-    font-size: clamp(16px, 1.8vw, 28px);
-    font-weight: 900;
-    color: #f8f8f8;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    line-height: 1.3;
-    white-space: pre-line;
-    margin: 0 0 1.4rem;
-  }
-
-  .stat-desc {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(14px, 1.15vw, 18px);
-    line-height: 1.7;
-    color: #f8f8f8;
-    max-width: 52ch;
-    margin: 0 0 2rem;
-  }
-
-  .stat-divider {
-    width: 36px;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.22);
-    margin: 0 auto 1.8rem;
-  }
-
-  .stat-counter {
-    font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-    font-size: clamp(80px, 14vw, 200px);
-    font-weight: 900;
-    color: #f8f8f8;
-    line-height: 0.88;
-    letter-spacing: 0.04em;
-    will-change: contents;
-  }
-
-  .stat-label-under {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(10px, 0.9vw, 14px);
-    color: #f8f8f8;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-top: 1rem;
-    line-height: 1.4;
-  }
-
-  .stats-label {
-    position: absolute;
-    bottom: 4vh;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(9px, 0.7vw, 12px);
-    letter-spacing: 0.2em;
-    color: rgba(248, 248, 248, 0.5);
-    text-transform: uppercase;
-  }
-
-  .label-break {
-    display: none;
-  }
-
-  @media (max-width: 799px) {
-    .stats-label {
-      bottom: 16vh;
-    }
-
-    .label-break {
-      display: block;
+    .stats-grid {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      min-height: 0;
     }
 
     .stat-col {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       padding-top: 8vh;
     }
 
     .stat-title {
+      font-family: 'Akira Expanded', 'Arial Black', sans-serif;
       font-size: 18px;
+      font-weight: 900;
+      color: #f8f8f8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+      white-space: pre-line;
+      margin: 0 0 1.4rem;
+      text-align: center;
     }
 
     .stat-desc {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 14px;
+      line-height: 1.7;
+      color: #f8f8f8;
       max-width: 38ch;
+      margin: 0 0 2rem;
+      text-align: center;
+    }
+
+    .stat-divider {
+      width: 36px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.22);
+      margin: 0 auto 1.8rem;
     }
 
     .stat-counter {
+      font-family: 'Akira Expanded', 'Arial Black', sans-serif;
       font-size: 28vw;
+      font-weight: 900;
+      color: #f8f8f8;
+      line-height: 0.88;
+      letter-spacing: 0.04em;
+      will-change: contents;
     }
 
     .stat-label-under {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 11px;
+      color: #f8f8f8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-top: 1rem;
+      line-height: 1.4;
+    }
+
+    .stats-label {
+      position: absolute;
+      bottom: 16vh;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: clamp(9px, 0.7vw, 12px);
+      letter-spacing: 0.2em;
+      color: rgba(248, 248, 248, 0.5);
+      text-transform: uppercase;
     }
   }
 </style>
