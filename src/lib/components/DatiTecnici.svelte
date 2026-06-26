@@ -47,19 +47,21 @@
     },
   ];
 
+  // 3 card + 2 trail = 5 sezioni da 100svh → colonna 500svh, scrolla di 400svh
+  const TOTAL_PAGES = SECTIONS.length * 2 - 1; // 5
+
   /** @type {HTMLElement | null} */
   let scrollWrapper = null;
   /** @type {HTMLElement | null} */
   let sectionEl = null;
   /** @type {HTMLElement | null} */
   let mobileSectionEl = null;
-  /** @type {(HTMLElement | null)[]} */
-  let mobileCardEls = [];
-
-  let expandedIndex = $state(-1);
+  /** @type {HTMLElement | null} */
+  let mobileColumn = null;
 
   const modelProps = {
     scale: 2.0,
+    posY: 0,
     rotX: Math.PI * 5.5,
     rotY: Math.PI * 9.0,
     rotZ: Math.PI * 5.5,
@@ -119,53 +121,35 @@
     });
 
     mm.add('(max-width: 799px)', () => {
-      modelProps.scale = 4.5; // continua da dove Stats/Intro ha lasciato il modello
-
-      const validMobileCards = /** @type {HTMLElement[]} */ (mobileCardEls.filter(Boolean));
-      gsap.set(validMobileCards, { opacity: 0, y: 30 });
-
-      // Scale-down del modello mentre la sezione entra nel viewport
-      const scaleTl = gsap.timeline({
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: mobileSectionEl,
-          start: 'top 90%',
-          end: 'top 40%',
+          start: 'top top',
+          end: 'bottom bottom',
           scrub: 0.8,
-          onEnter:     () => { model3dVisible = true; },
-          onEnterBack: () => { model3dVisible = true; },
+          onEnter: () => {
+            model3dVisible = true;
+            modelScale    = [4.5, 4.5, 4.5];
+            modelPosition = [0, 0, 0];
+          },
+          onEnterBack: () => {
+            model3dVisible = true;
+            modelScale    = [4.5, 4.5, 4.5];
+            modelPosition = [0, 0, 0];
+          },
           onLeaveBack: () => { model3dVisible = false; },
         },
       });
 
-      scaleTl.to(modelProps, {
-        scale: 2.0,
-        duration: 1.0,
+      // Sposta la colonna esattamente dell'altezza eccedente (colonna - viewport)
+      tl.to(mobileColumn, {
+        y: () => -(mobileColumn.scrollHeight - window.innerHeight),
         ease: 'none',
-        onUpdate: () => {
-          modelScale = [modelProps.scale, modelProps.scale, modelProps.scale];
-        },
+        duration: 1,
+        invalidateOnRefresh: true,
       });
 
-      // Reveal delle card con dissolvenza + movimento Y
-      const cardReveal = ScrollTrigger.create({
-        trigger: mobileSectionEl,
-        start: 'top 65%',
-        onEnter: () => {
-          gsap.to(validMobileCards, {
-            opacity: 1, y: 0,
-            duration: 0.7, stagger: 0.2, ease: 'power2.out',
-          });
-        },
-        onLeaveBack: () => {
-          gsap.set(validMobileCards, { opacity: 0, y: 30 });
-        },
-      });
-
-      return () => {
-        scaleTl.kill();
-        cardReveal.kill();
-        gsap.set(validMobileCards, { clearProps: 'all' });
-      };
+      return () => { tl.kill(); };
     });
   });
 </script>
@@ -175,31 +159,49 @@
   <section class="dt-section" bind:this={sectionEl}></section>
 </div>
 
-<!-- Mobile: 3 card verticali con accordion -->
-<div class="dt-mobile-section" bind:this={mobileSectionEl}>
-  {#each SECTIONS as section, i}
-    <div class="dt-mobile-card" bind:this={mobileCardEls[i]}>
-      <h3 class="dt-mobile-title">{section.title}</h3>
-      <p class="dt-mobile-desc">{section.description}</p>
-      <div class="dt-mobile-expand-area" class:open={expandedIndex === i}>
-        <div class="dt-mobile-expand-inner">
-          <div class="dt-mobile-divider"></div>
-          {#each section.details as d}
-            <div class="dt-mobile-detail">
-              <h4 class="dt-mobile-detail-label">{d.label}</h4>
-              <p class="dt-mobile-detail-text">{d.text}</p>
+<!-- Mobile: colonna unica (card → trail → card → trail → card) animata da GSAP -->
+<div class="dt-mobile-wrapper" bind:this={mobileSectionEl}>
+  <div class="dt-mobile-sticky">
+    <div class="dt-mobile-column" bind:this={mobileColumn}>
+      {#each SECTIONS as section, i}
+        <!-- Sezione card: filler con dot sopra + contenuto + filler con dot sotto -->
+        <div class="dt-mobile-unit">
+          <!-- Filler sopra: dot solo per card non-prima -->
+          <div class="dt-unit-filler">
+            {#if i > 0}
+              {#each Array(5) as _}
+                <div class="dt-unit-trail-dot"></div>
+              {/each}
+            {/if}
+          </div>
+
+          <!-- Contenuto centrato: pallino + etichetta + card -->
+          <div class="dt-unit-content">
+            <div class="dt-unit-node">
+              <div class="dt-unit-dot">
+                <div class="dt-mobile-pulse"></div>
+                <div class="dt-mobile-pulse dt-mobile-pulse-2"></div>
+              </div>
+              <span class="dt-unit-label">{section.id.toUpperCase()}</span>
             </div>
-          {/each}
+            <div class="dt-mobile-card">
+              <h3 class="dt-mobile-title">{section.title}</h3>
+              <p class="dt-mobile-desc">{section.description}</p>
+            </div>
+          </div>
+
+          <!-- Filler sotto: dot solo per card non-ultima -->
+          <div class="dt-unit-filler">
+            {#if i < SECTIONS.length - 1}
+              {#each Array(5) as _}
+                <div class="dt-unit-trail-dot"></div>
+              {/each}
+            {/if}
+          </div>
         </div>
-      </div>
-      <button
-        class="dt-mobile-expand-btn"
-        onclick={() => { expandedIndex = expandedIndex === i ? -1 : i; }}
-      >
-        {expandedIndex === i ? 'CHIUDI ↑' : 'CLICK TO EXPAND ↓'}
-      </button>
+      {/each}
     </div>
-  {/each}
+  </div>
 </div>
 
 <style>
@@ -226,114 +228,153 @@
     }
   }
 
-  /* ── MOBILE CARDS ─────────────────────────────── */
-  .dt-mobile-section {
+  /* ── MOBILE ─────────────────────────────── */
+  .dt-mobile-wrapper {
     display: none;
   }
 
   @media (max-width: 799px) {
-    .dt-mobile-section {
+    /* 3 card (70svh) = 210svh */
+    .dt-mobile-wrapper {
+      display: block;
+      position: relative;
+      height: 210svh;
+    }
+
+    .dt-mobile-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Colonna verticale: GSAP la anima verso l'alto */
+    .dt-mobile-column {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      padding: 0 16px 40px;
+      align-items: center;
       width: 100%;
+      will-change: transform;
+    }
+
+    /* ── Sezione card: filler (dot) — contenuto — filler (dot) ── */
+    .dt-mobile-unit {
+      height: 70svh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 20px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    /* Filler flex:1 — distribuisce i dot con space-between dal bordo al contenuto */
+    .dt-unit-filler {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
       box-sizing: border-box;
     }
 
+    /* Wrapper del contenuto centrato (pallino + etichetta + card) */
+    .dt-unit-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .dt-unit-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dt-unit-dot {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.55);
+      flex-shrink: 0;
+    }
+
+    .dt-unit-label {
+      font-family: 'Akira Expanded', 'Arial Black', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+
+    /* Pulse rings */
+    .dt-mobile-pulse {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.55);
+      animation: dt-mobile-pulse-anim 2.6s ease-out infinite;
+      pointer-events: none;
+    }
+
+    .dt-mobile-pulse-2 {
+      animation-delay: -1.3s;
+    }
+
+    @keyframes dt-mobile-pulse-anim {
+      0%   { transform: scale(1);   opacity: 0.65; }
+      100% { transform: scale(2.8); opacity: 0;    }
+    }
+
+    /* ── Card ── */
     .dt-mobile-card {
+      width: 100%;
       background: rgba(255, 255, 255, 0.07);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
-      padding: 26px 20px 0;
-      color: #ffffff;
+      padding: 24px 22px;
+      box-sizing: border-box;
+      text-align: left;
     }
 
     .dt-mobile-title {
       font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-      font-size: 15px;
+      font-size: 18px;
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: #ffffff;
-      margin: 0 0 12px;
+      margin: 0 0 14px;
       line-height: 1.2;
     }
 
     .dt-mobile-desc {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 13px;
+      font-size: 16px;
       line-height: 1.65;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.75);
       margin: 0;
     }
 
-    .dt-mobile-expand-area {
-      display: grid;
-      grid-template-rows: 0fr;
-      overflow: hidden;
-      transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .dt-mobile-expand-area.open {
-      grid-template-rows: 1fr;
-    }
-
-    .dt-mobile-expand-inner {
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .dt-mobile-divider {
-      height: 1px;
-      background: rgba(255, 255, 255, 0.14);
-      margin: 18px 0;
-    }
-
-    .dt-mobile-detail {
-      margin-bottom: 16px;
-    }
-
-    .dt-mobile-detail:last-child {
-      margin-bottom: 0;
-    }
-
-    .dt-mobile-detail-label {
-      font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-      font-size: 11px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #ffffff;
-      margin: 0 0 6px;
-      line-height: 1.2;
-    }
-
-    .dt-mobile-detail-text {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 12px;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.65);
-      margin: 0;
-    }
-
-    .dt-mobile-expand-btn {
-      display: block;
-      width: 100%;
-      margin-top: 18px;
-      padding: 12px 0;
-      background: none;
-      border: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      color: rgba(255, 255, 255, 0.45);
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      cursor: pointer;
-      text-align: center;
+    .dt-unit-trail-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      flex-shrink: 0;
     }
   }
 </style>

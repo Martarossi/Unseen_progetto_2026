@@ -414,8 +414,8 @@
       const blurTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top+=1800 top",
-          end: "top+=2800 top",
+          start: "top+=1200 top",
+          end: "top+=2000 top",
           scrub: 1.0,
         },
       });
@@ -550,8 +550,8 @@
 
   .voci-intro-phrase {
     font-family: "Helvetica", sans-serif;
-    font-size: clamp(22px, 4vh, 52px);
-    line-height: 1.4;
+    font-size: 4vh;
+    line-height: normal;
     color: #1a2a35;
     margin: 0 0 0.15em;
     font-weight: 400;
@@ -614,6 +614,15 @@
   }
 
   @media (max-width: 799px) {
+    .voci-scroll-wrapper {
+      height: 2200px;
+    }
+
+    .voci-intro-phrase {
+      font-size: clamp(20px, 6.5vw, 28px);
+      line-height: 1.25;
+    }
+
     .voci-columns {
       flex-direction: column;
       bottom: 12vh;

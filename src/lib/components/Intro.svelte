@@ -76,7 +76,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=16800",
+          end: "+=9000",
           scrub: 0.5,
           onEnter:      () => { update3D(); model3dVisible = true; },
           onEnterBack:  () => { update3D(); model3dVisible = true; },
@@ -437,7 +437,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
-          end: "+=7200",
+          end: "+=4000",
           scrub: 0.5,
           onEnter:      () => { update3D(); model3dVisible = true; },
           onEnterBack:  () => { update3D(); model3dVisible = true; },
@@ -818,7 +818,7 @@
 
 <style>
   .intro-scroll-wrapper {
-    height: 16800px;
+    height: 9000px;
     position: relative;
   }
 
@@ -949,7 +949,7 @@
 
   @media (max-width: 799px) {
     .intro-scroll-wrapper {
-      height: 7200px;
+      height: 4000px;
     }
 
     .intro-container {

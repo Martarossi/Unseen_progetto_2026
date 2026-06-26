@@ -17,6 +17,7 @@
 
   // Corrisponde allo stato finale di DatiTecnici (displayState)
   const modelProps = {
+    scale: 2.2,   // desktop; mobile override a 4.5 poi anima a 1.35
     rotX: Math.PI * 6.0,
     rotY: Math.PI * 10.0,
     rotZ: Math.PI * 6.0,
@@ -85,9 +86,12 @@
     });
 
     mm.add('(max-width: 799px)', () => {
+      // Parte dalla scala grande di DatiTecnici e torna a dimensione normale
+      modelProps.scale = 4.5;
+
       const update3D = () => {
         modelPosition[0] = 0; modelPosition[1] = 0; modelPosition[2] = 0;
-        modelScale[0] = modelScale[1] = modelScale[2] = 1.35;
+        modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
         modelRotation[0] = modelProps.rotX;
         modelRotation[1] = modelProps.rotY;
         modelRotation[2] = modelProps.rotZ;
@@ -106,15 +110,18 @@
         },
       });
 
+      // Rimpicciolisce molto più rapidamente la scala (da 4.5 a 1.35) all'inizio dello scroll per non sovrapporsi al testo della citazione
       tl.to(modelProps, {
+        scale: 1.35,
         ...midState,
-        duration: 1.5,
-        ease: 'none',
+        duration: 0.4,
+        ease: 'power1.out',
         onUpdate: update3D,
       });
 
       tl.to({}, { duration: 0.5 });
 
+      // Seconda rotazione; scala rimane a 1.35 (VociDietroLaLente la porterà a 0)
       tl.to(modelProps, {
         ...settleState,
         duration: 1.5,
@@ -148,13 +155,13 @@
   }
 
   .citazione-img {
-    width: clamp(420px, 82vw, 1200px);
+    width: clamp(280px, 82vw, 1200px);
     height: auto;
     display: block;
   }
 
   .citazione-autore {
-    width: clamp(420px, 82vw, 1200px);
+    width: clamp(280px, 82vw, 1200px);
     text-align: right;
     margin: 8vh 0 0 0;
     padding: 0;
@@ -173,5 +180,12 @@
   .citazione-autore em {
     font-style: italic;
     font-weight: 400;
+  }
+
+  @media (max-width: 799px) {
+    .citazione-wrapper {
+      min-height: 50vh;
+      padding: 6vh 0;
+    }
   }
 </style>

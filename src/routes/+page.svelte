@@ -256,7 +256,7 @@
         bind:model3dVisible
       />
     </div>
-    <div class="section-gap">
+    <div class="section-gap section-gap--voci">
       <VociDietroLaLente
         bind:modelPosition
         bind:modelScale
@@ -319,19 +319,27 @@
   }
 
   .section-gap {
-    margin-top: 40vh;
+    margin-top: 20vh;
   }
 
   .section-gap--large {
-    margin-top: 120vh;
+    margin-top: 30vh;
+  }
+
+  .section-gap--voci {
+    margin-top: 5vh;
   }
 
   @media (max-width: 799px) {
     .section-gap {
-      margin-top: 20vh;
+      margin-top: 10vh;
     }
 
     .section-gap--large {
+      margin-top: 0vh;
+    }
+
+    .section-gap--voci {
       margin-top: 0vh;
     }
 
