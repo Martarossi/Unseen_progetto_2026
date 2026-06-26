@@ -169,13 +169,13 @@
         currentTwistZ = modelProps.twistZ;
       };
 
-      modelProps.scale = 1.35;
+      modelProps.scale = 4.5; // Intro ha già portato il modello a questa scala
 
-      const MODEL_END = 4.0;
+      const MODEL_END = 0;
       const SLOT = 4.0;
       const ENTER_DUR = 0.8;
       const EXIT_DUR = 0.8;
-      const TOTAL_DUR = MODEL_END + stats.length * SLOT; // 16.0
+      const TOTAL_DUR = MODEL_END + stats.length * SLOT; // 12.0
 
       const validCols = /** @type {HTMLElement[]} */ (statCols.filter(Boolean));
       gsap.set(validCols, { y: 80, opacity: 0 });
@@ -232,31 +232,6 @@
         },
       });
 
-      tl.to(modelProps, {
-        rotX: circleState.rotX,
-        rotY: circleState.rotY,
-        rotZ: circleState.rotZ,
-        twistX: circleState.twistX,
-        twistZ: circleState.twistZ,
-        duration: 1.0,
-        ease: "none",
-        onUpdate: update3D,
-      });
-      tl.to({}, { duration: 1.5 });
-      tl.to(modelProps, {
-        rotX: wakeState.rotX,
-        rotY: wakeState.rotY,
-        rotZ: wakeState.rotZ,
-        twistX: wakeState.twistX,
-        twistZ: wakeState.twistZ,
-        duration: 1.5,
-        ease: "none",
-        onUpdate: update3D,
-      });
-
-      // Scale-up lento: parte insieme a wakeState, completa a metà del secondo blocco
-      tl.to(modelProps, { scale: 4.5, duration: 6.0, ease: "power2.inOut", onUpdate: update3D }, 2.5);
-
       // Transizioni blocchi: dissolvenza in entrata e uscita
       stats.forEach((_, i) => {
         const col = statCols[i];
@@ -291,7 +266,7 @@
         </div>
       {/each}
     </div>
-    <p class="stats-label">ANALISI AUTOMATIZZATA CONTENUTI · OLYMPIC BROADCASTING</p>
+    <p class="stats-label">ANALISI AUTOMATIZZATA CONTENUTI ·<br class="label-break"> OLYMPIC BROADCASTING</p>
   </section>
 </div>
 
@@ -417,7 +392,23 @@
     text-transform: uppercase;
   }
 
+  .label-break {
+    display: none;
+  }
+
   @media (max-width: 799px) {
+    .stats-label {
+      bottom: 16vh;
+    }
+
+    .label-break {
+      display: block;
+    }
+
+    .stat-col {
+      padding-top: 8vh;
+    }
+
     .stat-title {
       font-size: 18px;
     }

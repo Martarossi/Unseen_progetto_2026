@@ -336,7 +336,7 @@
     }
 
     .section-gap--stats {
-      margin-top: 5vh;
+      margin-top: 0vh;
     }
   }
 

@@ -740,7 +740,14 @@
           ease: "power1.inOut",
           onUpdate: update3D,
         },
-        13.8, // Spostato da 15.3 a 13.8
+        13.8,
+      );
+
+      // Scale-up: parte quando l'ultima card inizia a scomparire, durata 3.0
+      tl.to(
+        modelProps,
+        { scale: 4.5, duration: 3.0, ease: "power2.inOut", onUpdate: update3D },
+        13.2,
       );
 
       const cardFrontTimes = [9.0, 10.4, 11.8]; // Aggiornato con i nuovi punti medi di centratura delle card [7.0+2, 8.4+2, 9.8+2]
