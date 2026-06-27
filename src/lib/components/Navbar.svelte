@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import gsap from "gsap";
 
-  const logoSrc = "/topbarunseen.png";
+  const logoSrc = "/topbarunseen.svg";
   /** @type {{ onOpenAbout?: (event: MouseEvent) => any }} */
   let { onOpenAbout = () => {} } = $props();
 
@@ -49,8 +49,8 @@
 <nav class="navbar" bind:this={navbarEl}>
   <div class="navbar__brand" class:visible={scrollY > 450}>
     <div class="navbar__brand-inner">
-      <img src={logoSrc} alt="Unseen logo" />
-      <div class="logo-tint"></div>
+      <img class="logo-white" src={logoSrc} alt="Unseen logo" />
+      <img class="logo-black" src="/logo_black.svg" alt="Unseen logo" />
     </div>
   </div>
 
@@ -90,23 +90,21 @@
   .navbar__brand-inner {
     position: relative;
     display: inline-block;
-    isolation: isolate;
   }
 
-  .navbar__brand img {
+  .logo-white {
     display: block;
-    max-width: 210px;
-    width: auto;
+    width: 210px;
     height: auto;
   }
 
-  .logo-tint {
+  .logo-black {
     position: absolute;
-    inset: 0;
-    background: #273b42;
-    mix-blend-mode: multiply;
+    top: 0;
+    left: 0;
+    width: 210px;
+    height: auto;
     opacity: 0;
-    pointer-events: none;
   }
 
   .navbar__links {
@@ -114,46 +112,34 @@
     align-items: center;
   }
 
-.navbar__link {
-  position: relative;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  background: transparent;
-  font-size: 0.95rem;
-  font-family: 'Akira Expanded', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  padding-bottom: 3px;
-  filter: blur(0px);
-  transition: filter 0.3s ease;
-}
+  .navbar__link {
+    position: relative;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    font-size: 0.95rem;
+    font-family: 'Akira Expanded', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    padding-bottom: 3px;
+    filter: blur(0px);
+    transition: filter 0.3s ease;
+  }
 
-  /* Underline animata
-  .navbar__link::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 1.5px;
-    background-color: #000;
-    transition: width 0.3s ease;
-  } */
-
-.navbar__link:hover,
-.navbar__link:focus-visible {
-  filter: blur(3px);
-}
+  .navbar__link:hover,
+  .navbar__link:focus-visible {
+    filter: blur(3px);
+  }
 
   @media (max-width: 768px) {
     .navbar {
       padding: 1rem 1.25rem;
     }
 
-    .navbar__brand img,
-    .navbar__brand .logo-tint {
-      max-width: 160px;
+    .logo-white,
+    .logo-black {
+      width: 160px;
     }
 
     .navbar__link {

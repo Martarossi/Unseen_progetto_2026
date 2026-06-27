@@ -208,7 +208,13 @@
         0.5,
       );
       shrinkTl.fromTo(
-        ".logo-tint",
+        ".logo-white",
+        { opacity: 1 },
+        { opacity: 0, duration: 3.5, ease: "power1.inOut" },
+        0.5,
+      );
+      shrinkTl.fromTo(
+        ".logo-black",
         { opacity: 0 },
         { opacity: 1, duration: 3.5, ease: "power1.inOut" },
         0.5,
@@ -418,7 +424,13 @@
         0.5,
       );
       shrinkTl.fromTo(
-        ".logo-tint",
+        ".logo-white",
+        { opacity: 1 },
+        { opacity: 0, duration: 3.5, ease: "power1.inOut" },
+        0.5,
+      );
+      shrinkTl.fromTo(
+        ".logo-black",
         { opacity: 0 },
         { opacity: 1, duration: 3.5, ease: "power1.inOut" },
         0.5,
@@ -428,7 +440,7 @@
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top+=1200 top",
-          end: "top+=2000 top",
+          end: "top+=3000 top",
           scrub: 1.0,
         },
       });
@@ -485,9 +497,14 @@
     <!-- Titolo sempre nitido -->
     <div class="voci-heading" bind:this={headingRef}>
       <img
-        src="/titolo-sez-cameraman.png"
+        src="/gallery_intro_desktop.svg"
         alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana."
-        class="heading-img"
+        class="heading-img heading-img--desktop"
+      />
+      <img
+        src="/gallery_intro.svg"
+        alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana."
+        class="heading-img heading-img--mobile"
       />
     </div>
 
@@ -594,6 +611,10 @@
     height: auto;
   }
 
+  .heading-img--mobile {
+    display: none;
+  }
+
   /* ── Due colonne in basso ── */
   .voci-columns {
     position: absolute;
@@ -627,8 +648,16 @@
   }
 
   @media (max-width: 799px) {
+    .heading-img--desktop {
+      display: none;
+    }
+
+    .heading-img--mobile {
+      display: block;
+    }
+
     .voci-scroll-wrapper {
-      height: 2200px;
+      height: 4500px;
     }
 
     .voci-intro-phrase {

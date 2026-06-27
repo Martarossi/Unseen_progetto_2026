@@ -84,4 +84,34 @@
     opacity: 0.9;
     filter: brightness(0) invert(1);
   }
+
+  @media (max-width: 799px) {
+    .footer {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 24px 16px;
+    }
+
+    .footer-copy {
+      position: static;
+      transform: none;
+      height: 22px;
+      align-self: center;
+      margin: 0 auto;
+    }
+
+    .footer-title {
+      transform: none;
+      flex: unset;
+      text-align: center;
+      white-space: normal;
+      font-size: 0.7rem;
+    }
+
+    .footer-logo-wrap {
+      display: none;
+    }
+  }
 </style>

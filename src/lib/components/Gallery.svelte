@@ -404,8 +404,22 @@
       padding: 14px 14px 18px;
     }
 
+    .card-header {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 0.7em;
+      padding-top: 8px;
+    }
+
     .name-line {
-      font-size: 18px;
+      font-size: 26px;
+      flex: 0 0 auto;
+    }
+
+    .name-divider,
+    .card-role {
+      flex: 0 0 100%;
     }
 
     .card-role {
