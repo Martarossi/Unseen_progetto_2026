@@ -142,7 +142,7 @@
       });
 
       tl.to(mobileColumn, {
-        y: () => -(mobileColumn.scrollHeight - window.innerHeight),
+        y: () => -(/** @type {HTMLElement} */ (mobileColumn).scrollHeight - window.innerHeight),
         ease: 'none',
         duration: 1,
         invalidateOnRefresh: true,

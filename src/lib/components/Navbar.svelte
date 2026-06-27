@@ -48,7 +48,10 @@
 
 <nav class="navbar" bind:this={navbarEl}>
   <div class="navbar__brand" class:visible={scrollY > 450}>
-    <img src={logoSrc} alt="Unseen logo" />
+    <div class="navbar__brand-inner">
+      <img src={logoSrc} alt="Unseen logo" />
+      <div class="logo-tint"></div>
+    </div>
   </div>
 
   <div class="navbar__links">
@@ -84,11 +87,26 @@
     transform: translateX(0);
   }
 
+  .navbar__brand-inner {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+  }
+
   .navbar__brand img {
     display: block;
     max-width: 210px;
     width: auto;
     height: auto;
+  }
+
+  .logo-tint {
+    position: absolute;
+    inset: 0;
+    background: #273b42;
+    mix-blend-mode: multiply;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .navbar__links {
@@ -133,7 +151,8 @@
       padding: 1rem 1.25rem;
     }
 
-    .navbar__brand img {
+    .navbar__brand img,
+    .navbar__brand .logo-tint {
       max-width: 160px;
     }
 

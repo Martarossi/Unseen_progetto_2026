@@ -204,13 +204,13 @@
       shrinkTl.fromTo(
         ".navbar__link",
         { color: "#ffffff" },
-        { color: "#1a2a35", duration: 3.5, ease: "power1.inOut" },
+        { color: "#273b42", duration: 3.5, ease: "power1.inOut" },
         0.5,
       );
       shrinkTl.fromTo(
-        ".navbar__brand img",
-        { filter: "invert(0)" },
-        { filter: "invert(1)", duration: 3.5, ease: "power1.inOut" },
+        ".logo-tint",
+        { opacity: 0 },
+        { opacity: 1, duration: 3.5, ease: "power1.inOut" },
         0.5,
       );
 
@@ -408,6 +408,19 @@
         whiteOverlay,
         { opacity: 0 },
         { opacity: 0.4, duration: 3.5, ease: "power1.inOut" },
+        0.5,
+      );
+
+      shrinkTl.fromTo(
+        ".navbar__link",
+        { color: "#ffffff" },
+        { color: "#273b42", duration: 3.5, ease: "power1.inOut" },
+        0.5,
+      );
+      shrinkTl.fromTo(
+        ".logo-tint",
+        { opacity: 0 },
+        { opacity: 1, duration: 3.5, ease: "power1.inOut" },
         0.5,
       );
 

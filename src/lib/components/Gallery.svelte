@@ -362,13 +362,15 @@
   /* ── Mobile ── */
   @media (max-width: 799px) {
     .gallery-scroll-wrapper { height: auto; }
-    .gallery-sticky { perspective: none; }
 
     .gallery-sticky {
+      perspective: none;
       position: relative;
+      width: 100%;
       height: auto;
       overflow: visible;
-      padding: 60px 20px;
+      padding: 60px 0;
+      box-sizing: border-box;
     }
 
     .cards-container {
@@ -381,12 +383,38 @@
 
     .interview-card {
       position: static;
-      width: 100%;
+      width: 92%;
+      margin: 0 auto;
       height: auto;
-      min-height: 260px;
+      min-height: unset;
       transform: none !important;
       filter: none !important;
       opacity: 1 !important;
+      flex-direction: column;
+    }
+
+    .card-media {
+      flex: 0 0 auto;
+      width: calc(100% - 20px);
+      aspect-ratio: 16 / 9;
+      margin: 10px 10px 0;
+    }
+
+    .card-info {
+      padding: 14px 14px 18px;
+    }
+
+    .name-line {
+      font-size: 18px;
+    }
+
+    .card-role {
+      font-size: 12px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      line-height: 1.55;
     }
   }
 </style>
