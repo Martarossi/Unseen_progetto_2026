@@ -141,7 +141,6 @@
         },
       });
 
-      // Sposta la colonna esattamente dell'altezza eccedente (colonna - viewport)
       tl.to(mobileColumn, {
         y: () => -(mobileColumn.scrollHeight - window.innerHeight),
         ease: 'none',

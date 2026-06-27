@@ -86,7 +86,7 @@
     });
 
     mm.add('(max-width: 799px)', () => {
-      // Parte dalla scala grande di DatiTecnici e torna a dimensione normale
+      // Parte dalla scala grande di DatiTecnici e si rimpicciolisce sulla citazione
       modelProps.scale = 4.5;
 
       const update3D = () => {
@@ -110,12 +110,12 @@
         },
       });
 
-      // Rimpicciolisce molto più rapidamente la scala (da 4.5 a 1.35) all'inizio dello scroll per non sovrapporsi al testo della citazione
+      // Rimpicciolisce 4.5 → 1.35 mentre ruota sulla citazione
       tl.to(modelProps, {
         scale: 1.35,
         ...midState,
-        duration: 0.4,
-        ease: 'power1.out',
+        duration: 1.5,
+        ease: 'none',
         onUpdate: update3D,
       });
 
