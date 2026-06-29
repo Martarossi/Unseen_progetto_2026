@@ -1,6 +1,6 @@
 <script>
 	import { tick } from "svelte";
-	import favicon from "$lib/assets/favicon.svg";
+
 	import NavBar from "$lib/components/Navbar.svelte";
 	import About from "$lib/components/About.svelte";
 
@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
 	<!-- Akira Expanded -->
 	<link href="https://fonts.cdnfonts.com/css/akira-expanded" rel="stylesheet">
