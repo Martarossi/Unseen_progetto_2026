@@ -20,7 +20,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px; /* padding ridotto */
+    padding: 20px 24px;
     box-sizing: border-box;
     background: transparent;
   }
@@ -96,10 +96,13 @@
 
     .footer-copy {
       position: static;
+      left: auto;
+      top: auto;
       transform: none;
       height: 22px;
-      align-self: center;
+      display: block;
       margin: 0 auto;
+      order: 1;
     }
 
     .footer-title {
@@ -108,6 +111,7 @@
       text-align: center;
       white-space: normal;
       font-size: 0.7rem;
+      order: 2;
     }
 
     .footer-logo-wrap {
