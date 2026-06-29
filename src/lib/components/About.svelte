@@ -102,7 +102,7 @@
             <!-- Top bar -->
             <div class="top-bar">
                 <div class="top-bar-logo">
-                    <img src="/topbarunseen.png" alt="Unseen logo" />
+                    <img src="/topbarunseen.svg" alt="Unseen logo" />
                 </div>
                 <button
                     class="close-btn"
