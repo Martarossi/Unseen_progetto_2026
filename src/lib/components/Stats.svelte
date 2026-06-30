@@ -42,9 +42,9 @@
   /** @type {HTMLElement|null} */
   let sectionEl = null;
   /** @type {(HTMLElement|null)[]} */
-  let counterEls = [];
+  let counterEls = $state([]);
   /** @type {(HTMLElement|null)[]} */
-  let statCols = [];
+  let statCols = $state([]);
 
   const modelProps = {
     scale: 2.0,
