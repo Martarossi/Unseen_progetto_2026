@@ -1,6 +1,6 @@
 <script>
   import { T, useThrelte } from "@threlte/core";
-  import { useGltf } from "@threlte/extras";
+  import { useGltf, useMeshopt } from "@threlte/extras";
   import * as THREE from "three";
   import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
   import { useRenderer } from "@threlte/core";
@@ -76,7 +76,8 @@
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
-  const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb");
+  const meshoptDecoder = useMeshopt();
+  const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb", { meshoptDecoder });
 
   const customUniforms = {
     twistXAngle: { value: (360 * Math.PI) / 180 },
