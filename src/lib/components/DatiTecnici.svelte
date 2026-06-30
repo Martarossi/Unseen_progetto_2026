@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import gsap from 'gsap';
-  import ScrollTrigger from 'gsap/dist/ScrollTrigger';
 
   let {
     modelPosition  = $bindable(/** @type {[number, number, number]} */ ([0, 0, 0])),
@@ -127,6 +126,7 @@
           start: 'top top',
           end: 'bottom bottom',
           scrub: 0.8,
+          invalidateOnRefresh: true,
           onEnter: () => {
             model3dVisible = true;
             modelScale    = [4.5, 4.5, 4.5];
@@ -145,7 +145,6 @@
         y: () => -(/** @type {HTMLElement} */ (mobileColumn).scrollHeight - window.innerHeight),
         ease: 'none',
         duration: 1,
-        invalidateOnRefresh: true,
       });
 
       return () => { tl.kill(); };
