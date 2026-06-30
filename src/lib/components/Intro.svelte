@@ -777,8 +777,8 @@
     <!-- IMMAGINE TESTUALE DI TAGLINE: L'immagine iniziale centrata che esprime il concetto cardine del progetto -->
     <div class="initial-text-wrapper" bind:this={textImage}>
       <picture>
-        <source media="(max-width: 799px)" srcset="/mobile/nontuttocio-mobile.png" />
-        <img src="/nontuttociòcheconta.png" alt="non tutto ciò che conta è visibile" class="tagline-image" />
+        <source media="(max-width: 799px)" srcset="/mobile/nontuttocio-mobile.svg" />
+        <img src="/nontuttociocheconta.svg" alt="non tutto ciò che conta è visibile" class="tagline-image" />
       </picture>
     </div>
 
@@ -871,8 +871,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60%;
-    max-width: 800px;
+    width: 170%;
+    max-width: 3000px;
     display: flex;
     justify-content: center;
     align-items: center;
