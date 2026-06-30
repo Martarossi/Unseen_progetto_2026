@@ -45,11 +45,14 @@
     },
     {
       id: 5,
-      firstName: 'LUCA',
-      lastName: 'BIANCHI',
-      role: 'Videomaker aereo\nDrone FPV',
+      firstName: 'ANDREA',
+      lastName: 'UDALI',
+      role: 'Videomaker',
       image: '/gallery_alpine.png',
       thumb: '/gallery_milanocortina.png',
+      video: '/video_interviste/Intro-Udali.mp4',
+      youtubeUrl: 'https://youtu.be/nMPI1SWulRo',
+      desc: `Cosa significa lavorare come cameraman durante i Giochi Olimpici Invernali? In questa intervista andiamo dietro l'obiettivo con un professionista con 24 anni di esperienza che ha coperto le spettacolari e adrenaliniche discipline del Mogul (le gobbe) e dell'Aerial a Livigno, una delle località più fredde d'Italia. Lontano dal calore dello studio, i cameraman sportivi affrontano sfide estreme che il pubblico da casa non può nemmeno immaginare: ore immobili a temperature sotto lo zero, tempeste di neve improvvise e la necessità di proteggere attrezzature sofisticatissime.`
     },
   ];
 
@@ -104,10 +107,17 @@
 
   /** @type {Record<number, boolean>} */
   let videoEnded = $state({});
+  /** @type {Record<number, boolean>} */
+  let videoHovered = $state({});
 
   /** @param {number} id */
   function onVideoEnded(id) {
     videoEnded = { ...videoEnded, [id]: true };
+  }
+
+  /** @param {number} id @param {boolean} hovered */
+  function onVideoHover(id, hovered) {
+    videoHovered = { ...videoHovered, [id]: hovered };
   }
 
   onMount(() => {
@@ -145,7 +155,12 @@
 
           <div class="card-media">
             {#if iv.video}
-              <div class="video-wrapper">
+              <div
+                class="video-wrapper"
+                role="presentation"
+                onmouseenter={() => onVideoHover(iv.id, true)}
+                onmouseleave={() => onVideoHover(iv.id, false)}
+              >
                 <video
                   src={iv.video}
                   autoplay
@@ -153,12 +168,13 @@
                   playsinline
                   onended={() => onVideoEnded(iv.id)}
                 ></video>
-                {#if videoEnded[iv.id] && iv.youtubeUrl}
+                {#if (videoEnded[iv.id] || videoHovered[iv.id]) && iv.youtubeUrl}
                   <a
                     href={iv.youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     class="video-end-overlay"
+                    class:ended={videoEnded[iv.id]}
                   >
                     <span>per la versione integrale</span>
                     <span>clicca qui</span>
@@ -299,7 +315,7 @@
     transition: filter 0.4s ease, opacity 0.4s ease;
   }
 
-  .video-end-overlay:hover span {
+  .video-end-overlay:has(span:hover) span {
     filter: blur(6px);
     opacity: 0.5;
   }
