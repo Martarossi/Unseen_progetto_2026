@@ -56,11 +56,19 @@
 ></div>
 
 {#if activeModel > 0}
-  <button class="arrow-btn left" onclick={prevModel} aria-label="Modello precedente">&#8249;</button>
+  <button class="arrow-btn left" onclick={prevModel} aria-label="Modello precedente">
+    <svg width="5" height="9" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 1L1 6.5L7 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
 {/if}
 
 {#if activeModel < TOTAL_MODELS - 1}
-  <button class="arrow-btn right" onclick={nextModel} aria-label="Modello successivo">&#8250;</button>
+  <button class="arrow-btn right" onclick={nextModel} aria-label="Modello successivo">
+    <svg width="5" height="9" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L7 6.5L1 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
 {/if}
 
 <div class="canvas-container">
@@ -105,7 +113,7 @@
   border-radius: 50%;
   cursor: pointer;
   font-size: 22px;
-  line-height: 1;
+  line-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;

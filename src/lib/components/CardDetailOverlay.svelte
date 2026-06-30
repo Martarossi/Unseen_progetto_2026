@@ -85,6 +85,13 @@
     startRAF();
   }
 
+  /** @param {number} index */
+  function goToSlide(index) {
+    barProgress = 0;
+    activeSlide = index;
+    startRAF();
+  }
+
   /** @param {MouseEvent} e */
   function handleNavClick(e) {
     const rect = /** @type {HTMLElement} */ (e.currentTarget).getBoundingClientRect();
@@ -191,7 +198,14 @@
           onkeydown={(e) => { if (e.key === 'ArrowLeft') prevSlide(); if (e.key === 'ArrowRight') nextSlide(); }}>
           <div class="nav-progress">
             {#each currentSlides as _, i}
-              <div class="progress-line">
+              <div
+                class="progress-line"
+                role="button"
+                tabindex="0"
+                aria-label="Vai alla sezione {i + 1}"
+                onclick={(e) => { e.stopPropagation(); goToSlide(i); }}
+                onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); goToSlide(i); } }}
+              >
                 <div
                   class="progress-fill"
                   style="width: {i < activeSlide ? 100 : i === activeSlide ? barProgress * 100 : 0}%"
@@ -367,6 +381,18 @@
   border-radius: 1px;
   overflow: hidden;
   position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.progress-line::before {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
+}
+
+.progress-line:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .progress-fill {

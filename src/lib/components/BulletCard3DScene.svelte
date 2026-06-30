@@ -1,29 +1,36 @@
 <script>
   import { T, useTask } from "@threlte/core";
-  import { useGltf } from "@threlte/extras";
   import * as THREE from "three";
+  import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+  import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
   /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number }} */
   let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
 
   const PARTICLE_COUNT = 5000;
-  const MORPH_DURATION = 1.8;
+  const MORPH_DURATION = 0.6;
 
-  const gltf0 = useGltf("/modello_bullettime.glb");
-  const gltf1 = useGltf("/modello_3d_sciatore.glb");
-  const gltf2 = useGltf("/modello_3d_bob.glb");
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+  const loader = new GLTFLoader();
+  loader.setDRACOLoader(dracoLoader);
+
+  const MODEL_URLS = [
+    "/modello_bullettime.glb",
+    "/modello_3d_sciatore.glb",
+    "/modello_3d_bob.glb",
+  ];
+  const MODEL_HEIGHTS = [4.0, 4.0, 2.1];
 
   const currentPos = new Float32Array(PARTICLE_COUNT * 3);
-  const morphFrom  = new Float32Array(PARTICLE_COUNT * 3); // snapshot at morph start
+  const morphFrom  = new Float32Array(PARTICLE_COUNT * 3);
   const morphGeo   = new THREE.BufferGeometry();
   const posAttr    = new THREE.BufferAttribute(currentPos, 3);
-  morphGeo.setAttribute('position', posAttr);
+  morphGeo.setAttribute("position", posAttr);
 
-  // Sampled positions for each model (indexed 0–2)
   /** @type {(Float32Array|null)[]} */
   const pos = [null, null, null];
 
-  // Morph state
   /** @type {Float32Array|null} */
   let morphTo      = null;
   let morphElapsed = 0;
@@ -50,7 +57,7 @@
     shader.uniforms.uTime = uTime;
     shader.vertexShader = `uniform float uTime;\n` + shader.vertexShader;
     shader.vertexShader = shader.vertexShader.replace(
-      '#include <begin_vertex>',
+      "#include <begin_vertex>",
       `
       #include <begin_vertex>
       vec3 wave;
@@ -61,7 +68,7 @@
       `
     );
     shader.fragmentShader = shader.fragmentShader.replace(
-      '#include <color_fragment>',
+      "#include <color_fragment>",
       `
       #include <color_fragment>
       vec2 center = gl_PointCoord - vec2(0.5);
@@ -77,9 +84,6 @@
 
   // ── Geometry sampler ──────────────────────────────────────────────────────
   /**
-   * Campiona PARTICLE_COUNT punti sulla superficie del modello, normalizza,
-   * e ordina per Y in modo che testa↔testa e piedi↔piedi durante il morph.
-   * La pre-estrazione di yVals rende il sort cache-friendly (accesso sequenziale).
    * @param {THREE.Group} scene
    * @param {number} [targetHeight]
    * @returns {Float32Array}
@@ -113,7 +117,7 @@
         vB.fromBufferAttribute(attr, idx.getX(t+1)).applyMatrix4(mesh.matrixWorld);
         vC.fromBufferAttribute(attr, idx.getX(t+2)).applyMatrix4(mesh.matrixWorld);
         const r1 = Math.sqrt(Math.random()), r2 = Math.random();
-        p.set(0,0,0)
+        p.set(0, 0, 0)
           .addScaledVector(vA, 1 - r1)
           .addScaledVector(vB, r1 * (1 - r2))
           .addScaledVector(vC, r1 * r2);
@@ -127,7 +131,6 @@
       raw[i*3+2] = p.z;
     }
 
-    // Bounding box
     let minX=Infinity, maxX=-Infinity;
     let minY=Infinity, maxY=-Infinity;
     let minZ=Infinity, maxZ=-Infinity;
@@ -140,7 +143,6 @@
     const cx=(minX+maxX)/2, cy=(minY+maxY)/2, cz=(minZ+maxZ)/2;
     const sc = (maxY - minY) > 0 ? targetHeight / (maxY - minY) : 1;
 
-    // Pre-estrai Y in un array flat → sort cache-friendly (niente stride-3)
     const yVals = new Float32Array(PARTICLE_COUNT);
     for (let i = 0; i < PARTICLE_COUNT; i++) yVals[i] = raw[i*3+1];
     const indices = Array.from({ length: PARTICLE_COUNT }, (_, i) => i);
@@ -156,45 +158,25 @@
     return sorted;
   }
 
-  // ── Load models ───────────────────────────────────────────────────────────
-  // setTimeout defer: evita di bloccare il main thread durante uno scroll frame attivo.
-  $effect(() => {
-    const scene = $gltf0?.scene;
-    if (!scene) return;
-    const id = setTimeout(() => {
-      pos[0] = sampleScene(scene);
-      currentPos.set(pos[0]);
-      posAttr.needsUpdate = true;
-    }, 50);
-    return () => clearTimeout(id);
-  });
-
-  $effect(() => {
-    const scene = $gltf1?.scene;
-    if (!scene) return;
-    const id = setTimeout(() => {
-      pos[1] = sampleScene(scene);
-    }, 50);
-    return () => clearTimeout(id);
-  });
-
-  $effect(() => {
-    const scene = $gltf2?.scene;
-    if (!scene) return;
-    const id = setTimeout(() => {
-      pos[2] = sampleScene(scene, 7 / 3);
-    }, 50);
-    return () => clearTimeout(id);
+  // ── Load all models on mount ──────────────────────────────────────────────
+  MODEL_URLS.forEach((url, index) => {
+    loader.load(url, (gltf) => {
+      pos[index] = sampleScene(gltf.scene, MODEL_HEIGHTS[index]);
+      if (index === 0) {
+        currentPos.set(pos[0]);
+        posAttr.needsUpdate = true;
+      }
+    });
   });
 
   // ── Trigger morph on model change ─────────────────────────────────────────
   let _mounted = false;
   $effect(() => {
-    const _dep = activeModel;
+    const current = activeModel;
     if (!_mounted) { _mounted = true; return; }
-    const target = pos[activeModel];
+    const target = pos[current];
     if (!target) return;
-    morphFrom.set(currentPos); // snapshot current visual state
+    morphFrom.set(currentPos);
     morphTo      = target;
     morphElapsed = 0;
     isMorphing   = true;
