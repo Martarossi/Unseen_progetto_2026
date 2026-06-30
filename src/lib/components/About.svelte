@@ -44,47 +44,51 @@
             const sections = [leftColumn, rightColumn, footerNamesEl].filter(Boolean);
 
             // Stato iniziale
-            gsap.set(leftColumn, { filter: 'blur(0px)', opacity: 1 });
-            gsap.set(rightColumn, { filter: 'blur(6px)', opacity: 0.45 });
-            gsap.set(footerNamesEl, { filter: 'blur(6px)', opacity: 0.45 });
+            if (leftColumn)   gsap.set(leftColumn,   { filter: 'blur(0px)', opacity: 1 });
+            if (rightColumn)  gsap.set(rightColumn,  { filter: 'blur(6px)', opacity: 0.45 });
+            if (footerNamesEl) gsap.set(footerNamesEl, { filter: 'blur(6px)', opacity: 0.45 });
 
             // Animazione per il secondo paragrafo (rightColumn)
-            const animRight = gsap.fromTo(rightColumn,
-                { filter: 'blur(6px)', opacity: 0.45 },
-                {
-                    filter: 'blur(0px)',
-                    opacity: 1,
-                    scrollTrigger: {
-                        trigger: ".sticky-content",
-                        scroller: aboutWrapperEl,
-                        start: "top+=30 top",
-                        end: "top+=180 top",
-                        scrub: true
+            if (rightColumn) {
+                const animRight = gsap.fromTo(rightColumn,
+                    { filter: 'blur(6px)', opacity: 0.45 },
+                    {
+                        filter: 'blur(0px)',
+                        opacity: 1,
+                        scrollTrigger: {
+                            trigger: ".sticky-content",
+                            scroller: aboutWrapperEl,
+                            start: "top+=30 top",
+                            end: "top+=180 top",
+                            scrub: true
+                        }
                     }
-                }
-            );
-            if (animRight.scrollTrigger) scrollTriggers.push(animRight.scrollTrigger);
+                );
+                if (animRight.scrollTrigger) scrollTriggers.push(animRight.scrollTrigger);
+            }
 
             // Animazione per il footer names
-            const animFooter = gsap.fromTo(footerNamesEl,
-                { filter: 'blur(6px)', opacity: 0.45 },
-                {
-                    filter: 'blur(0px)',
-                    opacity: 1,
-                    scrollTrigger: {
-                        trigger: ".sticky-content",
-                        scroller: aboutWrapperEl,
-                        start: "top+=180 top",
-                        end: "top+=350 top",
-                        scrub: true
+            if (footerNamesEl) {
+                const animFooter = gsap.fromTo(footerNamesEl,
+                    { filter: 'blur(6px)', opacity: 0.45 },
+                    {
+                        filter: 'blur(0px)',
+                        opacity: 1,
+                        scrollTrigger: {
+                            trigger: ".sticky-content",
+                            scroller: aboutWrapperEl,
+                            start: "top+=180 top",
+                            end: "top+=350 top",
+                            scrub: true
+                        }
                     }
-                }
-            );
-            if (animFooter.scrollTrigger) scrollTriggers.push(animFooter.scrollTrigger);
+                );
+                if (animFooter.scrollTrigger) scrollTriggers.push(animFooter.scrollTrigger);
+            }
         } else {
             // Desktop: blur su hover
-            gsap.set(leftColumn,  { filter: "blur(14px)", opacity: 0.35 });
-            gsap.set(rightColumn, { filter: "blur(14px)", opacity: 0.35 });
+            if (leftColumn)  gsap.set(leftColumn,  { filter: "blur(14px)", opacity: 0.35 });
+            if (rightColumn) gsap.set(rightColumn, { filter: "blur(14px)", opacity: 0.35 });
         }
     });
 
@@ -109,6 +113,15 @@
                     onclick={handleClose}
                     aria-label="Close"
                 >&times;</button>
+            </div>
+
+            <!-- Full-width image (prima nel DOM così sticky funziona correttamente su mobile) -->
+            <div class="huge-image-container">
+                <img
+                    src="/about-us.png"
+                    alt="About Us"
+                    class="huge-about-img"
+                />
             </div>
 
             <!-- Two-column text area -->
@@ -165,36 +178,27 @@
                 </div>
             </div>
 
-            <!-- Full-width image -->
-            <div class="huge-image-container">
-                <img
-                    src="/about-us.png"
-                    alt="About Us"
-                    class="huge-about-img"
-                />
-            </div>
-
             <!-- Footer names — tutto dentro lo stesso div -->
             <div class="footer-names">
                 <div class="footer-person">
                     <a href="https://www.instagram.com/dylanmeendez/" target="_blank" rel="noopener noreferrer">DYLAN HERNANDEZ</a>
-                    <a href="https://mail.google.com/mail/?view=cm&amp;to=dh.mendez33@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: dh.mendez33@gmail.com</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=dh.mendez33@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">dh.mendez33@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/denimarcolin/" target="_blank" rel="noopener noreferrer">DENISE MARCOLIN</a>
-                    <a href="https://mail.google.com/mail/?view=cm&amp;to=deni.marcolin@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: deni.marcolin@gmail.com</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=deni.marcolin@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">deni.marcolin@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/richi_pizzi/" target="_blank" rel="noopener noreferrer">RICCARDO PIZZIGONI</a>
-                    <a href="https://mail.google.com/mail/?view=cm&amp;to=richipizzi04@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: richipizzi04@gmail.com</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=richipizzi04@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">richipizzi04@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/martarossi_9/" target="_blank" rel="noopener noreferrer">MARTA ROSSI</a>
-                    <a href="https://mail.google.com/mail/?view=cm&amp;to=marta2005rossi@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: marta2005rossi@gmail.com</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=marta2005rossi@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">marta2005rossi@gmail.com</a>
                 </div>
                 <div class="footer-person">
                     <a href="https://www.instagram.com/___.dxvide._/" target="_blank" rel="noopener noreferrer">DAVIDE SACANNA</a>
-                    <a href="https://mail.google.com/mail/?view=cm&amp;to=davidesacanna@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">Mail: davidesacanna@gmail.com</a>
+                    <a href="https://mail.google.com/mail/?view=cm&amp;to=davidesacanna@gmail.com" class="footer-phone" target="_blank" rel="noopener noreferrer">davidesacanna@gmail.com</a>
                 </div>
             </div>
 
@@ -255,11 +259,13 @@
         justify-content: space-between;
         align-items: center;
         z-index: 10;
+        margin: -40px -40px 0;
+        padding: 1.25rem 2rem;
     }
 
     .top-bar-logo img {
-        height: 16px;
-        width: auto;
+        width: 210px;
+        height: auto;
         display: block;
     }
 
@@ -279,6 +285,7 @@
     }
 
     /* ── Two columns ── */
+    /* order: 2 perché sul desktop l'immagine è ora prima nel DOM ma va visualizzata dopo */
     .content-columns {
         display: flex;
         justify-content: space-between;
@@ -287,6 +294,7 @@
         padding: 0 5%;
         gap: 8%;
         margin-top: -20px;
+        order: 2;
     }
 
     .col {
@@ -318,6 +326,7 @@
         align-items: center;
         margin-bottom: 30px;
         width: 100%;
+        order: 3;
     }
 
     .huge-about-img {
@@ -374,7 +383,8 @@
             position: relative;
             height: auto;
             overflow: visible;
-            padding: 90px 24px 40px;
+            /* 54px top-bar + 100px immagine + 20px gap (il container è 240px ma fades oltre) */
+            padding: 190px 24px 40px;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
@@ -389,8 +399,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 24px;
+            margin: 0;
             z-index: 100;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
+            background: transparent;
             box-sizing: border-box;
         }
 
@@ -404,31 +415,44 @@
             font-size: 40px;
         }
 
-        /* "ABOUT US" in alto (ordine 1) */
+        /* "ABOUT US" — fixed, parte da top:0 per blur continuo.
+           Il mask-image sul container stesso crea la dissolvenza morbida in basso. */
         .huge-image-container {
-            order: 1;
-            position: relative;
-            bottom: auto;
-            left: auto;
+            order: unset;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             width: 100%;
-            z-index: 10;
-            margin: 10px 0 20px;
-            pointer-events: auto;
+            height: 240px;
+            padding-top: 54px;
+            z-index: 15;
+            margin: 0;
             display: flex;
             justify-content: flex-start;
+            align-items: flex-start;
+            overflow: visible;
+            box-sizing: border-box;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+            pointer-events: none;
         }
 
         .huge-about-img {
-            width: 100%;
-            max-width: 320px;
-            margin: 0;
-            height: auto;
-            display: block;
+            height: 100px;
+            width: auto;
+            max-width: calc(100% - 32px);
+            margin: 8px 16px 0;
+            object-fit: contain;
+            object-position: left center;
+            pointer-events: auto;
         }
 
-        /* Colonne di testo (ordine 2) */
+        /* Colonne di testo */
         .content-columns {
-            order: 2;
+            order: unset;
             display: flex;
             flex-direction: column;
             gap: 20px; /* avvicina i paragrafi */
@@ -461,9 +485,9 @@
             display: none;
         }
 
-        /* Nomi footer in fondo (ordine 3), allineati a sinistra */
+        /* Nomi footer in fondo, allineati a sinistra */
         .footer-names {
-            order: 3;
+            order: unset;
             min-height: auto;
             box-sizing: border-box;
             display: flex;
