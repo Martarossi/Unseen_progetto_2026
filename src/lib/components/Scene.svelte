@@ -1,17 +1,35 @@
 <script>
-  import { T } from "@threlte/core";
-  import { useGltf, Environment } from "@threlte/extras";
+  import { T, useThrelte } from "@threlte/core";
+  import { useGltf, useMeshopt } from "@threlte/extras";
   import * as THREE from "three";
+  import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
   import { useRenderer } from "@threlte/core";
   import VideoCard from "./VideoCard.svelte";
 
   const { renderer } = useRenderer();
+  const { scene } = useThrelte();
 
   $effect(() => {
     if (renderer) {
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.2;
     }
+  });
+
+  $effect(() => {
+    if (!renderer || !scene) return;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    const loader = new HDRLoader();
+    loader.load(
+      "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_garden_1k.hdr",
+      (texture) => {
+        const envMap = pmrem.fromEquirectangular(texture).texture;
+        scene.environment = envMap;
+        texture.dispose();
+        pmrem.dispose();
+      }
+    );
   });
 
   /**
@@ -58,7 +76,8 @@
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
-  const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb");
+  const meshoptDecoder = useMeshopt();
+  const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb", { meshoptDecoder });
 
   const customUniforms = {
     twistXAngle: { value: (360 * Math.PI) / 180 },
@@ -532,11 +551,6 @@
 <T.DirectionalLight position={[-5, -5, -5]} intensity={1.0} color="#b0c4de" />
 <T.PointLight position={[0, 0, 5]} intensity={1.5} distance={15} />
 
-<!-- STUDIO GARDEN ENVIRONMENT (Riflessi spettacolari per il vetro liquido) -->
-<Environment
-  url="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_garden_1k.hdr"
-  isBackground={false}
-/>
 
 {#if $gltf}
   <T is={$gltf.scene} {position} {scale} {rotation} visible={visible} />

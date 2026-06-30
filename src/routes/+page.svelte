@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import gsap from "gsap";
-  import ScrollTrigger from "gsap/dist/ScrollTrigger";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import Hero from "$lib/components/Hero.svelte";
   import Intro from "$lib/components/Intro.svelte";
   import Gallery from "$lib/components/Gallery.svelte";
@@ -20,6 +20,7 @@
 
   if (browser) {
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
     if ('scrollRestoration' in history) {
       // Prefer manual so we can control programmatic scroll, but
       // avoid forcing a scroll on back/forward navigation below.
