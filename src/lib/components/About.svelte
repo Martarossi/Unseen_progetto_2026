@@ -215,6 +215,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         overflow-x: hidden;
         overflow-y: auto;
         z-index: 9999;
