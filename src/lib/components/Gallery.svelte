@@ -40,11 +40,12 @@
     },
     {
       id: 4,
-      firstName: 'ANNA',
-      lastName: 'ROSSI',
+      firstName: 'MARCO',
+      lastName: `DONA'`,
       role: 'Operatrice\nsteadicam',
       image: '/gallery_unseen.png',
       thumb: '/gallery_alpine.png',
+      video: '/video_interviste/Intro-Dona.mp4',
     },
     {
       id: 5,
