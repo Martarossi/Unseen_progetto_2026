@@ -21,11 +21,14 @@
     },
     {
       id: 2,
-      firstName: 'SARA',
-      lastName: 'MARTINI',
-      role: 'Camerawoman\nSport estremi',
+      firstName: 'LUCIO',
+      lastName: 'PIAZZINI',
+      role: 'Videomaker',
       image: '/gallery_helvetica.png',
       thumb: '/gallery_neural.png',
+      video: '/video_interviste/Intro-Piazzini.mp4',
+      youtubeUrl: 'https://youtu.be/pFnFSAPNwc0',
+      desc: `Mentre il mondo ha gli occhi puntati sui campioni e sulle medaglie, c'è chi lavora nell'ombra, a bordo pista o dietro le ricetrasmittenti, pronto a intervenire nei momenti più critici. In questa intervista, il videomaker Lucio Piazzini ci racconta come è nato il progetto di Regione Veneto per mostrare chi salva vite: i soccorritori del 118 durante i Giochi Olimpici di Cortina.`,
     },
     {
       id: 3,
@@ -52,7 +55,7 @@
       thumb: '/gallery_milanocortina.png',
       video: '/video_interviste/Intro-Udali.mp4',
       youtubeUrl: 'https://youtu.be/nMPI1SWulRo',
-      desc: `Cosa significa lavorare come cameraman durante i Giochi Olimpici Invernali? In questa intervista andiamo dietro l'obiettivo con un professionista con 24 anni di esperienza che ha coperto le spettacolari e adrenaliniche discipline del Mogul (le gobbe) e dell'Aerial a Livigno, una delle località più fredde d'Italia. Lontano dal calore dello studio, i cameraman sportivi affrontano sfide estreme che il pubblico da casa non può nemmeno immaginare: ore immobili a temperature sotto lo zero, tempeste di neve improvvise e la necessità di proteggere attrezzature sofisticatissime.`
+      desc: `Cosa significa lavorare come cameraman durante i Giochi Olimpici Invernali? In questa intervista andiamo dietro l'obiettivo con un professionista con 24 anni di esperienza che ha coperto le spettacolari e adrenaliniche discipline del Mogul (le gobbe) e dell'Aerial a Livigno, una delle località più fredde d'Italia. `
     },
   ];
 
