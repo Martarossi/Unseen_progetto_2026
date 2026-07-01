@@ -62,7 +62,11 @@
     }
 
     const logoImg = new Image();
-    logoImg.src = "/LOGO.png";
+    logoImg.src = "/LOGO.svg";
+    // Dimensioni fisse pari al vecchio LOGO.png: l'SVG ha un viewBox diverso,
+    // fissarle mantiene invariato il calcolo della scala e la grandezza a schermo.
+    logoImg.width = 831;
+    logoImg.height = 161;
     let imgLoaded = false;
     logoImg.onload = () => {
       imgLoaded = true;

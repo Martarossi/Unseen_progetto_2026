@@ -200,5 +200,9 @@
     .citazione-img-mobile {
       display: block;
     }
+
+    .citazione-autore {
+      font-size: 15px;
+    }
   }
 </style>
