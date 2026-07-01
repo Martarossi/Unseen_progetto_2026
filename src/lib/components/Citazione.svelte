@@ -135,7 +135,8 @@
 </script>
 
 <div class="citazione-wrapper" bind:this={scrollWrapper}>
-  <img src="/citazione.png" alt="citazione" class="citazione-img" />
+  <img src="/citazione.png" alt="citazione" class="citazione-img citazione-img-desktop" />
+  <img src="/mobile/ilpuntononestupire.svg" alt="citazione" class="citazione-img citazione-img-mobile" />
   <p class="citazione-autore">
     <strong>Yiannis Exarchos,</strong> <em>CEO di Olympic<br />Broadcasting Services (OBS)</em>
   </p>
@@ -158,6 +159,10 @@
     width: clamp(280px, 82vw, 1200px);
     height: auto;
     display: block;
+  }
+
+  .citazione-img-mobile {
+    display: none;
   }
 
   .citazione-autore {
@@ -186,6 +191,14 @@
     .citazione-wrapper {
       min-height: 50vh;
       padding: 6vh 0;
+    }
+
+    .citazione-img-desktop {
+      display: none;
+    }
+
+    .citazione-img-mobile {
+      display: block;
     }
   }
 </style>
