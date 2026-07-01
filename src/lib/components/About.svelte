@@ -386,8 +386,8 @@
             position: relative;
             height: auto;
             overflow: visible;
-            /* 54px top-bar + 100px immagine + 20px gap (il container è 240px ma fades oltre) */
-            padding: 190px 24px 40px;
+            /* 90px top-bar in alto; 220px in fondo per non finire sotto l'immagine fixed in basso */
+            padding: 90px 24px 220px;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
@@ -418,28 +418,28 @@
             font-size: 40px;
         }
 
-        /* "ABOUT US" — fixed, parte da top:0 per blur continuo.
-           Il mask-image sul container stesso crea la dissolvenza morbida in basso. */
+        /* "ABOUT US" — fixed in fondo allo schermo (come su desktop, dove
+           l'immagine sta in basso). Il mask-image sfuma il bordo superiore
+           del container per la dissolvenza morbida col contenuto che scorre. */
         .huge-image-container {
             order: unset;
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
             width: 100%;
-            height: 240px;
-            padding-top: 54px;
+            height: 200px;
             z-index: 15;
             margin: 0;
             display: flex;
             justify-content: flex-start;
-            align-items: flex-start;
+            align-items: flex-end;
             overflow: visible;
             box-sizing: border-box;
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 45%, black 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 45%, black 100%);
             pointer-events: none;
         }
 
@@ -447,7 +447,7 @@
             height: 100px;
             width: auto;
             max-width: calc(100% - 32px);
-            margin: 8px 16px 0;
+            margin: 0 16px 10px;
             object-fit: contain;
             object-position: left center;
             pointer-events: auto;
