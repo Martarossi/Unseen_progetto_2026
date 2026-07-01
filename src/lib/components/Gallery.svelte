@@ -13,8 +13,6 @@
       firstName: 'JORDAN',
       lastName: 'COWAN',
       role: 'Videomaker\nEx pattinatore professionista',
-      image: '/gallery_milanocortina.png',
-      thumb: '/gallery_helvetica.png',
       video: '/video_interviste/Intro-Cowan.mp4',
       youtubeUrl: 'https://youtu.be/KLLawK2Y0jo',
       desc: 'Cosa succede quando un ex pattinatore artistico del Team USA decide di portare la macchina da presa sul ghiaccio? In questa intervista esclusiva, Jordan Cowan, fondatore di On Ice Perspectives, ci racconta come ha rivoluzionato il modo in cui il mondo guarda il pattinaggio artistico, arrivando a filmare direttamente sulla pista delle Olimpiadi.',
@@ -24,27 +22,22 @@
       firstName: 'LUCIO',
       lastName: 'PIAZZINI',
       role: 'Videomaker',
-      image: '/gallery_helvetica.png',
-      thumb: '/gallery_neural.png',
       video: '/video_interviste/Intro-Piazzini.mp4',
       youtubeUrl: 'https://youtu.be/pFnFSAPNwc0',
       desc: `Mentre il mondo ha gli occhi puntati sui campioni e sulle medaglie, c'è chi lavora nell'ombra, a bordo pista o dietro le ricetrasmittenti, pronto a intervenire nei momenti più critici. In questa intervista, il videomaker Lucio Piazzini ci racconta come è nato il progetto di Regione Veneto per mostrare chi salva vite: i soccorritori del 118 durante i Giochi Olimpici di Cortina.`,
     },
     {
       id: 3,
-      firstName: 'MARCO',
-      lastName: 'FERRI',
-      role: 'Direttore\ndella fotografia',
-      image: '/gallery_neural.png',
-      thumb: '/gallery_unseen.png',
+      firstName: 'LORENZO',
+      lastName: `D'ORAZIO`,
+      role: 'Videomaker',
+      video: '/video_interviste/Intro-Dorazio.mp4',
     },
     {
       id: 4,
       firstName: 'MARCO',
       lastName: `DONA'`,
       role: 'Operatrice\nsteadicam',
-      image: '/gallery_unseen.png',
-      thumb: '/gallery_alpine.png',
       video: '/video_interviste/Intro-Dona.mp4',
     },
     {
@@ -52,8 +45,6 @@
       firstName: 'ANDREA',
       lastName: 'UDALI',
       role: 'Videomaker',
-      image: '/gallery_alpine.png',
-      thumb: '/gallery_milanocortina.png',
       video: '/video_interviste/Intro-Udali.mp4',
       youtubeUrl: 'https://youtu.be/nMPI1SWulRo',
       desc: `Cosa significa lavorare come cameraman durante i Giochi Olimpici Invernali? In questa intervista andiamo dietro l'obiettivo con un professionista con 24 anni di esperienza che ha coperto le spettacolari e adrenaliniche discipline del Mogul (le gobbe) e dell'Aerial a Livigno, una delle località più fredde d'Italia. `
@@ -185,8 +176,6 @@
                   </a>
                 {/if}
               </div>
-            {:else}
-              <img src={iv.image} alt="{iv.firstName} {iv.lastName}" />
             {/if}
           </div>
 
@@ -271,7 +260,6 @@
     border-radius: 14px;
   }
 
-  .card-media img,
   .card-media video {
     width: 100%;
     height: 100%;
