@@ -7,11 +7,17 @@
 	let { children } = $props();
 	let showAboutOverlay = $state(false);
 	let animateAboutOpen = $state(false);
+	let closingAbout = $state(false);
 
 	async function openAbout() {
 		animateAboutOpen = true;
+		closingAbout = false;
 		await tick();
 		showAboutOverlay = true;
+	}
+
+	function startCloseAbout() {
+		closingAbout = true;
 	}
 
 	async function closeAbout() {
@@ -33,11 +39,11 @@
 <NavBar onOpenAbout={openAbout} />
 
 {#if animateAboutOpen}
-	<div class="about-open-transition" class:active={showAboutOverlay}></div>
+	<div class="about-open-transition" class:active={showAboutOverlay && !closingAbout}></div>
 {/if}
 
 {#if showAboutOverlay}
-	<About closeOverlay={closeAbout} />
+	<About closeOverlay={closeAbout} onCloseStart={startCloseAbout} />
 {/if}
 
 {@render children()}

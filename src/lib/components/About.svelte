@@ -3,7 +3,7 @@
     import gsap from "gsap";
     import ScrollTrigger from "gsap/dist/ScrollTrigger";
 
-    let { closeOverlay } = $props();
+    let { closeOverlay, onCloseStart } = $props();
 
     /** @type {HTMLElement|null} */
     let aboutWrapperEl = $state(null);
@@ -27,6 +27,7 @@
     async function handleClose() {
         if (closing) return;
         closing = true;
+        onCloseStart?.();
         await new Promise(r => setTimeout(r, 650));
         closeOverlay();
     }
@@ -345,6 +346,7 @@
         text-transform: uppercase;
         padding: 0 6% 0 4%;
         opacity: 0.9;
+        order: 4;
     }
 
     .footer-person {
