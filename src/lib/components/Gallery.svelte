@@ -115,6 +115,30 @@
     videoHovered = { ...videoHovered, [id]: hovered };
   }
 
+  /** @type {(HTMLVideoElement|null)[]} */
+  let videoEls = [];
+
+  /**
+   * Solo il video della card attiva viene mandato in play; tutti gli altri
+   * restano in pausa per non caricare/decodificare 5 video contemporaneamente.
+   * @param {number} index
+   */
+  function setActiveVideo(index) {
+    const clamped = Math.max(0, Math.min(interviews.length - 1, Math.round(index)));
+    videoEls.forEach((v, j) => {
+      if (!v) return;
+      if (j === clamped) {
+        if (v.paused) v.play().catch(() => {});
+      } else if (!v.paused) {
+        v.pause();
+      }
+    });
+  }
+
+  function pauseAllVideos() {
+    videoEls.forEach((v) => v && !v.paused && v.pause());
+  }
+
   onMount(() => {
     updateCards(0);
 
@@ -128,16 +152,44 @@
           start: 'top top',
           end: '+=4800',
           scrub: true,
+          // il video parte/si ferma solo quando la sezione entra/esce
+          // davvero dalla viewport, non appena la pagina viene caricata
+          onEnter: () => setActiveVideo(state.index),
+          onEnterBack: () => setActiveVideo(state.index),
+          onLeave: () => pauseAllVideos(),
+          onLeaveBack: () => pauseAllVideos(),
         },
       });
 
       tl.to(state, {
         index: interviews.length - 1,
         ease: 'none',
-        onUpdate: () => updateCards(state.index),
+        onUpdate: () => {
+          updateCards(state.index);
+          if (tl.scrollTrigger?.isActive) setActiveVideo(state.index);
+        },
       });
 
       return () => tl.kill();
+    });
+
+    mm.add('(max-width: 799px)', () => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const video = /** @type {HTMLVideoElement} */ (entry.target);
+            if (entry.isIntersecting) {
+              if (video.paused) video.play().catch(() => {});
+            } else if (!video.paused) {
+              video.pause();
+            }
+          });
+        },
+        { threshold: 0.4 }
+      );
+      videoEls.forEach((v) => v && observer.observe(v));
+
+      return () => observer.disconnect();
     });
   });
 </script>
@@ -145,7 +197,7 @@
 <div class="gallery-scroll-wrapper" bind:this={scrollWrapper}>
   <div class="gallery-sticky">
     <div class="cards-container" bind:this={cardsContainer}>
-      {#each interviews as iv}
+      {#each interviews as iv, j}
         <div class="interview-card">
 
           <div class="card-media">
@@ -156,11 +208,12 @@
                 onmouseenter={() => onVideoHover(iv.id, true)}
                 onmouseleave={() => onVideoHover(iv.id, false)}
               >
+                <!-- svelte-ignore a11y_media_has_caption -->
                 <video
+                  bind:this={videoEls[j]}
                   src={iv.video}
-                  autoplay
-                  muted
                   playsinline
+                  preload={j === 0 ? 'auto' : 'metadata'}
                   onended={() => onVideoEnded(iv.id)}
                 ></video>
                 {#if (videoEnded[iv.id] || videoHovered[iv.id]) && iv.youtubeUrl}
