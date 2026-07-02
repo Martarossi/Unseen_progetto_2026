@@ -110,6 +110,11 @@
     videoEnded = { ...videoEnded, [id]: true };
   }
 
+  /** @param {number} id */
+  function onVideoPlay(id) {
+    videoEnded = { ...videoEnded, [id]: false };
+  }
+
   /** @param {number} id @param {boolean} hovered */
   function onVideoHover(id, hovered) {
     videoHovered = { ...videoHovered, [id]: hovered };
@@ -215,6 +220,7 @@
                   playsinline
                   preload={j === 0 ? 'auto' : 'metadata'}
                   onended={() => onVideoEnded(iv.id)}
+                  onplay={() => onVideoPlay(iv.id)}
                 ></video>
                 {#if (videoEnded[iv.id] || videoHovered[iv.id]) && iv.youtubeUrl}
                   <a
