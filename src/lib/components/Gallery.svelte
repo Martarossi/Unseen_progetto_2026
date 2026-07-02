@@ -23,7 +23,7 @@
       lastName: 'PIAZZINI',
       role: 'Videomaker',
       video: '/video_interviste/Intro-Piazzini.mp4',
-      youtubeUrl: 'https://youtu.be/pFnFSAPNwc0',
+      youtubeUrl: 'https://youtu.be/WnPbDaGDOcQ',
       desc: `Mentre il mondo ha gli occhi puntati sui campioni e sulle medaglie, c'è chi lavora nell'ombra, a bordo pista o dietro le ricetrasmittenti, pronto a intervenire nei momenti più critici. In questa intervista, il videomaker Lucio Piazzini ci racconta come è nato il progetto di Regione Veneto per mostrare chi salva vite: i soccorritori del 118 durante i Giochi Olimpici di Cortina.`,
     },
     {
