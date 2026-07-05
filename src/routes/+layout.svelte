@@ -36,17 +36,26 @@
 	<link rel="stylesheet" href="https://use.typekit.net/tsx2ihe.css" />
 </svelte:head>
 
-<NavBar onOpenAbout={openAbout} />
+<svelte:boundary onerror={(error) => console.error("Errore durante il caricamento del sito:", error)}>
+	<NavBar onOpenAbout={openAbout} />
 
-{#if animateAboutOpen}
-	<div class="about-open-transition" class:active={showAboutOverlay && !closingAbout}></div>
-{/if}
+	{#if animateAboutOpen}
+		<div class="about-open-transition" class:active={showAboutOverlay && !closingAbout}></div>
+	{/if}
 
-{#if showAboutOverlay}
-	<About closeOverlay={closeAbout} onCloseStart={startCloseAbout} />
-{/if}
+	{#if showAboutOverlay}
+		<About closeOverlay={closeAbout} onCloseStart={startCloseAbout} />
+	{/if}
 
-{@render children()}
+	{@render children()}
+
+	{#snippet failed(error, reset)}
+		<div class="load-error">
+			<p>Il caricamento non è andato a buon fine.</p>
+			<button onclick={() => window.location.reload()}>Ricarica la pagina</button>
+		</div>
+	{/snippet}
+</svelte:boundary>
 
 <style>
 	:global(body) {
@@ -69,5 +78,30 @@
 
 	.about-open-transition.active {
 		clip-path: circle(150% at calc(100% - 130px) 50px);
+	}
+
+	.load-error {
+		position: fixed;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 16px;
+		background: #ffffff;
+		color: #030404;
+		font-family: sans-serif;
+		text-align: center;
+		padding: 24px;
+	}
+
+	.load-error button {
+		padding: 10px 24px;
+		border: 1px solid #030404;
+		background: transparent;
+		color: #030404;
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: 14px;
 	}
 </style>

@@ -22,7 +22,7 @@
     pmrem.compileEquirectangularShader();
     const loader = new HDRLoader();
     loader.load(
-      "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_garden_1k.hdr",
+      "/studio_garden_1k.hdr",
       (texture) => {
         const envMap = pmrem.fromEquirectangular(texture).texture;
         scene.environment = envMap;
