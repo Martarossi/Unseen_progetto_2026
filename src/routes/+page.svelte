@@ -313,7 +313,7 @@
   }
 
   .section-gap--large {
-    margin-top: 30vh;
+    margin-top: 38vh;
   }
 
   .section-gap--voci {
@@ -326,7 +326,7 @@
     }
 
     .section-gap--large {
-      margin-top: 0vh;
+      margin-top: 6vh;
     }
 
     .section-gap--voci {

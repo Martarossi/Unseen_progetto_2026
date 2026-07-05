@@ -242,8 +242,8 @@
       const blurTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top+=2500 top",
-          end: "top+=3500 top",
+          start: "top+=1300 top",
+          end: "top+=1800 top",
           scrub: 1.5,
         },
       });
@@ -439,8 +439,8 @@
       const blurTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top+=1200 top",
-          end: "top+=3000 top",
+          start: "top+=900 top",
+          end: "top+=1350 top",
           scrub: 1.0,
         },
       });
@@ -595,7 +595,7 @@
   /* ── Titolo allineato a sinistra ── */
   .voci-heading {
     position: absolute;
-    top: 38%;
+    top: 34%;
     left: 8vw;
     transform: translateY(-50%);
     text-align: left;
@@ -618,7 +618,7 @@
   /* ── Due colonne in basso ── */
   .voci-columns {
     position: absolute;
-    bottom: 20vh;
+    bottom: 24vh;
     left: 8vw;
     right: 8vw;
     display: flex;
@@ -667,12 +667,12 @@
 
     .voci-columns {
       flex-direction: column;
-      bottom: 12vh;
+      bottom: 15vh;
       gap: 3vh;
     }
 
     .voci-heading {
-      top: 30%;
+      top: 27%;
       left: 6vw;
       width: 88%;
     }
