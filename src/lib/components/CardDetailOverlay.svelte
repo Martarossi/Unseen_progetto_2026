@@ -273,8 +273,8 @@
 
 .close-btn {
   position: absolute;
-  top: 50px;
-  right: 50px;
+  top: 37px;
+  right: 37px;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.85);
