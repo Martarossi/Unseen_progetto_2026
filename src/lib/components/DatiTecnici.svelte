@@ -77,6 +77,20 @@
     twistZ: 72,
   };
 
+  /** Chrome a volte non ricalcola il backdrop-filter sopra il canvas WebGL finché
+   *  non avviene un vero recalc di stile (es. hover): forziamo un reflow sincrono
+   *  per farlo scattare subito, senza dover aspettare un'interazione dell'utente. */
+  function kickMobileCardsBackdrop() {
+    document.querySelectorAll('.dt-mobile-card').forEach((el) => {
+      const e = /** @type {HTMLElement} */ (el);
+      e.style.backdropFilter = 'blur(18.5px)';
+      e.style.setProperty('-webkit-backdrop-filter', 'blur(18.5px)');
+      void e.offsetHeight;
+      e.style.backdropFilter = '';
+      e.style.setProperty('-webkit-backdrop-filter', '');
+    });
+  }
+
   onMount(() => {
     const mm = gsap.matchMedia();
 
@@ -132,11 +146,13 @@
             model3dVisible = true;
             modelScale    = [4.5, 4.5, 4.5];
             modelPosition = [0, 0, 0];
+            requestAnimationFrame(kickMobileCardsBackdrop);
           },
           onEnterBack: () => {
             model3dVisible = true;
             modelScale    = [4.5, 4.5, 4.5];
             modelPosition = [0, 0, 0];
+            requestAnimationFrame(kickMobileCardsBackdrop);
           },
           onLeaveBack: () => { model3dVisible = false; },
         },

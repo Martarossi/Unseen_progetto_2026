@@ -74,6 +74,29 @@
     });
     return best;
   })());
+
+  /** @type {(HTMLElement | null)[]} */
+  let cardEls = $state([]);
+
+  /** @param {HTMLElement | null} el */
+  function kickBackdrop(el) {
+    if (!el) return;
+    // Chrome a volte non ricalcola il backdrop-filter sopra il canvas WebGL finché
+    // non avviene un vero recalc di stile (es. hover): forziamo un reflow sincrono
+    // per farlo scattare subito, senza dover aspettare un'interazione dell'utente.
+    el.style.backdropFilter = 'blur(18.5px)';
+    el.style.setProperty('-webkit-backdrop-filter', 'blur(18.5px)');
+    void el.offsetHeight;
+    el.style.backdropFilter = '';
+    el.style.setProperty('-webkit-backdrop-filter', '');
+  }
+
+  $effect(() => {
+    if (visible) {
+      activeIndex; // ri-esegui anche quando cambia la card attiva
+      requestAnimationFrame(() => cardEls.forEach(kickBackdrop));
+    }
+  });
 </script>
 
 <div class="dt-overlay" class:visible class:exiting class:reenter>
@@ -114,6 +137,7 @@
       <div
         class="dt-card"
         class:active={activeIndex === i}
+        bind:this={cardEls[i]}
       >
         <div class="dt-card-front">
           <h3 class="dt-card-title">{s.title}</h3>
