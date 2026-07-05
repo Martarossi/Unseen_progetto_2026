@@ -349,6 +349,15 @@
       padding: 24px 22px;
       box-sizing: border-box;
       text-align: left;
+      /* Chrome a volte non ricalcola il backdrop-filter sopra il canvas WebGL finché
+         non avviene un ripaint (es. scroll): una variazione impercettibile e continua
+         del raggio di blur forza la ricomposizione fin dal primo frame visibile. */
+      animation: dt-mobile-backdrop-kick 0.5s linear infinite;
+    }
+
+    @keyframes dt-mobile-backdrop-kick {
+      0%, 100% { backdrop-filter: blur(18px);   -webkit-backdrop-filter: blur(18px); }
+      50%      { backdrop-filter: blur(18.4px); -webkit-backdrop-filter: blur(18.4px); }
     }
 
     .dt-mobile-title {

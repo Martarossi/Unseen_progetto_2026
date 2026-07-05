@@ -313,6 +313,18 @@
     z-index: 0;
   }
 
+  /* Chrome a volte non ricalcola il backdrop-filter sopra il canvas WebGL finché
+     non avviene un ripaint (es. scroll): una variazione impercettibile e continua
+     del raggio di blur forza la ricomposizione fin dal primo frame visibile. */
+  .dt-overlay.visible .dt-card {
+    animation: dt-backdrop-kick 0.5s linear infinite;
+  }
+
+  @keyframes dt-backdrop-kick {
+    0%, 100% { backdrop-filter: blur(18px);   -webkit-backdrop-filter: blur(18px); }
+    50%      { backdrop-filter: blur(18.4px); -webkit-backdrop-filter: blur(18.4px); }
+  }
+
   .dt-card.active {
     filter: blur(0px);
     opacity: 1;
