@@ -484,7 +484,7 @@
           >{/each}
       </p>
       <p class="voci-intro-phrase">
-        {#each splitIntoLetters("sta dietro l'") as char}<span
+        {#each splitIntoLetters("agisce dietro l'") as char}<span
             class="voci-letter">{char}</span
           >{/each}<b
           >{#each splitIntoLetters("inquadratura") as char}<span
