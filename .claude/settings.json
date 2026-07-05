@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(sips -c 300 900 -o crop_logo.png stats_header2.png)",
+      "Bash(sips --cropOffset 0 0 --cropToHeightWidth 200 500 stats_header2.png --out crop_logo2.png)",
+      "Bash(pkill -f \"vite dev\")",
+      "Bash(node crop2.mjs)"
+    ]
+  }
+}

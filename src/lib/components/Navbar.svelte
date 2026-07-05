@@ -77,6 +77,7 @@
   }
 
   .navbar__brand {
+    position: relative;
     opacity: 0;
     transform: translateX(-20px);
     transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -87,8 +88,29 @@
     transform: translateX(0);
   }
 
+  /*
+    Layer di sfondo separato dal logo: sfoca ciò che scorre sotto e dissolve i propri bordi,
+    senza intaccare la nitidezza del logo sopra.
+    L'elemento sfocato è volutamente molto più grande della capsula visibile: il bordo "duro"
+    intrinseco del backdrop-filter (limite fisico del suo box) finisce così ben oltre la zona
+    visibile, dove la maschera lo ha già portato a trasparenza 0 — quindi invisibile.
+    La forma e la dimensione visibili sono decise solo dal raggio fisso della mask-image.
+  */
+  .navbar__brand::before {
+    content: "";
+    position: absolute;
+    inset: -3.2rem -5rem;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    mask-image: radial-gradient(ellipse 135px 42px at center, #000 35%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 135px 42px at center, #000 35%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
   .navbar__brand-inner {
     position: relative;
+    z-index: 1;
     display: inline-block;
   }
 
@@ -108,12 +130,27 @@
   }
 
   .navbar__links {
+    position: relative;
     display: flex;
     align-items: center;
   }
 
+  /* Stesso principio del brand: il box che sfoca sta dietro, il link resta nitido sopra */
+  .navbar__links::before {
+    content: "";
+    position: absolute;
+    inset: -3.2rem -5rem;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    mask-image: radial-gradient(ellipse 95px 38px at center, #000 35%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 95px 38px at center, #000 35%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
   .navbar__link {
     position: relative;
+    z-index: 1;
     color: #ffffff;
     border: none;
     cursor: pointer;
