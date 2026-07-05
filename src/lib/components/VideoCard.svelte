@@ -37,21 +37,31 @@
   const CVS_H = isMobile ? 720 : 360;
   const CARD_H = CARD_W * (CVS_H / 640);   // mantiene proporzioni canvas ↔ geometria
   const CARD_DEPTH = 0.03;
-  const CORNER_R = 0.22; // raggio angoli fronte – non clampato dalla depth con ExtrudeGeometry
+  // Raggio angoli fronte in px sul canvas texture: deve combaciare con il roundRect usato
+  // per disegnare/clippare il video, altrimenti la mesh (meno arrotondata) sbuca oltre
+  // il video (più arrotondato) e si vede lo sfondo della pagina negli angoli.
+  const VIDEO_CORNER_PX = 39;
+  // Margine (in px equivalenti) oltre VIDEO_CORNER_PX: copre la sfumatura di 1-2px generata
+  // dal filtro bilineare della texture e dall'antialiasing del canvas ai bordi arrotondati.
+  const CORNER_MARGIN_PX = 5;
+  const CORNER_R = CARD_W * ((VIDEO_CORNER_PX + CORNER_MARGIN_PX) / 640);
 
   // Forma arrotondata: angoli esatti anche sullo spessore
   const hw = CARD_W / 2;
   const hh = CARD_H / 2;
+  // Archi di cerchio veri (absarc), non Bezier: devono combaciare esattamente con gli
+  // archi circolari del ctx.roundRect sul canvas, altrimenti sulla diagonale a 45°
+  // la Bezier taglia meno del cerchio e la mesh sbuca leggermente oltre il video.
   const cardShape = new THREE.Shape();
   cardShape.moveTo(-hw + CORNER_R, -hh);
   cardShape.lineTo( hw - CORNER_R, -hh);
-  cardShape.quadraticCurveTo( hw, -hh,  hw, -hh + CORNER_R);
+  cardShape.absarc( hw - CORNER_R, -hh + CORNER_R, CORNER_R, -Math.PI / 2, 0, false);
   cardShape.lineTo( hw,  hh - CORNER_R);
-  cardShape.quadraticCurveTo( hw,  hh,  hw - CORNER_R,  hh);
+  cardShape.absarc( hw - CORNER_R,  hh - CORNER_R, CORNER_R, 0, Math.PI / 2, false);
   cardShape.lineTo(-hw + CORNER_R,  hh);
-  cardShape.quadraticCurveTo(-hw,  hh, -hw,  hh - CORNER_R);
+  cardShape.absarc(-hw + CORNER_R,  hh - CORNER_R, CORNER_R, Math.PI / 2, Math.PI, false);
   cardShape.lineTo(-hw, -hh + CORNER_R);
-  cardShape.quadraticCurveTo(-hw, -hh, -hw + CORNER_R, -hh);
+  cardShape.absarc(-hw + CORNER_R, -hh + CORNER_R, CORNER_R, Math.PI, 3 * Math.PI / 2, false);
   cardShape.closePath();
 
   const cardGeom = new THREE.ExtrudeGeometry(cardShape, { depth: CARD_DEPTH, bevelEnabled: false });
@@ -445,7 +455,7 @@
 
           ctx.save();
           ctx.beginPath();
-          ctx.roundRect(0, 0, W, H, [39]);
+          ctx.roundRect(0, 0, W, H, [VIDEO_CORNER_PX]);
           ctx.clip();
 
           // Sfondo scuro per area testo
@@ -513,7 +523,7 @@
           // ── DESKTOP: card landscape 16:9 – video pieno con overlay gradiente ──
           ctx.save();
           ctx.beginPath();
-          ctx.roundRect(0, 0, W, H, [39]);
+          ctx.roundRect(0, 0, W, H, [VIDEO_CORNER_PX]);
           ctx.clip();
 
           ctx.drawImage(videoEl, 0, 0, W, H);
