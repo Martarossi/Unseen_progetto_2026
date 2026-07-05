@@ -60,7 +60,7 @@
       -50%,
       -50%
     ); /* centrato sia orizzontalmente che verticalmente */
-    height: 28px;
+    height: 22px;
     width: auto;
     opacity: 0.85;
     z-index: 2;
