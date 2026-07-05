@@ -34,7 +34,7 @@
     opacity: 0.22;
   }
 
-  .footer > :not(.footer-grain) {
+  .footer > :not(.footer-grain):not(.footer-copy) {
     position: relative;
     z-index: 1;
   }
@@ -43,13 +43,12 @@
     font-family: "Akira Expanded", "Arial Black", sans-serif;
     font-weight: 900;
     font-size: 0.8rem;
-    transform: translate(-17%, -50%);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #273b42;
     white-space: nowrap;
-    flex: 1;
-    margin: 0; /* nessun margine extra */
+    flex: 0 0 auto;
+    margin-left: 1.5vh; /* nessun margine extra */
     padding: 0; /* nessun padding extra */
   }
 
@@ -78,11 +77,11 @@
 
   .footer-logo {
     height: 36px;
-    transform: translate(-50%, -50%);
     width: auto;
     object-fit: contain;
     opacity: 0.9;
     filter: brightness(0) invert(1);
+    margin-right: 1.5vh;
   }
 
   @media (max-width: 799px) {
