@@ -98,6 +98,7 @@
           start: 'top top',
           end: '+=4500',
           scrub: 0.5,
+          invalidateOnRefresh: true,
           onEnter:     () => { model3dVisible = true;  dotsVisible = true;  },
           onLeave:     () => { dotsVisible = false; },
           onEnterBack: () => { model3dVisible = true;  dotsVisible = true;  },
@@ -339,8 +340,8 @@
     .dt-mobile-card {
       width: 100%;
       background: rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
       padding: 24px 22px;

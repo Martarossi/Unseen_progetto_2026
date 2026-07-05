@@ -436,10 +436,10 @@
             align-items: flex-end;
             overflow: visible;
             box-sizing: border-box;
-            backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 45%, black 100%);
+            backdrop-filter: blur(16px);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 45%, black 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 45%, black 100%);
             pointer-events: none;
         }
 

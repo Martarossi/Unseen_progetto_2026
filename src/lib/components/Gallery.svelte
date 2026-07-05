@@ -297,8 +297,8 @@
     height: min(70vh, 530px);
 
     background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
+    backdrop-filter: blur(28px);
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 22px;
     box-shadow:
@@ -343,8 +343,8 @@
     position: absolute;
     inset: 0;
     background: rgba(53, 91, 99, 0.75);
-    backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
     display: flex;
     flex-direction: column;
     align-items: center;

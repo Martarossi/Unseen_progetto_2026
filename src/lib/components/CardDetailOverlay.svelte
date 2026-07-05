@@ -356,8 +356,8 @@
 
 .card {
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 32px;
   color: #ffffff;
@@ -454,8 +454,8 @@
   justify-content: flex-start;
   background: none;
   border: none;
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border-radius: 0;
 }
 
