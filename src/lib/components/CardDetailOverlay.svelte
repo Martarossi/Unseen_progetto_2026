@@ -12,6 +12,25 @@
   let activeSlide = $state(0);
   let barProgress = $state(0); // 0 → 1, riempimento barra corrente
 
+  // ── Sync modello 3D Bullet Timing con le clip del video ────────────────────
+  // modello_bullettime.glb = hockey, modello_3d_sciatore.glb = sci, modello_3d_bob.glb = bob
+  const BOB_MODEL = 2;
+  const HOCKEY_MODEL = 0;
+  const SKI_MODEL = 1;
+  const HOCKEY_CLIP_START = 7.2; // s, inizio clip hockey nel video Bullet_time
+  const SKI_CLIP_START = 13.5;   // s, inizio clip sci nel video Bullet_time
+
+  let bulletActiveModel = $state(BOB_MODEL);
+
+  function handleBulletVideoTimeUpdate() {
+    if (cardType !== 'bullet' || !videoEl) return;
+    const t = videoEl.currentTime;
+    const target = t < HOCKEY_CLIP_START ? BOB_MODEL
+      : t < SKI_CLIP_START ? HOCKEY_MODEL
+      : SKI_MODEL;
+    if (target !== bulletActiveModel) bulletActiveModel = target;
+  }
+
   const cardType = $derived(
     videoSrc.includes('tracker') ? 'tracker' :
     (videoSrc.includes('Bullet') || videoSrc.includes('bullet')) ? 'bullet' :
@@ -177,7 +196,7 @@
           </div>
         {:else if cardType === 'bullet'}
           <div class="bullet-scene-wrap">
-            <BulletCard3D />
+            <BulletCard3D activeModel={bulletActiveModel} />
           </div>
         {/if}
       </div>
@@ -193,6 +212,7 @@
             playsinline
             class="video-el"
             class:video-el-zoom={cardType === 'spacetime'}
+            ontimeupdate={handleBulletVideoTimeUpdate}
           ></video>
         </div>
         <div class="card nav-card" onclick={handleNavClick} role="button" tabindex="0"
@@ -273,8 +293,8 @@
 
 .close-btn {
   position: absolute;
-  top: 37px;
-  right: 37px;
+  top: 30px;
+  right: 30px;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.85);

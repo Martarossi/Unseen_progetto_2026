@@ -8,7 +8,7 @@
   let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
 
   const PARTICLE_COUNT = 5000;
-  const MORPH_DURATION = 0.6;
+  const MORPH_DURATION = 1.2;
 
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
@@ -20,7 +20,7 @@
     "/modello_3d_sciatore.glb",
     "/modello_3d_bob.glb",
   ];
-  const MODEL_HEIGHTS = [4.0, 4.0, 2.1];
+  const MODEL_HEIGHTS = [3.5, 4.0, 2.1];
 
   const currentPos = new Float32Array(PARTICLE_COUNT * 3);
   const morphFrom  = new Float32Array(PARTICLE_COUNT * 3);
@@ -159,12 +159,14 @@
   }
 
   // ── Load all models on mount ──────────────────────────────────────────────
+  let initialized = false;
   MODEL_URLS.forEach((url, index) => {
     loader.load(url, (gltf) => {
       pos[index] = sampleScene(gltf.scene, MODEL_HEIGHTS[index]);
-      if (index === 0) {
-        currentPos.set(pos[0]);
+      if (!initialized && index === activeModel) {
+        currentPos.set(pos[index]);
         posAttr.needsUpdate = true;
+        initialized = true;
       }
     });
   });

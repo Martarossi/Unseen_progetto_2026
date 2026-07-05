@@ -3,11 +3,12 @@
   import * as THREE from "three";
   import BulletCard3DScene from "./BulletCard3DScene.svelte";
 
+  /** @type {{ activeModel?: number }} */
+  let { activeModel = 0 } = $props();
+
   let isDragging = $state(false);
   let externalRotY = $state(0);
   let lastX = 0;
-  let activeModel = $state(0);
-  const TOTAL_MODELS = 3;
 
   /** @type {HTMLDivElement | undefined} */
   let dragZone = $state(undefined);
@@ -29,18 +30,6 @@
   function onPointerUp() {
     isDragging = false;
   }
-
-  /** @param {MouseEvent} e */
-  function nextModel(e) {
-    e.stopPropagation();
-    if (activeModel < TOTAL_MODELS - 1) activeModel++;
-  }
-
-  /** @param {MouseEvent} e */
-  function prevModel(e) {
-    e.stopPropagation();
-    if (activeModel > 0) activeModel--;
-  }
 </script>
 
 <div
@@ -54,22 +43,6 @@
   onpointercancel={onPointerUp}
   style="cursor: {isDragging ? 'grabbing' : 'grab'}"
 ></div>
-
-{#if activeModel > 0}
-  <button class="arrow-btn left" onclick={prevModel} aria-label="Modello precedente">
-    <svg width="5" height="9" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M7 1L1 6.5L7 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-{/if}
-
-{#if activeModel < TOTAL_MODELS - 1}
-  <button class="arrow-btn right" onclick={nextModel} aria-label="Modello successivo">
-    <svg width="5" height="9" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 1L7 6.5L1 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-{/if}
 
 <div class="canvas-container">
   <Canvas
@@ -98,42 +71,6 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-}
-
-.arrow-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.75);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 22px;
-  line-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  transition: background 0.2s, color 0.2s;
-}
-
-.arrow-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 1);
-}
-
-.arrow-btn.right {
-  right: 10px;
-}
-
-.arrow-btn.left {
-  left: 10px;
 }
 
 .canvas-container {
