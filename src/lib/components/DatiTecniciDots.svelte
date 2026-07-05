@@ -2,12 +2,10 @@
   /** @type {{
    *   visible?: boolean,
    *   ringAngle?: number,
-   *   onParticleClick?: (id: string) => void
    * }} */
   let {
     visible = false,
     ringAngle = 0,
-    onParticleClick = undefined,
   } = $props();
 
   const SECTIONS = [
@@ -113,11 +111,9 @@
   <!-- Cards row -->
   <div class="dt-cards-row">
     {#each SECTIONS as s, i}
-      <button
+      <div
         class="dt-card"
         class:active={activeIndex === i}
-        onclick={() => onParticleClick?.(s.id)}
-        aria-label="Apri sezione {s.title}"
       >
         <div class="dt-card-front">
           <h3 class="dt-card-title">{s.title}</h3>
@@ -134,7 +130,7 @@
             {/each}
           </div>
         </div>
-      </button>
+      </div>
     {/each}
   </div>
 
@@ -308,7 +304,6 @@
     border-radius: 22px;
     padding: 34px 26px;
     text-align: left;
-    cursor: pointer;
     transition: filter 0.55s ease, opacity 0.55s ease, border-color 0.45s ease, transform 0.45s ease;
     filter: blur(5px);
     opacity: 0.35;

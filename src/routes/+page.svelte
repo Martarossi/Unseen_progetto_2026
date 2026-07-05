@@ -15,7 +15,6 @@
   import CardDetailOverlay from "$lib/components/CardDetailOverlay.svelte";
   import DatiTecnici from "$lib/components/DatiTecnici.svelte";
   import DatiTecniciDots from "$lib/components/DatiTecniciDots.svelte";
-  import DatiTecniciOverlay from "$lib/components/DatiTecniciOverlay.svelte";
 
 
   if (browser) {
@@ -46,8 +45,6 @@
 
   // DatiTecnici state
   let datiDotsVisible = $state(false);
-  let showDatiOverlay = $state(false);
-  let activeDatiType = $state('guide');
   let datiRingAngle = $state(0);
 
   // Stato dinamico per passare il video corretto all'overlay separato
@@ -185,15 +182,7 @@
 <DatiTecniciDots
   visible={datiDotsVisible}
   ringAngle={datiRingAngle}
-  onParticleClick={(id) => { activeDatiType = id; showDatiOverlay = true; }}
 />
-
-{#if showDatiOverlay}
-  <DatiTecniciOverlay
-    type={activeDatiType}
-    closeOverlay={() => showDatiOverlay = false}
-  />
-{/if}
 
 {#if showCardOverlay}
   <CardDetailOverlay
