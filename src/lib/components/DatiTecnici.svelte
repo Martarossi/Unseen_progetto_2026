@@ -339,9 +339,11 @@
     /* ── Card ── */
     .dt-mobile-card {
       width: 100%;
+      position: relative;
       background: rgba(255, 255, 255, 0.07);
       -webkit-backdrop-filter: blur(18px);
       backdrop-filter: blur(18px);
+      will-change: backdrop-filter;
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
       padding: 24px 22px;

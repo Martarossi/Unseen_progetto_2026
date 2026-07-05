@@ -300,6 +300,7 @@
     background: rgba(255, 255, 255, 0.055);
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
+    will-change: backdrop-filter;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 22px;
     padding: 34px 26px;
