@@ -100,8 +100,8 @@
     content: "";
     position: absolute;
     inset: -3.2rem -5rem;
-    backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
     mask-image: radial-gradient(ellipse 135px 42px at center, #000 35%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 135px 42px at center, #000 35%, transparent 100%);
     pointer-events: none;
@@ -140,8 +140,8 @@
     content: "";
     position: absolute;
     inset: -3.2rem -5rem;
-    backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
     mask-image: radial-gradient(ellipse 95px 38px at center, #000 35%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 95px 38px at center, #000 35%, transparent 100%);
     pointer-events: none;
