@@ -192,6 +192,7 @@
             muted
             playsinline
             class="video-el"
+            class:video-el-zoom={cardType === 'spacetime'}
           ></video>
         </div>
         <div class="card nav-card" onclick={handleNavClick} role="button" tabindex="0"
@@ -353,6 +354,10 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.video-el-zoom {
+  transform: scale(1.06);
 }
 
 /* Navigation card */
