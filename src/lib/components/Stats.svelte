@@ -85,13 +85,41 @@
         currentTwistZ = modelProps.twistZ;
       };
 
+      const countersDuration = Math.max(...stats.map((s) => s.duration));
+
+      let scrollLocked = false;
+      const preventScroll = (e) => { e.preventDefault(); };
+      const scrollKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '];
+      const preventScrollKeys = (e) => {
+        if (scrollKeys.includes(e.key)) e.preventDefault();
+      };
+      const lockScroll = () => {
+        if (scrollLocked) return;
+        scrollLocked = true;
+        window.addEventListener('wheel', preventScroll, { passive: false });
+        window.addEventListener('touchmove', preventScroll, { passive: false });
+        window.addEventListener('keydown', preventScrollKeys);
+      };
+      const unlockScroll = () => {
+        if (!scrollLocked) return;
+        scrollLocked = false;
+        window.removeEventListener('wheel', preventScroll);
+        window.removeEventListener('touchmove', preventScroll);
+        window.removeEventListener('keydown', preventScrollKeys);
+      };
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
           start: "top top",
           end: "+=1200",
           scrub: 0.5,
-          onEnter:     () => { model3dVisible = true; showGlass = false; },
+          onEnter: () => {
+            model3dVisible = true;
+            showGlass = false;
+            lockScroll();
+            gsap.delayedCall(countersDuration, unlockScroll);
+          },
           onLeave:     () => { showGlass = true; },
           onEnterBack: () => { model3dVisible = true; showGlass = false; },
           onLeaveBack: () => { showGlass = true; },
@@ -150,6 +178,7 @@
       return () => {
         tl.kill();
         counterTweens.forEach(t => t.kill());
+        unlockScroll();
       };
     });
 
