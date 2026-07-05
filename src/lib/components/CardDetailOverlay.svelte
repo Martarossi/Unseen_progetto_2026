@@ -217,7 +217,7 @@
         </div>
         <div class="card nav-card" onclick={handleNavClick} role="button" tabindex="0"
           onkeydown={(e) => { if (e.key === 'ArrowLeft') prevSlide(); if (e.key === 'ArrowRight') nextSlide(); }}>
-          <div class="nav-progress" onclick={(e) => e.stopPropagation()}>
+          <div class="nav-progress" role="presentation" onclick={(e) => e.stopPropagation()}>
             {#each currentSlides as _, i}
               <div
                 class="progress-line"

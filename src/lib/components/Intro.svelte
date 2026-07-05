@@ -797,7 +797,7 @@
 
       <div class="paragraph-wrapper" bind:this={p2}>
         <span class="para-label"><span class="label-main">SISTEMA INVISIBILE</span><span class="label-suffix"> // </span><span class="label-suffix"> AI</span></span>
-        <h2 class="para-title">CONNESSIONI</h2>
+        <h2 class="para-title"><span class="fade-in-letters">CONNESSIO</span>NI</h2>
         <p>
           Dietro ogni immagine di velocità, performance
           ed emozione che caratterizza l'evento
@@ -936,6 +936,14 @@
     line-height: 1;
     letter-spacing: -0.02em;
     margin: 0 0 1.1rem 0;
+  }
+
+  /* Sfumatura di leggibilità sulle prime 4 lettere di "CONNESSIONI", troppo scure sullo sfondo */
+  .fade-in-letters {
+    background: linear-gradient(to right, #4b5c64, var(--colors-brand-900, #273b42));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .paragraph-wrapper p {
