@@ -454,7 +454,7 @@
 
     .stat-title {
       font-family: 'Akira Expanded', 'Arial Black', sans-serif;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 900;
       color: #f8f8f8;
       text-transform: uppercase;
@@ -462,7 +462,8 @@
       line-height: 1.3;
       white-space: pre-line;
       margin: 0 0 1.4rem;
-      text-align: center;
+      text-align: left;
+      width: 85%;
     }
 
     .stat-desc {
@@ -470,9 +471,9 @@
       font-size: 14px;
       line-height: 1.7;
       color: #f8f8f8;
-      max-width: 38ch;
       margin: 0 0 2rem;
-      text-align: center;
+      text-align: left;
+      width: 85%;
     }
 
     .stat-divider {
