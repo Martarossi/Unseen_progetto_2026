@@ -72,6 +72,14 @@
     twistZ: 175,
   };
 
+  /** Vibrazione tattile durante il conteggio dei numeri (solo mobile, dove supportata:
+   *  iOS Safari non implementa la Vibration API e ignora silenziosamente la chiamata). */
+  function vibrate(/** @type {number | number[]} */ pattern) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(pattern);
+    }
+  }
+
   onMount(() => {
     const mm = gsap.matchMedia();
 
@@ -259,10 +267,12 @@
               if (st.progress >= triggerProg && !counterFired[i]) {
                 counterFired[i] = true;
                 ct.restart();
+                vibrate(2500);
               } else if (st.progress < triggerProg && counterFired[i]) {
                 counterFired[i] = false;
                 ct.pause().progress(0);
                 el.textContent = '000';
+                vibrate(0);
               }
             });
           },
@@ -275,11 +285,12 @@
             if (!counterFired[0] && counterTweens[0]) {
               counterFired[0] = true;
               counterTweens[0].restart();
+              vibrate(2500);
             }
           },
-          onLeave:     () => { showGlass = true; lowPowerMode = false; },
+          onLeave:     () => { showGlass = true; lowPowerMode = false; vibrate(0); },
           onEnterBack: () => { model3dVisible = true; showGlass = false; lowPowerMode = true; },
-          onLeaveBack: () => { showGlass = true; lowPowerMode = false; },
+          onLeaveBack: () => { showGlass = true; lowPowerMode = false; vibrate(0); },
         },
       });
 
