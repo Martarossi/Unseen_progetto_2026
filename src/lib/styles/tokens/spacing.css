@@ -34,5 +34,5 @@
   --unit-160: 160px;
 
   /* Mobile: compensa lo spazio della top bar del browser (es. Chrome) che riduce l'altezza visibile */
-  --mobile-lift: 32px;
+  --mobile-lift: 100px;
 }

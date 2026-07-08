@@ -666,17 +666,17 @@
     }
 
     .voci-intro-text {
-      top: calc(50% - var(--mobile-lift, 32px));
+      top: calc(50% - var(--mobile-lift, 100px));
     }
 
     .voci-columns {
       flex-direction: column;
-      bottom: calc(15vh + var(--mobile-lift, 32px));
+      bottom: calc(15vh + var(--mobile-lift, 100px));
       gap: 3vh;
     }
 
     .voci-heading {
-      top: calc(27% - var(--mobile-lift, 32px));
+      top: calc(27% - var(--mobile-lift, 100px));
       left: 6vw;
       width: 88%;
     }
