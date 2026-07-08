@@ -599,6 +599,13 @@
          ~1s dopo il caricamento e il viewport cambia altezza. */
       transform: translate3d(-50%, 0, 0);
       will-change: transform;
+      /* Su iOS/WebKit (Safari e Chrome iOS, che usa lo stesso motore) il layer di questo testo,
+         sopra il canvas WebGL che ridisegna a 60fps, a volte smette di essere ricomposto e
+         l'animazione di opacità resta bloccata invisibile. Un secondo keyframe che perturba
+         impercettibilmente un'altra proprietà tiene il layer costantemente "vivo" (stesso
+         principio del fix già usato per il backdrop-filter in DatiTecnici/DatiTecniciDots). */
+      animation: pulse-intermittent 0.7s ease-in-out infinite alternate,
+                 click-hint-kick 0.45s linear infinite;
       top: auto;
       font-family: "Helvetica", "Arial", sans-serif;
       font-size: 13px;
@@ -625,5 +632,10 @@
     100% {
       opacity: 0.2;
     }
+  }
+
+  @keyframes click-hint-kick {
+    0%, 100% { filter: blur(0px); }
+    50%      { filter: blur(0.01px); }
   }
 </style>
