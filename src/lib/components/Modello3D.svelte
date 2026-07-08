@@ -66,13 +66,29 @@
   // abbassiamo ulteriormente la risoluzione di rendering del modello 3D
   // per alleggerire il carico GPU. [1, 1.5] replica il cap desktop esistente.
   let dprValue = $derived(isMobile && lowPowerMode ? 1 : /** @type {[number, number]} */ ([1, 1.5]));
+
+  // Il modello resta statico (nessuna posizione/rotazione cambia) per tutta la
+  // durata delle sezioni in lowPowerMode: invece di limitarci ad abbassare il
+  // dpr, su mobile fermiamo del tutto il render loop WebGL (autoRenderTask),
+  // azzerando il carico GPU/CPU che altrimenti competeva con le scritture DOM
+  // dei contatori e causava il tremolio. Un rAF di ritardo lascia disegnare
+  // l'ultima posa corretta prima di congelare il canvas.
+  let autoRenderEnabled = $state(true);
+
+  $effect(() => {
+    if (isMobile && lowPowerMode) {
+      const raf = requestAnimationFrame(() => { autoRenderEnabled = false; });
+      return () => cancelAnimationFrame(raf);
+    }
+    autoRenderEnabled = true;
+  });
 </script>
 
 <div class="model3d-layer" class:visible>
   {#if isClicked}
     {#key isMobile}
       <Canvas
-        autoRender={true}
+        autoRender={autoRenderEnabled}
         dpr={dprValue}
         createRenderer={(canvas) => {
           const renderer = new THREE.WebGLRenderer({
