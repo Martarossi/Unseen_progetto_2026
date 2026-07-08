@@ -4,10 +4,11 @@
   import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
-  /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number }} */
-  let { externalRotY = 0, isDragging = false, activeModel = 0 } = $props();
+  /** @type {{ externalRotY?: number, isDragging?: boolean, activeModel?: number, isMobile?: boolean }} */
+  let { externalRotY = 0, isDragging = false, activeModel = 0, isMobile = false } = $props();
 
-  const PARTICLE_COUNT = 5000;
+  // Su mobile dimezziamo il conteggio: troppo pesante per la GPU dei telefoni
+  const PARTICLE_COUNT = isMobile ? 2500 : 5000;
   const MORPH_DURATION = 1.2;
 
   const dracoLoader = new DRACOLoader();
