@@ -219,13 +219,17 @@
         if (!el) { counterTweens.push(null); return; }
 
         const proxy = { val: 0 };
+        let lastRounded = -1;
         counterTweens.push(gsap.to(proxy, {
           val: stat.target,
           duration: 2.5,
           ease: "power1.out",
           paused: true,
           onUpdate: () => {
-            el.textContent = String(Math.round(proxy.val)).padStart(3, '0');
+            const rounded = Math.round(proxy.val);
+            if (rounded === lastRounded) return;
+            lastRounded = rounded;
+            el.textContent = String(rounded).padStart(3, '0');
           },
         }));
       });
@@ -497,6 +501,12 @@
       font-feature-settings: "tnum" 1;
       width: 3ch;
       will-change: contents;
+      /* Isola il reflow del testo che cambia 60 volte/sec durante il conteggio:
+         senza contain, su mobile (dove il canvas 3D fixed non è promosso a layer
+         GPU separato, vedi Modello3D.svelte) queste scritture ripetute forzano
+         la ricomposizione dell'intero schermo, percepita come un tremolio. */
+      contain: content;
+      transform: translateZ(0);
     }
 
     .stat-label-under {
