@@ -207,7 +207,9 @@
         {:else if cardType === 'bullet'}
           <div class="bullet-scene-wrap">
             <div class="bullet-scene-lift">
-              <BulletCard3D activeModel={bulletActiveModel} {isMobile} />
+              {#key isMobile}
+                <BulletCard3D activeModel={bulletActiveModel} {isMobile} />
+              {/key}
             </div>
           </div>
         {/if}

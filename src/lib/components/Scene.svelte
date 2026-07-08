@@ -18,7 +18,7 @@
 
   $effect(() => {
     if (!renderer || !scene) return;
-    const pmrem = new THREE.PMREMGenerator(renderer);
+    const pmrem = new THREE.PMREMGenerator(/** @type {THREE.WebGLRenderer} */ (renderer));
     pmrem.compileEquirectangularShader();
     const loader = new HDRLoader();
     loader.load(

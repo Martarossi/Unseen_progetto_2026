@@ -62,9 +62,9 @@
     }
 
     const logoImg = new Image();
-    logoImg.src = "/LOGO.svg";
-    // Dimensioni fisse pari al vecchio LOGO.png: l'SVG ha un viewBox diverso,
-    // fissarle mantiene invariato il calcolo della scala e la grandezza a schermo.
+    // PNG invece di SVG: Safari su iOS non applica il filtro di blur del gruppo "UN"
+    // quando l'SVG è disegnato su canvas, facendolo sparire del tutto.
+    logoImg.src = "/LOGO.png";
     logoImg.width = 831;
     logoImg.height = 161;
     let imgLoaded = false;
@@ -299,7 +299,7 @@
   });
 </script>
 
-le card <svelte:window bind:scrollY />
+<svelte:window bind:scrollY />
 
 <div
   class="hero-mobile"

@@ -88,9 +88,9 @@
       const countersDuration = Math.max(...stats.map((s) => s.duration));
 
       let scrollLocked = false;
-      const preventScroll = (e) => { e.preventDefault(); };
+      const preventScroll = (/** @type {Event} */ e) => { e.preventDefault(); };
       const scrollKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '];
-      const preventScrollKeys = (e) => {
+      const preventScrollKeys = (/** @type {KeyboardEvent} */ e) => {
         if (scrollKeys.includes(e.key)) e.preventDefault();
       };
       const lockScroll = () => {
@@ -393,6 +393,9 @@
       color: #f8f8f8;
       line-height: 0.88;
       letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      width: 3ch;
       will-change: contents;
     }
 
@@ -490,6 +493,9 @@
       color: #f8f8f8;
       line-height: 0.88;
       letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      width: 3ch;
       will-change: contents;
     }
 

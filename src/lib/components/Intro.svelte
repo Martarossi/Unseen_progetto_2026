@@ -975,7 +975,7 @@
     }
 
     .texts-container {
-      top: calc(50% - var(--mobile-lift, 100px));
+      top: 50%;
       width: 85%;
       left: 7.5%;
       gap: 2rem;
@@ -997,7 +997,7 @@
     }
 
     .initial-text-wrapper {
-      top: calc(50% - var(--mobile-lift, 100px));
+      top: 50%;
       width: auto;
       max-width: none;
       left: 5%;
