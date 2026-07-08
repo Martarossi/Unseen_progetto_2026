@@ -572,7 +572,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, calc(-50% + 15px));
+    transform: translate(-50%, -50%);
     text-align: center;
     pointer-events: none;
     white-space: nowrap;
@@ -666,7 +666,7 @@
     }
 
     .voci-intro-text {
-      top: calc(50% - var(--mobile-lift, 100px));
+      top: calc(50% - var(--mobile-lift, 100px) + 45px);
     }
 
     .voci-columns {

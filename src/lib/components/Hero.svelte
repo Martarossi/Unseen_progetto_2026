@@ -208,7 +208,8 @@
       const dx = (canvas.width  - dWidth)  / 2;
       // Su mobile alziamo leggermente il logo per compensare lo spazio della top bar del browser (vedi --mobile-lift)
       const mobileLift = canvas.width <= 799 ? 100 : 0;
-      const dy = (canvas.height - dHeight) / 2 - mobileLift;
+      const mobileTitleShift = canvas.width <= 799 ? 40 : 0;
+      const dy = (canvas.height - dHeight) / 2 - mobileLift + mobileTitleShift;
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
       ctx.globalCompositeOperation = "destination-in";
@@ -487,7 +488,6 @@
     max-width: 100%;
     position: relative;
     z-index: 10;
-    transform: translateY(15px);
   }
 
   .phrase {
@@ -596,11 +596,11 @@
       line-height: 1.25;
       padding: 0 6vw;
       text-align: center;
-      transform: translateY(calc(-1 * var(--mobile-lift, 100px) + 15px));
+      transform: translateY(calc(-1 * var(--mobile-lift, 100px) + 45px));
     }
 
     .subtitle {
-      top: calc(50% + 80px - var(--mobile-lift, 100px));
+      top: calc(50% + 120px - var(--mobile-lift, 100px));
       font-size: 15px;
       white-space: normal;
       text-align: center;
@@ -613,7 +613,7 @@
 
     .click-hint--mobile {
       position: fixed;
-      bottom: calc(48px + var(--mobile-lift, 100px) - 10px);
+      bottom: calc(20px + var(--mobile-lift, 100px) - 30px);
       left: 50%;
       /* translate3d invece di translateX: forza un layer di composizione dedicato.
          Su Safari/Chrome mobile un position:fixed "semplice" può sparire per un frame
