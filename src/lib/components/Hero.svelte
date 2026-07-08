@@ -185,7 +185,9 @@
       const dWidth  = logoImg.width  * scale;
       const dHeight = logoImg.height * scale;
       const dx = (canvas.width  - dWidth)  / 2;
-      const dy = (canvas.height - dHeight) / 2;
+      // Su mobile alziamo leggermente il logo per compensare lo spazio della top bar del browser (vedi --mobile-lift)
+      const mobileLift = canvas.width <= 799 ? 32 : 0;
+      const dy = (canvas.height - dHeight) / 2 - mobileLift;
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
       ctx.globalCompositeOperation = "destination-in";
@@ -572,10 +574,11 @@
       line-height: 1.25;
       padding: 0 6vw;
       text-align: center;
+      transform: translateY(calc(-1 * var(--mobile-lift, 32px)));
     }
 
     .subtitle {
-      top: calc(50% + 80px);
+      top: calc(50% + 80px - var(--mobile-lift, 32px));
       font-size: 15px;
       white-space: normal;
       text-align: center;
@@ -583,12 +586,12 @@
     }
 
     .scroll-prompt {
-      bottom: 40px;
+      bottom: calc(40px + var(--mobile-lift, 32px));
     }
 
     .click-hint--mobile {
       position: fixed;
-      bottom: 48px;
+      bottom: calc(48px + var(--mobile-lift, 32px));
       left: 50%;
       transform: translateX(-50%);
       top: auto;

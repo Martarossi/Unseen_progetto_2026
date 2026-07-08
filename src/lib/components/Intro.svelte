@@ -975,6 +975,7 @@
     }
 
     .texts-container {
+      top: calc(50% - var(--mobile-lift, 32px));
       width: 85%;
       left: 7.5%;
       gap: 2rem;
@@ -990,11 +991,13 @@
     }
 
     .big-text {
+      top: calc(50% - var(--mobile-lift, 32px));
       font-size: 11vw;
       padding: 0 24px;
     }
 
     .initial-text-wrapper {
+      top: calc(50% - var(--mobile-lift, 32px));
       width: auto;
       max-width: none;
       left: 5%;
