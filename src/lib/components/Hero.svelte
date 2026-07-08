@@ -345,6 +345,26 @@
     return str.split("").map((c) => (c === " " ? "&nbsp;" : c));
   }
 
+  // Attende che il font "Helvetica" (caricato da Typekit via <link> esterno) sia
+  // pronto, con un timeout di sicurezza. Senza questa attesa, su mobile — dove il
+  // download del font è più lento — il testo dell'intro parte con il font di fallback
+  // del sistema e "salta" a metà animazione quando il font corretto finisce di
+  // caricare: è questo lo sfarfallio di testo "strano" visibile ad inizio pagina.
+  async function waitForFonts(timeoutMs = 1200) {
+    if (typeof document === "undefined" || !("fonts" in document)) return;
+    try {
+      await Promise.race([
+        Promise.all([
+          document.fonts.load('400 16px Helvetica'),
+          document.fonts.load('700 16px Helvetica'),
+        ]),
+        new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+      ]);
+    } catch (e) {
+      // Font non disponibile/errore di rete: si procede comunque dopo il timeout
+    }
+  }
+
   onMount(() => {
     // Inizializza il centro
     mouseX = window.innerWidth / 2;
@@ -360,40 +380,49 @@
 
     const pieces = descriptionRef?.querySelectorAll(".text-piece") ?? [];
 
-    const tl = gsap.timeline({ delay: 0.2 });
+    let cancelled = false;
+    /** @type {gsap.core.Timeline | null} */
+    let tl = null;
 
-    // ANIMAZIONE DI ENTRATA DEL TESTO: Fa comparire progressivamente le lettere con dissolvenza, traslazione verticale e rimozione del blur.
-    tl.fromTo(
-      pieces,
-      { opacity: 0, filter: "blur(10px)", y: 20 },
-      {
-        opacity: 1,
-        filter: "blur(0px)",
-        y: 0,
-        duration: 1.2,
-        stagger: 0.03, // ritardo tra ogni lettera
-        ease: "power2.out",
-      },
-    )
-      // ANIMAZIONE DI USCITA DEL TESTO: Nasconde le lettere facendole sfumare verso l'alto e sfocandole prima di svelare il logo.
-      .to(
+    waitForFonts().then(() => {
+      if (cancelled) return;
+      tl = gsap.timeline({ delay: 0.2 });
+
+      // ANIMAZIONE DI ENTRATA DEL TESTO: Fa comparire progressivamente le lettere con dissolvenza, traslazione verticale e rimozione del blur.
+      tl.fromTo(
         pieces,
+        { opacity: 0, filter: "blur(10px)", y: 20 },
         {
-          opacity: 0,
-          filter: "blur(10px)",
-          y: -20,
-          duration: 0.8,
-          stagger: 0.02,
-          ease: "power2.in",
+          opacity: 1,
+          filter: "blur(0px)",
+          y: 0,
+          duration: 1.2,
+          stagger: 0.03, // ritardo tra ogni lettera
+          ease: "power2.out",
         },
-        "-=0.7",
       )
-      .call(() => {
-        showLogo = true;
-      });
+        // ANIMAZIONE DI USCITA DEL TESTO: Nasconde le lettere facendole sfumare verso l'alto e sfocandole prima di svelare il logo.
+        .to(
+          pieces,
+          {
+            opacity: 0,
+            filter: "blur(10px)",
+            y: -20,
+            duration: 0.8,
+            stagger: 0.02,
+            ease: "power2.in",
+          },
+          "-=0.7",
+        )
+        .call(() => {
+          showLogo = true;
+        });
+    });
 
     const cleanup = initCanvas();
     return () => {
+      cancelled = true;
+      tl?.kill();
       cleanup?.();
     };
   });

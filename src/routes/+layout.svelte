@@ -30,6 +30,11 @@
 <svelte:head>
 	<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
+	<!-- Anticipa la connessione ai domini dei font esterni per ridurre il tempo di download,
+	     in particolare su mobile dove il font di fallback resta visibile più a lungo. -->
+	<link rel="preconnect" href="https://fonts.cdnfonts.com" crossorigin="anonymous" />
+	<link rel="preconnect" href="https://use.typekit.net" crossorigin="anonymous" />
+
 	<!-- Akira Expanded -->
 	<link href="https://fonts.cdnfonts.com/css/akira-expanded" rel="stylesheet">
 	<!-- Helvetica -->
