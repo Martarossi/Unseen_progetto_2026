@@ -409,8 +409,8 @@
         }
 
         .top-bar-logo img {
-            height: 14px;
-            width: auto;
+            width: 160px;
+            height: auto;
             display: block;
         }
 

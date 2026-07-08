@@ -613,7 +613,7 @@
 
     .click-hint--mobile {
       position: fixed;
-      bottom: calc(20px + var(--mobile-lift, 100px));
+      bottom: calc(20px + var(--mobile-lift, 100px) - 30px);
       left: 50%;
       /* translate3d invece di translateX: forza un layer di composizione dedicato.
          Su Safari/Chrome mobile un position:fixed "semplice" può sparire per un frame
