@@ -50,27 +50,29 @@
     return str.split("").map((c) => (c === " " ? " " : c));
   }
 
-  // Blocca lo scroll con `position: fixed` invece di `overflow: hidden`.
-  // Su Safari, alternare `overflow: hidden` mentre è in corso uno scroll a
-  // inerzia (trackpad/wheel) accoda il delta e lo riapplica tutto insieme
-  // allo sblocco, facendo "saltare" lo scroll oltre il range della blurTl
-  // (l'utente si ritrova già nello stato finale del crossfade). Fissare il
-  // body alla posizione corrente evita del tutto l'accumulo del delta.
+  // Blocca lo scroll con `overflow: hidden` e, allo sblocco, forza il ripristino
+  // esatto della posizione di scroll salvata.
+  // NB: qui NON si può usare `position: fixed` sul body (tecnica comune per i modal):
+  // toglierlo dal flow fa collassare l'altezza scrollabile di <html>, il browser
+  // clampa `window.scrollY` a 0, e ScrollTrigger legge quel salto come uno scroll
+  // reale fino in cima alla pagina — scatena `onLeaveBack` che mette in pausa
+  // letterTl a tempo 0 e sblocca subito lo scroll: l'intro resta bloccata/invisibile.
+  // Con `overflow: hidden` il body resta nel flow (l'altezza documento non cambia),
+  // quindi ScrollTrigger non vede nessuno scroll spurio.
+  // Il `window.scrollTo` allo sblocco serve invece per il bug Safari: alternare
+  // `overflow: hidden` mentre è in corso uno scroll a inerzia (trackpad/wheel)
+  // accoda il delta e lo riapplica tutto insieme allo sblocco, facendo "saltare"
+  // lo scroll oltre il range della blurTl — ripristinare esplicitamente la
+  // posizione salvata neutralizza il salto.
   let lockedScrollY = 0;
 
   function lockBodyScroll() {
     lockedScrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${lockedScrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
+    document.body.style.overflow = "hidden";
   }
 
   function unlockBodyScroll() {
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
+    document.body.style.overflow = "";
     window.scrollTo(0, lockedScrollY);
   }
 
