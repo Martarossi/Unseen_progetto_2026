@@ -31,12 +31,33 @@
 
   /** @type {gsap.core.Tween | null} */
   let scrollPromptPulse = null;
+  /** @type {gsap.core.Tween | null} */
+  let dragHintPulse = null;
 
   $effect(() => {
     if (scrollY > 0 && scrollPromptPulse) {
       scrollPromptPulse.kill();
       scrollPromptPulse = null;
     }
+  });
+
+  // Stesso funzionamento del pulse di "scroll down to explore" (tween GSAP sull'opacità,
+  // non CSS @keyframes): tenere l'opacità pilotata da JS frame per frame è ciò che evita
+  // il bug iOS/WebKit per cui il layer smette di essere ricomposto (vedi commento più sotto).
+  $effect(() => {
+    if (showLogo && !isClicked && isTouchDevice) {
+      dragHintPulse = gsap.to(".click-hint--mobile", {
+        opacity: 0.2,
+        duration: 0.7,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+    return () => {
+      dragHintPulse?.kill();
+      dragHintPulse = null;
+    };
   });
 
   function initCanvas() {
@@ -466,6 +487,7 @@
     max-width: 100%;
     position: relative;
     z-index: 10;
+    transform: translateY(15px);
   }
 
   .phrase {
@@ -574,7 +596,7 @@
       line-height: 1.25;
       padding: 0 6vw;
       text-align: center;
-      transform: translateY(calc(-1 * var(--mobile-lift, 100px)));
+      transform: translateY(calc(-1 * var(--mobile-lift, 100px) + 15px));
     }
 
     .subtitle {
@@ -591,7 +613,7 @@
 
     .click-hint--mobile {
       position: fixed;
-      bottom: calc(48px + var(--mobile-lift, 100px));
+      bottom: calc(48px + var(--mobile-lift, 100px) - 10px);
       left: 50%;
       /* translate3d invece di translateX: forza un layer di composizione dedicato.
          Su Safari/Chrome mobile un position:fixed "semplice" può sparire per un frame
@@ -599,13 +621,9 @@
          ~1s dopo il caricamento e il viewport cambia altezza. */
       transform: translate3d(-50%, 0, 0);
       will-change: transform;
-      /* Su iOS/WebKit (Safari e Chrome iOS, che usa lo stesso motore) il layer di questo testo,
-         sopra il canvas WebGL che ridisegna a 60fps, a volte smette di essere ricomposto e
-         l'animazione di opacità resta bloccata invisibile. Un secondo keyframe che perturba
-         impercettibilmente un'altra proprietà tiene il layer costantemente "vivo" (stesso
-         principio del fix già usato per il backdrop-filter in DatiTecnici/DatiTecniciDots). */
-      animation: pulse-intermittent 0.7s ease-in-out infinite alternate,
-                 click-hint-kick 0.45s linear infinite;
+      /* L'opacità è pilotata dal tween GSAP in JS (stesso meccanismo di "scroll down to
+         explore"), non da @keyframes CSS: annulla qui l'animazione ereditata da .click-hint. */
+      animation: none;
       top: auto;
       font-family: "Helvetica", "Arial", sans-serif;
       font-size: 13px;
@@ -634,8 +652,4 @@
     }
   }
 
-  @keyframes click-hint-kick {
-    0%, 100% { filter: blur(0px); }
-    50%      { filter: blur(0.01px); }
-  }
 </style>
