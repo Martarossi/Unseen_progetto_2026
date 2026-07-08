@@ -397,7 +397,6 @@
       font-feature-settings: "tnum" 1;
       width: 3ch;
       will-change: contents;
-      contain: layout style paint;
     }
 
     .stat-label-under {
@@ -436,11 +435,6 @@
       height: 100svh;
       min-height: unset;
       overflow: hidden;
-      /* Isola il layer sticky dal reflow del counter che cambia testo ad ogni frame:
-         senza questo, Safari iOS ricalcola la posizione sticky ad ogni mutazione,
-         facendo tremare l'intero blocco finché il numero è in animazione. */
-      transform: translateZ(0);
-      -webkit-transform: translateZ(0);
     }
 
     .stats-grid {
@@ -503,7 +497,6 @@
       font-feature-settings: "tnum" 1;
       width: 3ch;
       will-change: contents;
-      contain: layout style paint;
     }
 
     .stat-label-under {
