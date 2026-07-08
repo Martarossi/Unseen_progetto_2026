@@ -505,7 +505,7 @@
 
     .stats-label {
       position: absolute;
-      bottom: calc(16vh + var(--mobile-lift, 100px) - 20px);
+      bottom: calc(16vh + var(--mobile-lift, 100px) - 130px);
       left: 0;
       right: 0;
       text-align: center;
