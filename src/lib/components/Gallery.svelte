@@ -49,7 +49,7 @@
       id: 5,
       firstName: 'ANDREA',
       lastName: 'UDALI',
-      role: 'Videomaker',
+      role: 'Cameraman',
       video: '/video_interviste/Intro-Udali.mp4',
       youtubeUrl: 'https://youtu.be/nMPI1SWulRo',
       desc: `Cosa significa lavorare come cameraman durante i Giochi Olimpici Invernali? In questa intervista andiamo dietro l'obiettivo con un professionista con 24 anni di esperienza che ha coperto le spettacolari e adrenaliniche discipline del Mogul (le gobbe) e dell'Aerial a Livigno, una delle località più fredde d'Italia. `
