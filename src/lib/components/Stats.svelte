@@ -23,15 +23,15 @@
       label: "TELECAMERE ATTIVE SUI CAMPI DI GARA"
     },
     {
-      title: "FLUSSO DI PRODUZIONE\nE DISTRIBUZIONE GLOBALE",
+      title: "FLUSSO DI PRODUZIONE\nE DISTRIBUZIONE GLOBALE",
       desc: "Il racconto continuo delle Olimpiadi. Grazie alla trasmissione multi-piattaforma in Ultra HD gestita da OBS, ogni sessione competitiva viene prodotta in tempo reale per i broadcaster di tutto il mondo.",
       target: 900,
       duration: 3.0,
       label: "ORE DI DIRETTA STREAMING"
     },
     {
-      title: "CENTRI DI COMANDO\nTECNOLOGICO",
-      desc: "Infrastrutture ad alta tecnologia suddivise tra regie mobili nei siti di gara e regie virtualizzate presso l'IBC. Una capillarità necessaria per coordinare simultaneamente eventi live paralleli.",
+      title: "CENTRI DI\nCOMANDO TECNOLOGICO",
+      desc: "Infrastrutture ad alta tecnologia suddivise tra regie mobili nei siti di gara e regie virtualizzate presso l'IBC. Una capillarità necessaria per coordinare simultaneamente eventi live paralleli.",
       target: 23,
       duration: 2.0,
       label: "REGIE INTERNESSE IN RETE"

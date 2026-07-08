@@ -12,7 +12,7 @@
       id: 1,
       firstName: 'JORDAN',
       lastName: 'COWAN',
-      role: 'Videomaker & Ex pattinatore professionista',
+      role: 'Videomaker & Ex pattinatore professionista',
       video: '/video_interviste/Intro-Cowan.mp4',
       youtubeUrl: 'https://youtu.be/KLLawK2Y0jo',
       desc: 'Cosa succede quando un ex pattinatore artistico del Team USA decide di portare la macchina da presa sul ghiaccio? In questa intervista esclusiva, Jordan Cowan, fondatore di On Ice Perspectives, ci racconta come ha rivoluzionato il modo in cui il mondo guarda il pattinaggio artistico, arrivando a filmare direttamente sulla pista delle Olimpiadi.',
@@ -24,13 +24,13 @@
       role: 'Videomaker',
       video: '/video_interviste/Intro-Piazzini.mp4',
       youtubeUrl: 'https://youtu.be/WnPbDaGDOcQ',
-      desc: `Mentre il mondo ha gli occhi puntati sui campioni e sulle medaglie, c'è chi lavora nell'ombra, a bordo pista o dietro le ricetrasmittenti, pronto a intervenire nei momenti più critici. In questa intervista, il videomaker Lucio Piazzini ci racconta come è nato il progetto di Regione Veneto per mostrare chi salva vite: i soccorritori del 118 durante i Giochi Olimpici di Cortina.`,
+      desc: `Mentre il mondo ha gli occhi puntati sui campioni e sulle medaglie, c'è chi lavora nell'ombra, a bordo pista o dietro le ricetrasmittenti, pronto a intervenire nei momenti più critici. In questa intervista, il videomaker Lucio Piazzini ci racconta come è nato il progetto di Regione Veneto per mostrare chi salva vite: i soccorritori del 118 durante i Giochi Olimpici di Cortina.`,
     },
     {
       id: 3,
       firstName: 'LORENZO',
       lastName: `D'ORAZIO`,
-      role: 'Senior Video Producer & Drone Pilot',
+      role: 'Senior Video Producer & Drone Pilot',
       video: '/video_interviste/Intro-Dorazio.mp4',
       youtubeUrl: 'https://youtu.be/Oz9el_FaBZY',
       desc: `Cosa unisce la regia televisiva dei grandi eventi all'azione d'emergenza in alta montagna? In questa intervista esclusiva offriamo uno sguardo a chi salva vite ed esplora i limiti della tecnologia aerea, scoprendo i retroscena di una professione tanto spettacolare quanto rigorosa.`
@@ -39,7 +39,7 @@
       id: 4,
       firstName: 'MARCO',
       lastName: `DONA'`,
-      role: 'Cameraman & Capo Operatore Video',
+      role: 'Cameraman & Capo Operatore Video',
       video: '/video_interviste/Intro-Dona.mp4',
       youtubeUrl: 'https://youtu.be/jE7GKEfmi3U',
       desc: `Cosa significa essere "malati di news" e dover raccontare un evento gigantesco come le Olimpiadi per un canale all-news come Rai News? In questa intervista, il videomaker Lucio Piazzini ci offre uno sguardo a chi racconta la realtà, portandoci dietro le quinte di una troupe giornalistica d'assalto a Milano Cortina.`
@@ -347,6 +347,7 @@
   .video-end-overlay {
     position: absolute;
     inset: 0;
+    border-radius: 14px;
     background: rgba(53, 91, 99, 0.75);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);

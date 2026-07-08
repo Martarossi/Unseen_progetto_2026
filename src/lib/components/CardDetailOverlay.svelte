@@ -59,11 +59,11 @@
       { label: 'Prevenzione', text: "Incrociando i dati storici dell'atleta con il tracciamento live di movimento e fatica, gli algoritmi segnalano anomalie di carico o postura prima che si trasformino in infortuni." },
       { label: 'Zero Ingombro', text: "L'AI rileva oltre 20 punti biomeccanici del corpo solo attraverso le immagini video. Grazie alla Computer Vision, il sistema traccia ogni atleta senza bisogno di sensori fisici." },
       { label: 'Precisione Millimetrica', text: "L'AI monitora la velocità in tempo reale con uno scarto inferiore ai 5 cm/s e calcola al millimetro l'altezza dei salti, individuando dove l'atleta perde centesimi per ottimizzare le linee di discesa." },
-      { label: 'Performance', text: "Il Tracker Athletes è stato utilizzato per discipline come salto con gli sci, snowboard, pattinaggio, bob, skeleton, hockey e curling, trasformando gli atleti in una sorgente vivente di dati in tempo reale." }
+      { label: 'Performance', text: "Il Tracker Athletes è stato utilizzato per discipline come salto con gli sci, snowboard, pattinaggio, bob, skeleton, hockey e curling, trasformando gli atleti in una sorgente vivente di dati in tempo reale." }
     ],
     bullet: [
       { label: '360°', text: "L'AI sceglie il momento di massima tensione sportiva permettendo di ruotare l'inquadratura a 360° attorno all'atleta per vedere ogni dettaglio." },
-      { label: 'Fluidità', text: "L'IA genera fino a 50 fotogrammi sintetici tra uno scatto reale e l'altro, garantendo una fluidità visiva che l'occhio umano percepisce come perfezione assoluta." },
+      { label: 'Fluidità', text: "L'IA genera fino a 50 fotogrammi sintetici tra uno scatto reale e l'altro, garantendo una fluidità visiva che l'occhio umano percepisce come perfezione assoluta." },
       { label: 'Flusso Dati', text: "Ogni sessione di Replay 360° richiede oltre 10 Gbps di banda su reti 5G dedicate, testimoniando l'invisibile infrastruttura tecnologica che c'è dietro." },
       { label: 'Performance', text: "Il Bullet Timing è stato implementato in 17 discipline, tra le quali sci freestyle, skating, snowboard, ski cross, bobsleigh, speed skating, skeleton, hockey e curling." }
     ]
@@ -179,7 +179,7 @@
           <div class="divider"></div>
           <p class="subtitle">
             {#if cardType === 'spacetime'}
-              Scomposizione gesto sportivo in fotogrammi simultanei
+              Scomposizione gesto sportivo in fotogrammi simultanei
             {:else if cardType === 'tracker'}
               Analisi istantanea dell'azione sportiva con feedback di dati
             {:else}

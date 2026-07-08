@@ -16,7 +16,7 @@
       description: "Droni acrobatici FPV governati dall'Intelligenza Artificiale hanno registrato le riprese più acrobatiche. AI Drone Flight Correction permette di volare a pochi metri dagli sciatori a oltre 100 km/h, garantendo immagini stabili in condizioni climatiche estreme.",
       base: 0,
       details: [
-        { label: 'PREVISIONE',    text: "Algoritmi di Machine Learning calcolano l'impatto di una folata di vento prima che sposti il mezzo, modificando la potenza dei singoli motori mantenendo l'inquadratura perfetta." },
+        { label: 'PREVISIONE',    text: "Algoritmi di Machine Learning calcolano l'impatto di una folata di vento prima che sposti il mezzo, modificando la potenza dei singoli motori mantenendo l'inquadratura perfetta." },
         { label: 'TRACCIAMENTO',  text: "Il pilota si concentra sulla guida generale, mentre l'AI gestisce l'inquadratura attraverso la computer vision, agganciando l'atleta." },
         { label: 'SALVAGUARDIA',  text: "Sistemi anticollisione guidati dall'AI creano una \"bolla di sicurezza\" attorno al drone, modificando la rotta in caso di emergenza senza interrompere la fluidità del video." },
       ],
@@ -30,7 +30,7 @@
       details: [
         { label: 'RISOLUZIONE',    text: "L'AI ricostruisce i dettagli mancanti pixel per pixel, ripulendo l'immagine dal \"rumore\" visivo e portando la definizione a livelli straordinari." },
         { label: 'HIGH FRAME',     text: "Lo sci alpino e il bob superano anche i 130 km/h. L'AI genera fotogrammi intermedi virtuali per fluidificare l'azione, eliminando le sfocature da movimento (motion blur)." },
-        { label: 'AUDIO SPAZIALE', text: "L'IA pulisce l'audio ambientale in tempo reale, attenuando il rumore del vento ad alta quota per enfatizzare il suono dei movimenti." },
+        { label: 'AUDIO SPAZIALE', text: "L'IA pulisce l'audio ambientale in tempo reale, attenuando il rumore del vento ad alta quota per enfatizzare il suono dei movimenti." },
       ],
     },
     {

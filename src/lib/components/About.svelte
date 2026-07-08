@@ -148,7 +148,7 @@
                         Slices, Athlete Trackers e Bullet Timing. Ad accompagnare
                         l'utente nel sito è un elemento 3D fluido e mutabile, metafora
                         visiva di un'AI capace di adattarsi a ogni dato ma priva
-                        di una propria forma definita.
+                        di una propria forma definita.
                     </p>
                 </div>
 
@@ -159,7 +159,7 @@
                     onmouseenter={onEnterRight}
                     onmouseleave={onLeaveRight}
                 >
-                    <h2>COME NASCE UNSEEN?</h2>
+                    <h2>COME NASCE UNSEEN?</h2>
                     <p>
                         Un-seen nasce per esplorare ciò che normalmente resta
                         fuori dall'inquadratura. Non l'atleta al centro della

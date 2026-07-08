@@ -521,7 +521,7 @@
           Una raccolta di voci di chi <strong
             >vive l'evento<br /> da dietro la lente</strong
           >: professionisti <br />che lavorano in condizioni estreme,<br /> in equilibrio
-          costante tra tecnica ed emozione.
+          costante tra tecnica ed emozione.
         </p>
       </div>
     </div>
@@ -671,7 +671,7 @@
 
     .voci-columns {
       flex-direction: column;
-      bottom: calc(15vh + var(--mobile-lift, 100px) - 20px);
+      bottom: calc(15vh + var(--mobile-lift, 100px) - 60px);
       gap: 3vh;
     }
 
@@ -679,6 +679,7 @@
       top: calc(27% - var(--mobile-lift, 100px));
       left: 6vw;
       width: 88%;
+      transform: translateY(calc(-50% + 20px));
     }
 
     .col-text p {
