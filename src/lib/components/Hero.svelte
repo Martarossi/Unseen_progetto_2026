@@ -593,7 +593,12 @@
       position: fixed;
       bottom: calc(48px + var(--mobile-lift, 100px));
       left: 50%;
-      transform: translateX(-50%);
+      /* translate3d invece di translateX: forza un layer di composizione dedicato.
+         Su Safari/Chrome mobile un position:fixed "semplice" può sparire per un frame
+         (o restare bloccato invisibile) quando la barra degli indirizzi si autocollassa
+         ~1s dopo il caricamento e il viewport cambia altezza. */
+      transform: translate3d(-50%, 0, 0);
+      will-change: transform;
       top: auto;
       font-family: "Helvetica", "Arial", sans-serif;
       font-size: 13px;
