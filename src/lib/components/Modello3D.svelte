@@ -27,7 +27,8 @@
    *   onCardExpanded?: () => void,
    *   dotsVisible?: boolean,
    *   showGlass?: boolean,
-   *   onPositionsUpdate?: (positions: {x: number, y: number}[]) => void
+   *   onPositionsUpdate?: (positions: {x: number, y: number}[]) => void,
+   *   lowPowerMode?: boolean
    * }} */
   let {
     position = [0, 0, 0],
@@ -47,6 +48,7 @@
     dotsVisible = false,
     onPositionsUpdate = undefined,
     showGlass = true,
+    lowPowerMode = false,
   } = $props();
 
   // Reattivo: aggiornato via matchMedia listener → forza ricreazione della Canvas con {#key}
@@ -59,6 +61,11 @@
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   });
+
+  // Su mobile, durante le sezioni più pesanti (es. i contatori di Stats),
+  // abbassiamo ulteriormente la risoluzione di rendering del modello 3D
+  // per alleggerire il carico GPU. [1, 1.5] replica il cap desktop esistente.
+  let dprValue = $derived(isMobile && lowPowerMode ? 1 : /** @type {[number, number]} */ ([1, 1.5]));
 </script>
 
 <div class="model3d-layer" class:visible>
@@ -66,6 +73,7 @@
     {#key isMobile}
       <Canvas
         autoRender={true}
+        dpr={dprValue}
         createRenderer={(canvas) => {
           const renderer = new THREE.WebGLRenderer({
             canvas,

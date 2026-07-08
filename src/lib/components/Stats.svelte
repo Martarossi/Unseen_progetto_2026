@@ -11,6 +11,7 @@
     currentTwistZ = $bindable(200),
     model3dVisible = $bindable(false),
     showGlass = $bindable(true),
+    lowPowerMode = $bindable(false),
   } = $props();
 
   const stats = [
@@ -268,6 +269,7 @@
           onEnter: () => {
             model3dVisible = true;
             showGlass = false;
+            lowPowerMode = true;
             update3D();
             if (validCols[0]) gsap.set(validCols[0], { y: 0, opacity: 1 });
             if (!counterFired[0] && counterTweens[0]) {
@@ -275,9 +277,9 @@
               counterTweens[0].restart();
             }
           },
-          onLeave:     () => { showGlass = true; },
-          onEnterBack: () => { model3dVisible = true; showGlass = false; },
-          onLeaveBack: () => { showGlass = true; },
+          onLeave:     () => { showGlass = true; lowPowerMode = false; },
+          onEnterBack: () => { model3dVisible = true; showGlass = false; lowPowerMode = true; },
+          onLeaveBack: () => { showGlass = true; lowPowerMode = false; },
         },
       });
 

@@ -70,6 +70,9 @@
   const orbitProps3 = { angle: 0, y: -3, opacity: 0, centerX: 0, centerY: 0 };
   let model3dVisible = $state(false);
   let showGlass = $state(true);
+  // Attivato solo su mobile da Stats durante il conteggio, per abbassare
+  // temporaneamente la risoluzione di rendering del modello 3D (vedi Modello3D.svelte)
+  let statsLowPowerMode = $state(false);
 
   /**
    * @param {{ x: number, y: number, width: number, height: number } | null} _rect
@@ -177,6 +180,7 @@
   {onCardExpanded}
   dotsVisible={datiDotsVisible}
   {showGlass}
+  lowPowerMode={statsLowPowerMode}
 />
 
 <DatiTecniciDots
@@ -220,6 +224,7 @@
         bind:currentTwistZ
         bind:model3dVisible
         bind:showGlass
+        bind:lowPowerMode={statsLowPowerMode}
       />
     </div>
 
