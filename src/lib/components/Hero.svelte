@@ -185,7 +185,9 @@
       const dWidth  = logoImg.width  * scale;
       const dHeight = logoImg.height * scale;
       const dx = (canvas.width  - dWidth)  / 2;
-      const dy = (canvas.height - dHeight) / 2;
+      // Su mobile alziamo leggermente il logo per compensare lo spazio della top bar del browser (vedi --mobile-lift)
+      const mobileLift = canvas.width <= 799 ? 100 : 0;
+      const dy = (canvas.height - dHeight) / 2 - mobileLift;
       ctx.drawImage(logoImg, dx, dy, dWidth, dHeight);
 
       ctx.globalCompositeOperation = "destination-in";
@@ -572,10 +574,11 @@
       line-height: 1.25;
       padding: 0 6vw;
       text-align: center;
+      transform: translateY(calc(-1 * var(--mobile-lift, 100px)));
     }
 
     .subtitle {
-      top: calc(50% + 80px);
+      top: calc(50% + 80px - var(--mobile-lift, 100px));
       font-size: 15px;
       white-space: normal;
       text-align: center;
@@ -583,14 +586,26 @@
     }
 
     .scroll-prompt {
-      bottom: 40px;
+      bottom: calc(40px + var(--mobile-lift, 100px));
     }
 
     .click-hint--mobile {
       position: fixed;
-      bottom: 48px;
+      bottom: calc(48px + var(--mobile-lift, 100px));
       left: 50%;
-      transform: translateX(-50%);
+      /* translate3d invece di translateX: forza un layer di composizione dedicato.
+         Su Safari/Chrome mobile un position:fixed "semplice" può sparire per un frame
+         (o restare bloccato invisibile) quando la barra degli indirizzi si autocollassa
+         ~1s dopo il caricamento e il viewport cambia altezza. */
+      transform: translate3d(-50%, 0, 0);
+      will-change: transform;
+      /* Su iOS/WebKit (Safari e Chrome iOS, che usa lo stesso motore) il layer di questo testo,
+         sopra il canvas WebGL che ridisegna a 60fps, a volte smette di essere ricomposto e
+         l'animazione di opacità resta bloccata invisibile. Un secondo keyframe che perturba
+         impercettibilmente un'altra proprietà tiene il layer costantemente "vivo" (stesso
+         principio del fix già usato per il backdrop-filter in DatiTecnici/DatiTecniciDots). */
+      animation: pulse-intermittent 0.7s ease-in-out infinite alternate,
+                 click-hint-kick 0.45s linear infinite;
       top: auto;
       font-family: "Helvetica", "Arial", sans-serif;
       font-size: 13px;
@@ -617,5 +632,10 @@
     100% {
       opacity: 0.2;
     }
+  }
+
+  @keyframes click-hint-kick {
+    0%, 100% { filter: blur(0px); }
+    50%      { filter: blur(0.01px); }
   }
 </style>

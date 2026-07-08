@@ -12,6 +12,16 @@
   let activeSlide = $state(0);
   let barProgress = $state(0); // 0 → 1, riempimento barra corrente
 
+  // Su mobile il modello 3D viene alleggerito (meno particelle): troppo pesante per la GPU dei telefoni
+  let isMobile = $state(false);
+  onMount(() => {
+    const mq = window.matchMedia('(max-width: 799px)');
+    isMobile = mq.matches;
+    const handler = (/** @type {MediaQueryListEvent} */ e) => { isMobile = e.matches; };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  });
+
   // ── Sync modello 3D Bullet Timing con le clip del video ────────────────────
   // modello_bullettime.glb = hockey, modello_3d_sciatore.glb = sci, modello_3d_bob.glb = bob
   const BOB_MODEL = 2;
@@ -196,7 +206,7 @@
           </div>
         {:else if cardType === 'bullet'}
           <div class="bullet-scene-wrap">
-            <BulletCard3D activeModel={bulletActiveModel} />
+            <BulletCard3D activeModel={bulletActiveModel} {isMobile} />
           </div>
         {/if}
       </div>

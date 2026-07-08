@@ -449,7 +449,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding-top: 8vh;
+      padding-top: calc(8vh - var(--mobile-lift, 100px));
     }
 
     .stat-title {
@@ -505,7 +505,7 @@
 
     .stats-label {
       position: absolute;
-      bottom: 16vh;
+      bottom: calc(16vh + var(--mobile-lift, 100px));
       left: 0;
       right: 0;
       text-align: center;

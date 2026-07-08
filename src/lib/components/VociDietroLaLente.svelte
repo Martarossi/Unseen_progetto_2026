@@ -665,14 +665,18 @@
       line-height: 1.25;
     }
 
+    .voci-intro-text {
+      top: calc(50% - var(--mobile-lift, 100px));
+    }
+
     .voci-columns {
       flex-direction: column;
-      bottom: 15vh;
+      bottom: calc(15vh + var(--mobile-lift, 100px));
       gap: 3vh;
     }
 
     .voci-heading {
-      top: 27%;
+      top: calc(27% - var(--mobile-lift, 100px));
       left: 6vw;
       width: 88%;
     }

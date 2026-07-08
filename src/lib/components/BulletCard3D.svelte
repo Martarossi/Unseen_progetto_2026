@@ -3,8 +3,8 @@
   import * as THREE from "three";
   import BulletCard3DScene from "./BulletCard3DScene.svelte";
 
-  /** @type {{ activeModel?: number }} */
-  let { activeModel = 0 } = $props();
+  /** @type {{ activeModel?: number, isMobile?: boolean }} */
+  let { activeModel = 0, isMobile = false } = $props();
 
   let isDragging = $state(false);
   let externalRotY = $state(0);
@@ -57,7 +57,7 @@
       return renderer;
     }}
   >
-    <BulletCard3DScene {externalRotY} {isDragging} {activeModel} />
+    <BulletCard3DScene {externalRotY} {isDragging} {activeModel} {isMobile} />
   </Canvas>
 </div>
 
