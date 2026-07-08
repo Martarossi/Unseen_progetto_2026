@@ -572,7 +572,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, calc(-50% + 15px));
+    transform: translate(-50%, calc(-50% + 25px));
     text-align: center;
     pointer-events: none;
     white-space: nowrap;
