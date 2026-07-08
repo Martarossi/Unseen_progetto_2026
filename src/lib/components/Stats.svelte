@@ -220,15 +220,22 @@
 
         const proxy = { val: 0 };
         let lastRounded = -1;
+        let lastWriteTime = 0;
         counterTweens.push(gsap.to(proxy, {
           val: stat.target,
           duration: 2.5,
           ease: "power1.out",
           paused: true,
           onUpdate: () => {
+            const now = performance.now();
+            // Aggiorna al massimo ~24 volte/sec (invece dei 60fps del ticker GSAP):
+            // il conteggio resta leggibile ma si dimezza il carico di scrittura DOM
+            // che, sommato al rendering del modello 3D, faceva scattare il tremolio su mobile.
+            if (now - lastWriteTime < 40 && proxy.val < stat.target) return;
             const rounded = Math.round(proxy.val);
             if (rounded === lastRounded) return;
             lastRounded = rounded;
+            lastWriteTime = now;
             el.textContent = String(rounded).padStart(3, '0');
           },
         }));
@@ -499,12 +506,14 @@
       letter-spacing: 0.04em;
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
-      width: 3ch;
       will-change: contents;
-      /* Isola il reflow del testo che cambia 60 volte/sec durante il conteggio:
-         senza contain, su mobile (dove il canvas 3D fixed non è promosso a layer
-         GPU separato, vedi Modello3D.svelte) queste scritture ripetute forzano
-         la ricomposizione dell'intero schermo, percepita come un tremolio. */
+      /* Isola il reflow del testo che cambia durante il conteggio: senza contain,
+         su mobile (dove il canvas 3D fixed non è promosso a layer GPU separato,
+         vedi Modello3D.svelte) queste scritture ripetute forzano la ricomposizione
+         dell'intero schermo, percepita come un tremolio.
+         Niente width fissa: con tabular-nums i 3 caratteri hanno già larghezza
+         costante, e una width in "ch" tagliava l'ultima cifra perché non teneva
+         conto del letter-spacing (contain:paint taglia tutto ciò che eccede il box). */
       contain: content;
       transform: translateZ(0);
     }
