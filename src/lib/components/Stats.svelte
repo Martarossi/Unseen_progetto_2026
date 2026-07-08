@@ -232,15 +232,16 @@
         let lastWriteTime = 0;
         counterTweens.push(gsap.to(proxy, {
           val: stat.target,
-          duration: 2.5,
+          duration: 4,
           ease: "power1.out",
           paused: true,
           onUpdate: () => {
             const now = performance.now();
-            // Aggiorna al massimo ~24 volte/sec (invece dei 60fps del ticker GSAP):
-            // il conteggio resta leggibile ma si dimezza il carico di scrittura DOM
-            // che, sommato al rendering del modello 3D, faceva scattare il tremolio su mobile.
-            if (now - lastWriteTime < 40 && proxy.val < stat.target) return;
+            // Aggiorna al massimo ~15 volte/sec (invece dei 60fps del ticker GSAP) e con
+            // un conteggio rallentato (4s invece di 2.5s): il conteggio resta leggibile
+            // ma si riduce ulteriormente il carico di scrittura DOM che, sommato al
+            // rendering del modello 3D, faceva scattare il tremolio su mobile.
+            if (now - lastWriteTime < 65 && proxy.val < stat.target) return;
             const rounded = Math.round(proxy.val);
             if (rounded === lastRounded) return;
             lastRounded = rounded;
