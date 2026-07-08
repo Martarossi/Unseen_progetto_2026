@@ -12,7 +12,7 @@
       id: 1,
       firstName: 'JORDAN',
       lastName: 'COWAN',
-      role: 'Videomaker\nEx pattinatore professionista',
+      role: 'Videomaker & Ex pattinatore professionista',
       video: '/video_interviste/Intro-Cowan.mp4',
       youtubeUrl: 'https://youtu.be/KLLawK2Y0jo',
       desc: 'Cosa succede quando un ex pattinatore artistico del Team USA decide di portare la macchina da presa sul ghiaccio? In questa intervista esclusiva, Jordan Cowan, fondatore di On Ice Perspectives, ci racconta come ha rivoluzionato il modo in cui il mondo guarda il pattinaggio artistico, arrivando a filmare direttamente sulla pista delle Olimpiadi.',
@@ -30,15 +30,20 @@
       id: 3,
       firstName: 'LORENZO',
       lastName: `D'ORAZIO`,
-      role: 'Videomaker',
+      role: 'Senior Video Producer & Drone Pilot',
       video: '/video_interviste/Intro-Dorazio.mp4',
+      youtubeUrl: 'https://youtu.be/Oz9el_FaBZY',
+      desc: `Cosa unisce la regia televisiva dei grandi eventi all'azione d'emergenza in alta montagna? In questa intervista esclusiva offriamo uno sguardo a chi salva vite ed esplora i limiti della tecnologia aerea, scoprendo i retroscena di una professione tanto spettacolare quanto rigorosa.`
     },
     {
       id: 4,
       firstName: 'MARCO',
       lastName: `DONA'`,
-      role: 'Operatrice\nsteadicam',
+      role: 'Cameraman & Capo Operatore Video',
       video: '/video_interviste/Intro-Dona.mp4',
+      youtubeUrl: 'https://youtu.be/jE7GKEfmi3U',
+      desc: `Cosa significa essere "malati di news" e dover raccontare un evento gigantesco come le Olimpiadi per un canale all-news come Rai News? In questa intervista, il videomaker Lucio Piazzini ci offre uno sguardo a chi racconta la realtà, portandoci dietro le quinte di una troupe giornalistica d'assalto a Milano Cortina.`
+
     },
     {
       id: 5,
