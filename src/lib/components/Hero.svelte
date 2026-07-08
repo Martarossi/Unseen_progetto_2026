@@ -596,7 +596,7 @@
       line-height: 1.25;
       padding: 0 6vw;
       text-align: center;
-      transform: translateY(calc(-1 * var(--mobile-lift, 100px) + 45px));
+      transform: translateY(calc(-1 * var(--mobile-lift, 100px) + 65px));
     }
 
     .subtitle {

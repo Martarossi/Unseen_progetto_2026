@@ -666,12 +666,12 @@
     }
 
     .voci-intro-text {
-      top: calc(50% - var(--mobile-lift, 100px) + 45px);
+      top: calc(50% - var(--mobile-lift, 100px) + 85px);
     }
 
     .voci-columns {
       flex-direction: column;
-      bottom: calc(15vh + var(--mobile-lift, 100px));
+      bottom: calc(15vh + var(--mobile-lift, 100px) - 20px);
       gap: 3vh;
     }
 
