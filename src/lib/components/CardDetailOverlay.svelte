@@ -206,7 +206,9 @@
           </div>
         {:else if cardType === 'bullet'}
           <div class="bullet-scene-wrap">
-            <BulletCard3D activeModel={bulletActiveModel} {isMobile} />
+            <div class="bullet-scene-lift">
+              <BulletCard3D activeModel={bulletActiveModel} {isMobile} />
+            </div>
           </div>
         {/if}
       </div>
@@ -661,6 +663,16 @@
     isolation: isolate;
   }
 
+  /* Sposta il contenuto 3D senza toccare .bullet-scene-wrap: quel div ha
+     un'animazione di entrata (ov-fade-up) che termina a transform: translateY(0)
+     e sovrascriverebbe silenziosamente qualunque transform statico messo lì sopra. */
+  .bullet-scene-lift {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform: translateY(-96px);
+  }
+
   .main-card h2 {
     font-size: clamp(38px, 11vw, 54px);
     margin-bottom: 12px;
@@ -681,6 +693,8 @@
 
   .nav-progress {
     padding: 16px 20px 0;
+    /* Leggermente più dello spazio sotto il titolo (label margin-bottom: 12px) */
+    margin-bottom: 15px;
   }
 
   .nav-content {

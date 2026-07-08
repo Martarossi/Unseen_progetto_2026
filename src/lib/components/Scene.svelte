@@ -76,8 +76,15 @@
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
+  // Su mobile si carica una versione alleggerita (morph target dimezzati, ~580KB vs ~1.1MB):
+  // il modello sorgente ha 240 morph target per l'animazione di twist, troppo pesanti per il download mobile.
   const meshoptDecoder = useMeshopt();
-  const gltf = useGltf("/OGGETTO%20ANIMATO%20PER%20SITO%202.glb", { meshoptDecoder });
+  const gltf = useGltf(
+    isMobile
+      ? "/OGGETTO%20ANIMATO%20PER%20SITO%202%20MOBILE.glb"
+      : "/OGGETTO%20ANIMATO%20PER%20SITO%202.glb",
+    { meshoptDecoder }
+  );
 
   const customUniforms = {
     twistXAngle: { value: (360 * Math.PI) / 180 },
