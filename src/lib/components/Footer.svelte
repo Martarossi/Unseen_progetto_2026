@@ -114,7 +114,16 @@
     }
 
     .footer-logo-wrap {
-      display: none;
+      flex: unset;
+      justify-content: center;
+      order: 3;
+    }
+
+    .footer-logo {
+      margin-right: 0;
+      filter: none;
+      opacity: 1;
+      transform: translateX(-5px);
     }
   }
 </style>

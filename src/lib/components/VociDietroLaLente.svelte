@@ -657,7 +657,7 @@
     }
 
     .voci-scroll-wrapper {
-      height: 4500px;
+      height: 2250px;
     }
 
     .voci-intro-phrase {
