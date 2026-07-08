@@ -21,8 +21,11 @@
     const pmrem = new THREE.PMREMGenerator(/** @type {THREE.WebGLRenderer} */ (renderer));
     pmrem.compileEquirectangularShader();
     const loader = new HDRLoader();
+    // Su mobile carica una HDR ridotta a metà risoluzione (512x256, ~448KB vs ~1.8MB):
+    // serve solo per l'illuminazione ambientale/riflessi vetro delle VideoCard, non per il modello
+    // (che è renderizzato come particelle unlit e non risente della risoluzione della env map).
     loader.load(
-      "/studio_garden_1k.hdr",
+      isMobile ? "/studio_garden_mobile.hdr" : "/studio_garden_1k.hdr",
       (texture) => {
         const envMap = pmrem.fromEquirectangular(texture).texture;
         scene.environment = envMap;
