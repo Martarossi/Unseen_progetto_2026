@@ -50,6 +50,30 @@
     return str.split("").map((c) => (c === " " ? " " : c));
   }
 
+  // Blocca lo scroll con `position: fixed` invece di `overflow: hidden`.
+  // Su Safari, alternare `overflow: hidden` mentre è in corso uno scroll a
+  // inerzia (trackpad/wheel) accoda il delta e lo riapplica tutto insieme
+  // allo sblocco, facendo "saltare" lo scroll oltre il range della blurTl
+  // (l'utente si ritrova già nello stato finale del crossfade). Fissare il
+  // body alla posizione corrente evita del tutto l'accumulo del delta.
+  let lockedScrollY = 0;
+
+  function lockBodyScroll() {
+    lockedScrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${lockedScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+  }
+
+  function unlockBodyScroll() {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    window.scrollTo(0, lockedScrollY);
+  }
+
   onMount(() => {
     const mm = gsap.matchMedia();
 
@@ -110,7 +134,7 @@
           "-=0.5",
         )
         .call(() => {
-          document.body.style.overflow = "";
+          unlockBodyScroll();
         });
 
       // Scrub: modello si rimpicciolisce + sfondo si schiarisce
@@ -130,7 +154,7 @@
             model3dVisible = false;
             if (!letterStarted) {
               letterStarted = true;
-              document.body.style.overflow = "hidden";
+              lockBodyScroll();
               letterTl.play(0);
             }
           },
@@ -140,7 +164,7 @@
             modelPosition[1] = 0;
             modelPosition[2] = 0;
             letterStarted = false;
-            document.body.style.overflow = "";
+            unlockBodyScroll();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0, filter: "blur(10px)", y: 20 });
             gsap.set(headingRef, { opacity: 0, y: 20 });
@@ -152,7 +176,7 @@
           onLeaveBack: () => {
             model3dVisible = true;
             letterStarted = false;
-            document.body.style.overflow = "";
+            unlockBodyScroll();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0 });
             gsap.set(headingRef, { opacity: 0 });
@@ -327,7 +351,7 @@
           "-=0.4",
         )
         .call(() => {
-          document.body.style.overflow = "";
+          unlockBodyScroll();
         });
 
       const shrinkTl = gsap.timeline({
@@ -346,7 +370,7 @@
             model3dVisible = false;
             if (!letterStarted) {
               letterStarted = true;
-              document.body.style.overflow = "hidden";
+              lockBodyScroll();
               letterTl.play(0);
             }
           },
@@ -356,7 +380,7 @@
             modelPosition[1] = 0;
             modelPosition[2] = 0;
             letterStarted = false;
-            document.body.style.overflow = "";
+            unlockBodyScroll();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0 });
             gsap.set(headingRef, { opacity: 0 });
@@ -368,7 +392,7 @@
           onLeaveBack: () => {
             model3dVisible = true;
             letterStarted = false;
-            document.body.style.overflow = "";
+            unlockBodyScroll();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0 });
             gsap.set(headingRef, { opacity: 0 });

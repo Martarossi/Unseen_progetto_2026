@@ -219,7 +219,7 @@
         overflow-x: hidden;
         overflow-y: auto;
         z-index: 9999;
-        background-image: url('/sfondo-About.png');
+        background-image: url('/sfondo-About.jpg');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;

@@ -188,8 +188,8 @@
   };
 
   // --- SISTEMA DI EMISSIONE PARTICELLE GPU (DALLA SUPERFICIE DELL'OGGETTO 3D) ---
-  // Su mobile dimezziamo il conteggio: i modelli erano troppo pesanti per la GPU dei telefoni
-  const ambientParticleCount = isMobile ? 90 : 180;
+  // Su mobile il conteggio è ridotto a un terzo: i modelli erano ancora troppo pesanti per la GPU dei telefoni
+  const ambientParticleCount = isMobile ? 60 : 180;
   
   const positions = new Float32Array(ambientParticleCount * 3);
   const driftDirs = new Float32Array(ambientParticleCount * 3);
@@ -528,8 +528,8 @@
         mesh.userData.isParticleConverted = true;
 
         // Campiona particelle distribuite uniformemente per ogni mesh (super denso!)
-        // Su mobile dimezziamo il conteggio per alleggerire il carico sulla GPU
-        const denseGeometry = samplePointsFromGeometry(mesh.geometry, isMobile ? 10000 : 20000);
+        // Su mobile riduciamo ulteriormente il conteggio per alleggerire il carico sulla GPU
+        const denseGeometry = samplePointsFromGeometry(mesh.geometry, isMobile ? 6000 : 20000);
         
         // Trasforma la geometria nel sistema di coordinate del root ($gltf.scene)
         const relativeMatrix = getRelativeMatrix(mesh, $gltf.scene);

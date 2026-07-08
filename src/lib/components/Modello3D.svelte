@@ -62,10 +62,10 @@
     return () => mq.removeEventListener('change', handler);
   });
 
-  // Su mobile, durante le sezioni più pesanti (es. i contatori di Stats),
-  // abbassiamo ulteriormente la risoluzione di rendering del modello 3D
-  // per alleggerire il carico GPU. [1, 1.5] replica il cap desktop esistente.
-  let dprValue = $derived(isMobile && lowPowerMode ? 1 : /** @type {[number, number]} */ ([1, 1.5]));
+  // Su mobile il pixel ratio resta sempre bloccato a 1 (invece del cap [1, 1.5]
+  // condiviso col desktop): è la leva con il maggior impatto sul carico GPU per
+  // un sistema particellare additive-blended con molto overdraw.
+  let dprValue = $derived(isMobile ? 1 : /** @type {[number, number]} */ ([1, 1.5]));
 </script>
 
 <div class="model3d-layer" class:visible>
@@ -81,7 +81,7 @@
             antialias: false,
             powerPreference: "high-performance",
           });
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 1.5));
           return renderer;
         }}
       >
