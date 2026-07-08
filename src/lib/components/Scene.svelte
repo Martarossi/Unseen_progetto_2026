@@ -569,32 +569,32 @@
   {orbitProps}
   {isMobile}
   label="VIDEOAI1"
-  videoSrc="/video_card/spacetime_slices.mov"
+  videoSrc="/video_card/spacetime_slices.mp4"
   cardTitle="SPACETIME SLICES"
   cardSubtitle="Scomposizione gesto sportivo in fotogrammi simultanei"
   isExpanding={expandCardIndex === 0}
   onCardExpanded={expandCardIndex === 0 ? onCardExpanded : undefined}
-  onCardClick={(rect) => onCardClick?.(rect, '/video_card/spacetime_slices.mov', 0)}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/spacetime_slices.mp4', 0)}
 />
 <VideoCard
   orbitProps={orbitProps2}
   {isMobile}
   label="VIDEOAI2"
-  videoSrc="/video_card/tracker.mov"
+  videoSrc="/video_card/tracker.mp4"
   cardTitle="TRACKER ATHLETES"
   cardSubtitle="Analisi istantanea dell'azione sportiva"
   isExpanding={expandCardIndex === 1}
   onCardExpanded={expandCardIndex === 1 ? onCardExpanded : undefined}
-  onCardClick={(rect) => onCardClick?.(rect, '/video_card/tracker.mov', 1)}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/tracker.mp4', 1)}
 />
 <VideoCard
   orbitProps={orbitProps3}
   {isMobile}
   label="VIDEOAI3"
-  videoSrc="/video_card/Bullet_time.mov"
+  videoSrc="/video_card/Bullet_time.mp4"
   cardTitle="BULLET TIMING"
   cardSubtitle="Scansione orbitale di un istante sospeso"
   isExpanding={expandCardIndex === 2}
   onCardExpanded={expandCardIndex === 2 ? onCardExpanded : undefined}
-  onCardClick={(rect) => onCardClick?.(rect, '/video_card/Bullet_time.mov', 2)}
+  onCardClick={(rect) => onCardClick?.(rect, '/video_card/Bullet_time.mp4', 2)}
 />

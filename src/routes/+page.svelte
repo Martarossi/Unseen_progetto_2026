@@ -79,7 +79,7 @@
   async function handleCardClick(_rect, videoSrc = '', cardIndex = 0) {
     if (showCardOverlay) return;
     activeCardIndex = cardIndex;
-    activeVideoSrc = videoSrc || "/video_card/spacetime_slices.mov";
+    activeVideoSrc = videoSrc || "/video_card/spacetime_slices.mp4";
     // Porta istantaneamente lo scroll alla posizione frontale della card,
     // poi aspetta che GSAP (scrub: 1) raggiunga quella posizione
     scrollToCard?.(cardIndex);
