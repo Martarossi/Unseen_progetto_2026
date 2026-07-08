@@ -215,6 +215,7 @@
           </div>
         </div>
       {/each}
+      <div class="dt-mobile-end-buffer"></div>
     </div>
   </div>
 </div>
@@ -249,11 +250,14 @@
   }
 
   @media (max-width: 799px) {
-    /* 3 card (70svh) = 210svh */
+    /* 3 card (70svh) + buffer di fine scroll (12svh) = 222svh.
+       Il buffer evita che l'ultima card resti tagliata quando la barra
+       degli indirizzi del browser mobile si nasconde/mostra a fine scroll
+       e window.innerHeight non combacia più con 100svh. */
     .dt-mobile-wrapper {
       display: block;
       position: relative;
-      height: 210svh;
+      height: 222svh;
     }
 
     .dt-mobile-sticky {
@@ -400,6 +404,12 @@
       height: 5px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.35);
+      flex-shrink: 0;
+    }
+
+    .dt-mobile-end-buffer {
+      height: 12svh;
+      width: 100%;
       flex-shrink: 0;
     }
   }
