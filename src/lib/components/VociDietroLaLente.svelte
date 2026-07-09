@@ -76,6 +76,16 @@
     window.scrollTo(0, lockedScrollY);
   }
 
+  // Usata da onEnterBack/onLeaveBack: qui lo scroll si è già spostato legittimamente
+  // (è per questo che il trigger è scattato), quindi si rilascia solo l'overflow
+  // senza richiamare scrollTo — altrimenti si rimanda lo scroll a `lockedScrollY`
+  // (la posizione salvata l'ultima volta che si è entrati nel lock, es. in fondo
+  // alla pagina), riattraversando subito lo start/end del trigger e riscatenando
+  // onLeave → lockBodyScroll(): un loop che intrappola lo scroll indietro.
+  function releaseBodyScrollLock() {
+    document.body.style.overflow = "";
+  }
+
   onMount(() => {
     const mm = gsap.matchMedia();
 
@@ -166,7 +176,7 @@
             modelPosition[1] = 0;
             modelPosition[2] = 0;
             letterStarted = false;
-            unlockBodyScroll();
+            releaseBodyScrollLock();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0, filter: "blur(10px)", y: 20 });
             gsap.set(headingRef, { opacity: 0, y: 20 });
@@ -178,7 +188,7 @@
           onLeaveBack: () => {
             model3dVisible = true;
             letterStarted = false;
-            unlockBodyScroll();
+            releaseBodyScrollLock();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0 });
             gsap.set(headingRef, { opacity: 0 });
@@ -382,7 +392,7 @@
             modelPosition[1] = 0;
             modelPosition[2] = 0;
             letterStarted = false;
-            unlockBodyScroll();
+            releaseBodyScrollLock();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0 });
             gsap.set(headingRef, { opacity: 0 });
@@ -394,7 +404,7 @@
           onLeaveBack: () => {
             model3dVisible = true;
             letterStarted = false;
-            unlockBodyScroll();
+            releaseBodyScrollLock();
             letterTl.pause(0);
             gsap.set(letters, { opacity: 0 });
             gsap.set(headingRef, { opacity: 0 });
