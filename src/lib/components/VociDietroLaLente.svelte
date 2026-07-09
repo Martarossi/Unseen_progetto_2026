@@ -319,8 +319,6 @@
     });
 
     mm.add("(max-width: 799px)", () => {
-      let letterStarted = false;
-
       const update3D = () => {
         modelScale[0] = modelScale[1] = modelScale[2] = modelProps.scale;
         modelRotation[0] = modelProps.rotX;
@@ -338,8 +336,23 @@
       gsap.set(colLeftRef, { filter: "blur(0px)" });
       gsap.set(colRightRef, { filter: "blur(8px)" });
 
-      const letterTl = gsap
-        .timeline({ paused: true })
+      // Su mobile la comparsa del testo NON usa il blocco scroll a tempo
+      // (lockBodyScroll/unlockBodyScroll, vedi sopra): `overflow: hidden` sul
+      // body non blocca lo scroll via touch/swipe su iOS/Android, quindi la
+      // pagina continuava a scorrere sotto al testo. Stessa scelta già fatta
+      // in Intro.svelte e nella versione mobile di Stats.svelte: qui la
+      // timeline è agganciata direttamente allo scroll (scrub) invece che al
+      // tempo, così avanzare nello scroll fa avanzare l'animazione — non c'è
+      // nulla da "sbloccare" e non si può scrollare oltre finché la frase non
+      // è del tutto scomparsa. Lo scroll indietro la inverte automaticamente.
+      const letterTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollWrapper,
+          start: "top+=800 top",
+          end: "top+=1600 top",
+          scrub: 0.5,
+        },
+      })
         .fromTo(
           letters,
           { opacity: 0, filter: "blur(6px)", y: 15 },
@@ -374,10 +387,7 @@
           { opacity: 0, y: 15 },
           { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
           "-=0.4",
-        )
-        .call(() => {
-          unlockBodyScroll();
-        });
+        );
 
       const shrinkTl = gsap.timeline({
         scrollTrigger: {
@@ -393,35 +403,18 @@
           },
           onLeave: () => {
             model3dVisible = false;
-            if (!letterStarted) {
-              letterStarted = true;
-              lockBodyScroll();
-              letterTl.play(0);
-            }
           },
           onEnterBack: () => {
             model3dVisible = true;
             modelPosition[0] = 0;
             modelPosition[1] = 0;
             modelPosition[2] = 0;
-            letterStarted = false;
-            releaseBodyScrollLock();
-            letterTl.pause(0);
-            gsap.set(letters, { opacity: 0 });
-            gsap.set(headingRef, { opacity: 0 });
-            gsap.set(columnsRef, { opacity: 0 });
             gsap.set(colLeftRef, { filter: "blur(0px)" });
             gsap.set(colRightRef, { filter: "blur(8px)" });
             gsap.set(vociBackground, { opacity: 0 });
           },
           onLeaveBack: () => {
             model3dVisible = true;
-            letterStarted = false;
-            releaseBodyScrollLock();
-            letterTl.pause(0);
-            gsap.set(letters, { opacity: 0 });
-            gsap.set(headingRef, { opacity: 0 });
-            gsap.set(columnsRef, { opacity: 0 });
             gsap.set(colLeftRef, { filter: "blur(0px)" });
             gsap.set(colRightRef, { filter: "blur(8px)" });
             gsap.set(vociBackground, { opacity: 0 });
@@ -485,11 +478,13 @@
         0.5,
       );
 
+      // Parte subito dopo la fine di letterTl (1600), niente più gap dedicato
+      // all'attesa del lock a tempo.
       const blurTl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollWrapper,
-          start: "top+=900 top",
-          end: "top+=1350 top",
+          start: "top+=1650 top",
+          end: "top+=2100 top",
           scrub: 1.0,
         },
       });
@@ -721,8 +716,9 @@
       display: block;
     }
 
+    /* 800 shrink + 800 letterTl (scrub, ex lock a tempo) + 450 blurTl + buffer finale */
     .voci-scroll-wrapper {
-      height: 2250px;
+      height: 3000px;
     }
 
     .voci-intro-phrase {
