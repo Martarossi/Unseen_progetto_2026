@@ -722,7 +722,7 @@
     }
 
     .voci-content {
-      transform: translateY(calc(-50% - var(--mobile-lift, 100px) + 30px));
+      transform: translateY(calc(-50% - var(--mobile-lift, 100px) + 40px));
       padding: 0 6vw;
       gap: clamp(30px, 5vh, 70px);
     }
