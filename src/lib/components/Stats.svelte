@@ -96,25 +96,29 @@
 
       const countersDuration = Math.max(...stats.map((s) => s.duration));
 
-      let scrollLocked = false;
-      const preventScroll = (/** @type {Event} */ e) => { e.preventDefault(); };
-      const scrollKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '];
-      const preventScrollKeys = (/** @type {KeyboardEvent} */ e) => {
-        if (scrollKeys.includes(e.key)) e.preventDefault();
-      };
+      // Blocca lo scroll con `overflow: hidden` invece di limitarsi a un preventDefault
+      // su wheel/touchmove/keydown (vedi stessa tecnica in VociDietroLaLente.svelte):
+      // il preventDefault selettivo lascia sempre uno spiraglio (drag della scrollbar,
+      // scroll da tasti su elementi focusati, e soprattutto lo scroll a inerzia del
+      // trackpad su desktop, che continua ad "accodare" delta anche dopo l'ultimo
+      // evento wheel intercettato) — è esattamente quello che permetteva di scrollare
+      // "un pochino" oltre il blocco mentre i numeri contano. `overflow: hidden` sul
+      // body impedisce lo scroll a livello di documento indipendentemente dal device
+      // di input. Il `window.scrollTo` allo sblocco ripristina la posizione esatta
+      // salvata, neutralizzando il "salto" da eventuale inerzia accodata nel frattempo.
+      let lockedScrollY = 0;
+      let isBodyScrollLocked = false;
       const lockScroll = () => {
-        if (scrollLocked) return;
-        scrollLocked = true;
-        window.addEventListener('wheel', preventScroll, { passive: false });
-        window.addEventListener('touchmove', preventScroll, { passive: false });
-        window.addEventListener('keydown', preventScrollKeys);
+        if (isBodyScrollLocked) return;
+        isBodyScrollLocked = true;
+        lockedScrollY = window.scrollY;
+        document.body.style.overflow = 'hidden';
       };
       const unlockScroll = () => {
-        if (!scrollLocked) return;
-        scrollLocked = false;
-        window.removeEventListener('wheel', preventScroll);
-        window.removeEventListener('touchmove', preventScroll);
-        window.removeEventListener('keydown', preventScrollKeys);
+        if (!isBodyScrollLocked) return;
+        isBodyScrollLocked = false;
+        document.body.style.overflow = '';
+        window.scrollTo(0, lockedScrollY);
       };
 
       const tl = gsap.timeline({
