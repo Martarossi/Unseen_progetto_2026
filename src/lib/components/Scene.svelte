@@ -79,8 +79,11 @@
   } = $props();
 
   // CARICAMENTO MODELLO GLTF
-  // Su mobile si carica una versione alleggerita (morph target dimezzati, ~580KB vs ~1.1MB):
-  // il modello sorgente ha 240 morph target per l'animazione di twist, troppo pesanti per il download mobile.
+  // Su mobile si carica una versione alleggerita (~9KB vs ~1.1MB): il twist è comunque
+  // guidato interamente dallo shader via uniform (uTime/twistX/twistZ, vedi sotto), quindi
+  // morph target e animazioni glTF del file sorgente non vengono mai letti a runtime
+  // (nessun AnimationMixer/morphTargetInfluences in questo componente) e sono stati rimossi
+  // dalla versione mobile insieme ai relativi keyframe, senza alcun impatto visivo.
   const meshoptDecoder = useMeshopt();
   const gltf = useGltf(
     isMobile
