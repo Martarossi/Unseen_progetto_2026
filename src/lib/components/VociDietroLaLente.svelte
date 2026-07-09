@@ -520,35 +520,37 @@
       </p>
     </div>
 
-    <!-- Titolo sempre nitido -->
-    <div class="voci-heading" bind:this={headingRef}>
-      <img
-        src="/gallery_intro_desktop.svg"
-        alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana."
-        class="heading-img heading-img--desktop"
-      />
-      <img
-        src="/gallery_intro.svg"
-        alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana."
-        class="heading-img heading-img--mobile"
-      />
-    </div>
-
-    <!-- Due colonne: inizialmente sfocate, si nitidiscono una alla volta con lo scroll -->
-    <div class="voci-columns" bind:this={columnsRef}>
-      <div class="col-text" bind:this={colLeftRef}>
-        <p>
-          L'AI funge solo da tecnologia <br />che analizza, stabilizza, calcola
-          <br />e ricostruisce.
-        </p>
+    <div class="voci-content">
+      <!-- Titolo sempre nitido -->
+      <div class="voci-heading" bind:this={headingRef}>
+        <img
+          src="/gallery_intro_desktop.svg"
+          alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana."
+          class="heading-img heading-img--desktop"
+        />
+        <img
+          src="/gallery_intro.svg"
+          alt="Dietro ad ogni immagine rimangono l'esperienza, la presenza e la sensibilità umana."
+          class="heading-img heading-img--mobile"
+        />
       </div>
-      <div class="col-text" bind:this={colRightRef}>
-        <p>
-          Una raccolta di voci di chi <strong
-            >vive l'evento<br /> da dietro la lente</strong
-          >: professionisti <br />che lavorano in condizioni estreme,<br /> in equilibrio
-          costante tra tecnica ed emozione.
-        </p>
+
+      <!-- Due colonne: inizialmente sfocate, si nitidiscono una alla volta con lo scroll -->
+      <div class="voci-columns" bind:this={columnsRef}>
+        <div class="col-text" bind:this={colLeftRef}>
+          <p>
+            L'AI funge solo da tecnologia <br />che analizza, stabilizza, calcola
+            <br />e ricostruisce.
+          </p>
+        </div>
+        <div class="col-text" bind:this={colRightRef}>
+          <p>
+            Una raccolta di voci di chi <strong
+              >vive l'evento<br /> da dietro la lente</strong
+            >: professionisti <br />che lavorano in condizioni estreme,<br /> in equilibrio
+            costante tra tecnica ed emozione.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -618,12 +620,29 @@
     opacity: 0;
   }
 
+  /* ── Titolo + colonne ──
+     Raggruppati in un unico blocco flex con gap fisso (clamp) e centrati come
+     insieme: prima il titolo e le colonne erano posizionati in modo indipendente
+     (top: 34% / bottom: 24vh), quindi su schermi molto alti (es. monitor 14"+)
+     la distanza tra i due — proporzionale al viewport — cresceva a dismisura e
+     il titolo finiva troppo in alto rispetto ai paragrafi. */
+  .voci-content {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 8vw;
+    box-sizing: border-box;
+    gap: clamp(60px, 9vh, 130px);
+    pointer-events: none;
+  }
+
   /* ── Titolo allineato a sinistra ── */
   .voci-heading {
-    position: absolute;
-    top: 34%;
-    left: 8vw;
-    transform: translateY(-50%);
     text-align: left;
     width: 78%;
     opacity: 0;
@@ -641,12 +660,9 @@
     display: none;
   }
 
-  /* ── Due colonne in basso ── */
+  /* ── Due colonne ── */
   .voci-columns {
-    position: absolute;
-    bottom: 24vh;
-    left: 8vw;
-    right: 8vw;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     gap: 8vw;
@@ -695,17 +711,19 @@
       top: calc(50% - var(--mobile-lift, 100px) + 85px);
     }
 
+    .voci-content {
+      transform: translateY(calc(-50% - var(--mobile-lift, 100px) + 30px));
+      padding: 0 6vw;
+      gap: clamp(30px, 5vh, 70px);
+    }
+
     .voci-columns {
       flex-direction: column;
-      bottom: calc(15vh + var(--mobile-lift, 100px) - 60px);
       gap: 3vh;
     }
 
     .voci-heading {
-      top: calc(27% - var(--mobile-lift, 100px));
-      left: 6vw;
       width: 88%;
-      transform: translateY(calc(-50% + 20px));
     }
 
     .col-text p {
