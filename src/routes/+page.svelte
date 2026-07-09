@@ -116,6 +116,20 @@
 
       const mm = gsap.matchMedia();
 
+      // I font (es. Akira Expanded) vengono caricati in modo asincrono da un CDN
+      // esterno (vedi +layout.svelte). Quando il font arriva DOPO che ScrollTrigger
+      // ha già misurato le sezioni pinnate, il conseguente reflow del testo (line-height,
+      // letter-spacing diversi dal font di fallback) sposta le posizioni reali nel
+      // documento senza che ScrollTrigger se ne accorga: lo scrub resta ancorato a offset
+      // ormai obsoleti, causando sovrapposizioni tra le fasi dell'animazione (tipicamente
+      // visibile su mobile dopo un reload con rete lenta). Un refresh dopo il caricamento
+      // di font e risorse rimisura tutti i trigger sulla base del layout definitivo.
+      const refreshScrollTrigger = () => ScrollTrigger.refresh();
+      if (document.fonts?.ready) {
+        document.fonts.ready.then(refreshScrollTrigger);
+      }
+      window.addEventListener('load', refreshScrollTrigger);
+
       // Desktop: more pronounced parallax
       mm.add("(min-width: 800px)", () => {
         gsap.to(".parallax-bg", {
@@ -147,6 +161,7 @@
       return () => {
         clearTimeout(scrollReset1);
         clearTimeout(scrollReset2);
+        window.removeEventListener('load', refreshScrollTrigger);
         mm.revert();
       };
     }
