@@ -66,13 +66,25 @@
   // posizione salvata neutralizza il salto.
   let lockedScrollY = 0;
 
+  // Su mobile (iOS Safari in particolare) `overflow: hidden` sul body NON
+  // blocca lo scroll via touch/swipe — blocca solo mouse wheel/scrollbar.
+  // Per questo qui serve anche un listener touchmove che fa preventDefault
+  // finché il lock è attivo, altrimenti su mobile il testo appare ma la
+  // pagina continua a scorrere sotto.
+  /** @param {TouchEvent} e */
+  function preventTouchScroll(e) {
+    e.preventDefault();
+  }
+
   function lockBodyScroll() {
     lockedScrollY = window.scrollY;
     document.body.style.overflow = "hidden";
+    document.addEventListener("touchmove", preventTouchScroll, { passive: false });
   }
 
   function unlockBodyScroll() {
     document.body.style.overflow = "";
+    document.removeEventListener("touchmove", preventTouchScroll);
     window.scrollTo(0, lockedScrollY);
   }
 
@@ -84,6 +96,7 @@
   // onLeave → lockBodyScroll(): un loop che intrappola lo scroll indietro.
   function releaseBodyScrollLock() {
     document.body.style.overflow = "";
+    document.removeEventListener("touchmove", preventTouchScroll);
   }
 
   onMount(() => {
