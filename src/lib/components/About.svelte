@@ -136,7 +136,7 @@
                 >
                     <h2>CHI SIAMO?</h2>
                     <p>
-                        Siamo cinque studenti del corso di Design della
+                        Siamo Après-ski, cinque studenti del corso di Design della
                         Comunicazione presso il Politecnico di Milano. Il
                         progetto nasce all'interno del corso di Web Design per
                         esplorare l'anima tecnologica e nascosta di Milano
